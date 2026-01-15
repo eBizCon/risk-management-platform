@@ -155,19 +155,27 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 
 	test.describe('Antrag einreichen (Submit Application)', () => {
 		test('should submit a draft application', async ({ page }) => {
-			await page.goto('/applications/new');
-			await page.getByLabel(/Name/i).fill('Submit Test');
-			await page.getByLabel(/Monatliches Einkommen/i).fill('4500');
-			await page.getByLabel(/Monatliche Fixkosten/i).fill('1800');
-			await page.getByLabel(/Gewünschte Rate/i).fill('500');
-			await page.getByLabel(/Beschäftigungsstatus/i).selectOption('employed');
-			await page.getByLabel(/Nein/i).check();
-			await page.getByRole('button', { name: /Als Entwurf speichern/i }).click();
+				await page.goto('/applications/new');
+				await page.getByLabel(/Name/i).fill('Submit Test');
+				await page.getByLabel(/Monatliches Einkommen/i).fill('4500');
+				await page.getByLabel(/Monatliche Fixkosten/i).fill('1800');
+				await page.getByLabel(/Gewünschte Rate/i).fill('500');
+				await page.getByLabel(/Beschäftigungsstatus/i).selectOption('employed');
+				await page.getByLabel(/Nein/i).check();
+				await page.getByRole('button', { name: /Als Entwurf speichern/i }).click();
 			
-			await page.getByRole('button', { name: /Einreichen/i }).click();
+				// Handle the confirmation dialog
+				page.on('dialog', async dialog => {
+					await dialog.accept();
+				});
 			
-			await expect(page.getByText(/Eingereicht/i)).toBeVisible();
-		});
+				await page.getByRole('button', { name: /Einreichen/i }).click();
+			
+				// Wait for page reload after submission
+				await page.waitForLoadState('networkidle');
+			
+				await expect(page.getByText('Eingereicht', { exact: true })).toBeVisible();
+			});
 
 		test('should not allow editing after submission', async ({ page }) => {
 			await page.goto('/applications/new');
@@ -225,15 +233,36 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await expect(greenIndicator.first()).toBeVisible();
 		});
 
-		test('should show red traffic light for low score with payment default', async ({ page }) => {
+	test('should show red traffic light for low score with payment default', async ({ page }) => {
 			await page.goto('/applications/new');
+			
+			// Wait for form to be ready
+			await page.waitForLoadState('networkidle');
+			
+			// Fill all fields sequentially with explicit waits
+			await page.getByLabel(/Name/i).click();
 			await page.getByLabel(/Name/i).fill('Red Light Test');
+			
+			await page.getByLabel(/Monatliches Einkommen/i).click();
 			await page.getByLabel(/Monatliches Einkommen/i).fill('2500');
+			
+			await page.getByLabel(/Monatliche Fixkosten/i).click();
 			await page.getByLabel(/Monatliche Fixkosten/i).fill('2000');
+			
+			await page.getByLabel(/Gewünschte Rate/i).click();
 			await page.getByLabel(/Gewünschte Rate/i).fill('300');
+			
 			await page.getByLabel(/Beschäftigungsstatus/i).selectOption('unemployed');
 			await page.getByLabel(/Ja/i).check();
+			
+			// Verify fields are filled before submitting
+			await expect(page.getByLabel(/Name/i)).toHaveValue('Red Light Test');
+			await expect(page.getByLabel(/Monatliches Einkommen/i)).toHaveValue('2500');
+			
 			await page.getByRole('button', { name: /Antrag einreichen/i }).click();
+			
+			// Wait for navigation to application detail page
+			await expect(page).toHaveURL(/\/applications\/\d+/, { timeout: 10000 });
 			
 			const redIndicator = page.locator('.bg-red-500, [class*="red"]');
 			await expect(redIndicator.first()).toBeVisible();
