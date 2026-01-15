@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import ApplicationTable from '$lib/components/ApplicationTable.svelte';
+	import RoleGuard from '$lib/components/RoleGuard.svelte';
 	import { Filter, FileText, CheckCircle, XCircle, Clock } from 'lucide-svelte';
 	import type { PageData } from './$types';
 
@@ -34,6 +35,7 @@
 	<title>Anträge bearbeiten - Risikomanagement</title>
 </svelte:head>
 
+<RoleGuard requiredRole="processor" redirectTo="/applications">
 <div class="space-y-6">
 	<div>
 		<h1 class="text-2xl font-bold text-primary">Anträge bearbeiten</h1>
@@ -109,7 +111,8 @@
 		<ApplicationTable
 			applications={data.applications}
 			isApplicantView={false}
-			onView={handleView}
+		onView={handleView}
 		/>
 	</div>
 </div>
+</RoleGuard>

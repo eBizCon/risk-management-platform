@@ -3,6 +3,7 @@
 	import { enhance } from '$app/forms';
 	import StatusBadge from '$lib/components/StatusBadge.svelte';
 	import ScoreDisplay from '$lib/components/ScoreDisplay.svelte';
+	import RoleGuard from '$lib/components/RoleGuard.svelte';
 	import { employmentStatusLabels } from '$lib/types';
 	import { ArrowLeft, CheckCircle, XCircle } from 'lucide-svelte';
 	import type { PageData, ActionData } from './$types';
@@ -40,6 +41,7 @@
 	<title>Antrag #{app.id} prüfen - Risikomanagement</title>
 </svelte:head>
 
+<RoleGuard requiredRole="processor" redirectTo="/applications">
 <div class="space-y-6">
 	<div class="flex items-center gap-4">
 		<a
@@ -211,9 +213,10 @@
 					score={app.score}
 					trafficLight={app.trafficLight}
 					{reasons}
-					showReasons={true}
+				showReasons={true}
 				/>
 			</div>
 		</div>
 	</div>
 </div>
+</RoleGuard>

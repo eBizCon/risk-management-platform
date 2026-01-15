@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation';
 	import StatusBadge from '$lib/components/StatusBadge.svelte';
 	import ScoreDisplay from '$lib/components/ScoreDisplay.svelte';
+	import RoleGuard from '$lib/components/RoleGuard.svelte';
 	import { employmentStatusLabels } from '$lib/types';
 	import { ArrowLeft, Edit, Send } from 'lucide-svelte';
 	import type { PageData } from './$types';
@@ -47,6 +48,7 @@
 	<title>Antrag #{app.id} - Risikomanagement</title>
 </svelte:head>
 
+<RoleGuard requiredRole="applicant" redirectTo="/processor">
 <div class="space-y-6">
 	<div class="flex items-center justify-between">
 		<div class="flex items-center gap-4">
@@ -167,3 +169,4 @@
 		</div>
 	</div>
 </div>
+</RoleGuard>

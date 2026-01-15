@@ -1,16 +1,14 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Antragsbearbeiter (Processor) Workflows', () => {
-	test.beforeEach(async ({ page }) => {
-		await page.goto('/');
-		const debugToggle = page.getByRole('button', { name: /Debug/i });
-		if (await debugToggle.isVisible()) {
-			await debugToggle.click();
-			const processorButton = page.getByRole('button', { name: /Bearbeiter/i });
-			if (await processorButton.isVisible()) {
-				await processorButton.click();
-			}
-		}
+	test.beforeEach(async ({ page, context }) => {
+		// Set the processor role cookie before navigating
+		await context.addCookies([{
+			name: 'risk-management-user-role',
+			value: 'processor',
+			domain: 'localhost',
+			path: '/'
+		}]);
 	});
 
 	test.describe('Eingereichte Anträge einsehen (View Submitted Applications)', () => {
@@ -41,16 +39,14 @@ test.describe('Antragsbearbeiter (Processor) Workflows', () => {
 	});
 
 	test.describe('Antragsdetails prüfen (Review Application Details)', () => {
-		test.beforeEach(async ({ page }) => {
-			await page.goto('/');
-			const debugToggle = page.getByRole('button', { name: /Debug/i });
-			if (await debugToggle.isVisible()) {
-				await debugToggle.click();
-				const applicantButton = page.getByRole('button', { name: /Antragsteller/i });
-				if (await applicantButton.isVisible()) {
-					await applicantButton.click();
-				}
-			}
+		test.beforeEach(async ({ page, context }) => {
+			// First set applicant role to create an application
+			await context.addCookies([{
+				name: 'risk-management-user-role',
+				value: 'applicant',
+				domain: 'localhost',
+				path: '/'
+			}]);
 			
 			await page.goto('/applications/new');
 				await page.getByLabel(/Name/i).fill('Processor Review Test');
@@ -61,14 +57,13 @@ test.describe('Antragsbearbeiter (Processor) Workflows', () => {
 				await page.getByLabel(/Nein/i).check();
 				await page.getByRole('button', { name: /Antrag einreichen/i }).click();
 			
-			const debugToggle2 = page.getByRole('button', { name: /Debug/i });
-			if (await debugToggle2.isVisible()) {
-				await debugToggle2.click();
-				const processorButton = page.getByRole('button', { name: /Bearbeiter/i });
-				if (await processorButton.isVisible()) {
-					await processorButton.click();
-				}
-			}
+			// Switch to processor role
+			await context.addCookies([{
+				name: 'risk-management-user-role',
+				value: 'processor',
+				domain: 'localhost',
+				path: '/'
+			}]);
 		});
 
 		test('should display application details in processor view', async ({ page }) => {
@@ -104,16 +99,14 @@ test.describe('Antragsbearbeiter (Processor) Workflows', () => {
 	});
 
 	test.describe('Antrag genehmigen (Approve Application)', () => {
-		test('should show approve button for submitted applications', async ({ page }) => {
-			await page.goto('/');
-			const debugToggle = page.getByRole('button', { name: /Debug/i });
-			if (await debugToggle.isVisible()) {
-				await debugToggle.click();
-				const applicantButton = page.getByRole('button', { name: /Antragsteller/i });
-				if (await applicantButton.isVisible()) {
-					await applicantButton.click();
-				}
-			}
+		test('should show approve button for submitted applications', async ({ page, context }) => {
+			// Set applicant role to create application
+			await context.addCookies([{
+				name: 'risk-management-user-role',
+				value: 'applicant',
+				domain: 'localhost',
+				path: '/'
+			}]);
 			
 			await page.goto('/applications/new');
 				await page.getByLabel(/Name/i).fill('Approve Test');
@@ -128,14 +121,13 @@ test.describe('Antragsbearbeiter (Processor) Workflows', () => {
 			const match = url.match(/\/applications\/(\d+)/);
 			const applicationId = match ? match[1] : null;
 			
-			const debugToggle2 = page.getByRole('button', { name: /Debug/i });
-			if (await debugToggle2.isVisible()) {
-				await debugToggle2.click();
-				const processorButton = page.getByRole('button', { name: /Bearbeiter/i });
-				if (await processorButton.isVisible()) {
-					await processorButton.click();
-				}
-			}
+			// Switch to processor role
+			await context.addCookies([{
+				name: 'risk-management-user-role',
+				value: 'processor',
+				domain: 'localhost',
+				path: '/'
+			}]);
 			
 			if (applicationId) {
 				await page.goto(`/processor/${applicationId}`);
@@ -143,16 +135,14 @@ test.describe('Antragsbearbeiter (Processor) Workflows', () => {
 			}
 		});
 
-		test('should approve application with optional comment', async ({ page }) => {
-			await page.goto('/');
-			const debugToggle = page.getByRole('button', { name: /Debug/i });
-			if (await debugToggle.isVisible()) {
-				await debugToggle.click();
-				const applicantButton = page.getByRole('button', { name: /Antragsteller/i });
-				if (await applicantButton.isVisible()) {
-					await applicantButton.click();
-				}
-			}
+		test('should approve application with optional comment', async ({ page, context }) => {
+			// Set applicant role to create application
+			await context.addCookies([{
+				name: 'risk-management-user-role',
+				value: 'applicant',
+				domain: 'localhost',
+				path: '/'
+			}]);
 			
 			await page.goto('/applications/new');
 				await page.getByLabel(/Name/i).fill('Approve With Comment');
@@ -167,14 +157,13 @@ test.describe('Antragsbearbeiter (Processor) Workflows', () => {
 			const match = url.match(/\/applications\/(\d+)/);
 			const applicationId = match ? match[1] : null;
 			
-			const debugToggle2 = page.getByRole('button', { name: /Debug/i });
-			if (await debugToggle2.isVisible()) {
-				await debugToggle2.click();
-				const processorButton = page.getByRole('button', { name: /Bearbeiter/i });
-				if (await processorButton.isVisible()) {
-					await processorButton.click();
-				}
-			}
+			// Switch to processor role
+			await context.addCookies([{
+				name: 'risk-management-user-role',
+				value: 'processor',
+				domain: 'localhost',
+				path: '/'
+			}]);
 			
 			if (applicationId) {
 				await page.goto(`/processor/${applicationId}`);
@@ -197,16 +186,14 @@ test.describe('Antragsbearbeiter (Processor) Workflows', () => {
 	});
 
 	test.describe('Antrag ablehnen (Reject Application)', () => {
-		test('should require comment when rejecting', async ({ page }) => {
-			await page.goto('/');
-			const debugToggle = page.getByRole('button', { name: /Debug/i });
-			if (await debugToggle.isVisible()) {
-				await debugToggle.click();
-				const applicantButton = page.getByRole('button', { name: /Antragsteller/i });
-				if (await applicantButton.isVisible()) {
-					await applicantButton.click();
-				}
-			}
+		test('should require comment when rejecting', async ({ page, context }) => {
+			// Set applicant role to create application
+			await context.addCookies([{
+				name: 'risk-management-user-role',
+				value: 'applicant',
+				domain: 'localhost',
+				path: '/'
+			}]);
 			
 			await page.goto('/applications/new');
 				await page.getByLabel(/Name/i).fill('Reject Test');
@@ -221,14 +208,13 @@ test.describe('Antragsbearbeiter (Processor) Workflows', () => {
 			const match = url.match(/\/applications\/(\d+)/);
 			const applicationId = match ? match[1] : null;
 			
-			const debugToggle2 = page.getByRole('button', { name: /Debug/i });
-			if (await debugToggle2.isVisible()) {
-				await debugToggle2.click();
-				const processorButton = page.getByRole('button', { name: /Bearbeiter/i });
-				if (await processorButton.isVisible()) {
-					await processorButton.click();
-				}
-			}
+			// Switch to processor role
+			await context.addCookies([{
+				name: 'risk-management-user-role',
+				value: 'processor',
+				domain: 'localhost',
+				path: '/'
+			}]);
 			
 			if (applicationId) {
 				await page.goto(`/processor/${applicationId}`);
@@ -244,16 +230,14 @@ test.describe('Antragsbearbeiter (Processor) Workflows', () => {
 			}
 		});
 
-		test('should reject application with required comment', async ({ page }) => {
-			await page.goto('/');
-			const debugToggle = page.getByRole('button', { name: /Debug/i });
-			if (await debugToggle.isVisible()) {
-				await debugToggle.click();
-				const applicantButton = page.getByRole('button', { name: /Antragsteller/i });
-				if (await applicantButton.isVisible()) {
-					await applicantButton.click();
-				}
-			}
+		test('should reject application with required comment', async ({ page, context }) => {
+			// Set applicant role to create application
+			await context.addCookies([{
+				name: 'risk-management-user-role',
+				value: 'applicant',
+				domain: 'localhost',
+				path: '/'
+			}]);
 			
 			await page.goto('/applications/new');
 				await page.getByLabel(/Name/i).fill('Reject With Comment');
@@ -268,14 +252,13 @@ test.describe('Antragsbearbeiter (Processor) Workflows', () => {
 			const match = url.match(/\/applications\/(\d+)/);
 			const applicationId = match ? match[1] : null;
 			
-			const debugToggle2 = page.getByRole('button', { name: /Debug/i });
-			if (await debugToggle2.isVisible()) {
-				await debugToggle2.click();
-				const processorButton = page.getByRole('button', { name: /Bearbeiter/i });
-				if (await processorButton.isVisible()) {
-					await processorButton.click();
-				}
-			}
+			// Switch to processor role
+			await context.addCookies([{
+				name: 'risk-management-user-role',
+				value: 'processor',
+				domain: 'localhost',
+				path: '/'
+			}]);
 			
 			if (applicationId) {
 				await page.goto(`/processor/${applicationId}`);
@@ -298,26 +281,38 @@ test.describe('Antragsbearbeiter (Processor) Workflows', () => {
 	});
 
 	test.describe('Bearbeitete Anträge nachverfolgen (Track Processed Applications)', () => {
-		test('should show approved applications in history', async ({ page }) => {
+		test('should show approved applications in history', async ({ page, context }) => {
+			// Set processor role
+			await context.addCookies([{
+				name: 'risk-management-user-role',
+				value: 'processor',
+				domain: 'localhost',
+				path: '/'
+			}]);
 			await page.goto('/processor?status=approved');
 			await expect(page.locator('table, [role="table"]')).toBeVisible();
 		});
 
-		test('should show rejected applications in history', async ({ page }) => {
+		test('should show rejected applications in history', async ({ page, context }) => {
+			// Set processor role
+			await context.addCookies([{
+				name: 'risk-management-user-role',
+				value: 'processor',
+				domain: 'localhost',
+				path: '/'
+			}]);
 			await page.goto('/processor?status=rejected');
 			await expect(page.locator('table, [role="table"]')).toBeVisible();
 		});
 
-		test('should display processor comment in application detail', async ({ page }) => {
-			await page.goto('/');
-			const debugToggle = page.getByRole('button', { name: /Debug/i });
-			if (await debugToggle.isVisible()) {
-				await debugToggle.click();
-				const applicantButton = page.getByRole('button', { name: /Antragsteller/i });
-				if (await applicantButton.isVisible()) {
-					await applicantButton.click();
-				}
-			}
+		test('should display processor comment in application detail', async ({ page, context }) => {
+			// Set applicant role to create application
+			await context.addCookies([{
+				name: 'risk-management-user-role',
+				value: 'applicant',
+				domain: 'localhost',
+				path: '/'
+			}]);
 			
 			await page.goto('/applications/new');
 				await page.getByLabel(/Name/i).fill('Comment Display Test');
@@ -332,14 +327,13 @@ test.describe('Antragsbearbeiter (Processor) Workflows', () => {
 			const match = url.match(/\/applications\/(\d+)/);
 			const applicationId = match ? match[1] : null;
 			
-			const debugToggle2 = page.getByRole('button', { name: /Debug/i });
-			if (await debugToggle2.isVisible()) {
-				await debugToggle2.click();
-				const processorButton = page.getByRole('button', { name: /Bearbeiter/i });
-				if (await processorButton.isVisible()) {
-					await processorButton.click();
-				}
-			}
+			// Switch to processor role
+			await context.addCookies([{
+				name: 'risk-management-user-role',
+				value: 'processor',
+				domain: 'localhost',
+				path: '/'
+			}]);
 			
 			if (applicationId) {
 				await page.goto(`/processor/${applicationId}`);

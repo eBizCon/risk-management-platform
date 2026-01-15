@@ -1,5 +1,6 @@
 <script lang="ts">
 	import ApplicationForm from '$lib/components/ApplicationForm.svelte';
+	import RoleGuard from '$lib/components/RoleGuard.svelte';
 	import { ArrowLeft } from 'lucide-svelte';
 	import type { ActionData } from './$types';
 
@@ -10,6 +11,7 @@
 	<title>Neuer Antrag - Risikomanagement</title>
 </svelte:head>
 
+<RoleGuard requiredRole="applicant" redirectTo="/processor">
 <div class="space-y-6">
 	<div class="flex items-center gap-4">
 		<a
@@ -27,3 +29,4 @@
 		<ApplicationForm errors={form?.errors} />
 	</div>
 </div>
+</RoleGuard>

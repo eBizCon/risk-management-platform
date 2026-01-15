@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import ApplicationTable from '$lib/components/ApplicationTable.svelte';
+	import RoleGuard from '$lib/components/RoleGuard.svelte';
 	import { Plus, Filter } from 'lucide-svelte';
 	import type { PageData } from './$types';
 
@@ -50,6 +51,7 @@
 	<title>Meine Anträge - Risikomanagement</title>
 </svelte:head>
 
+<RoleGuard requiredRole="applicant" redirectTo="/processor">
 <div class="space-y-6">
 	<div class="flex justify-between items-center">
 		<div>
@@ -93,3 +95,4 @@
 		/>
 	</div>
 </div>
+</RoleGuard>

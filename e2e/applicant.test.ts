@@ -1,7 +1,14 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Antragsteller (Applicant) Workflows', () => {
-	test.beforeEach(async ({ page }) => {
+	test.beforeEach(async ({ page, context }) => {
+		// Set the applicant role cookie before navigating
+		await context.addCookies([{
+			name: 'risk-management-user-role',
+			value: 'applicant',
+			domain: 'localhost',
+			path: '/'
+		}]);
 		await page.goto('/');
 	});
 
