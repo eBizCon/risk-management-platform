@@ -14,7 +14,7 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 		test('should navigate to new application form', async ({ page }) => {
 			await page.getByRole('link', { name: /Neuer Antrag/i }).click();
 			await expect(page).toHaveURL('/applications/new');
-			await expect(page.locator('h1')).toContainText('Neuer Kreditantrag');
+			await expect(page.locator('h1')).toContainText('Kreditantrag erstellen');
 		});
 
 		test('should display all required form fields', async ({ page }) => {
@@ -31,37 +31,47 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 		test('should show validation errors for empty form submission', async ({ page }) => {
 			await page.goto('/applications/new');
 			
-			await page.getByRole('button', { name: /Als Entwurf speichern/i }).click();
-			
-			await expect(page.getByText(/Name muss mindestens/i)).toBeVisible();
-		});
-
-		test('should show validation error for income less than 0', async ({ page }) => {
-			await page.goto('/applications/new');
-			
-			await page.getByLabel(/Name/i).fill('Test User');
-			await page.getByLabel(/Monatliches Einkommen/i).fill('-100');
+			// Fill minimal data to bypass HTML5 required validation, but leave name too short
+			await page.getByLabel(/Name/i).fill('A');
+			await page.getByLabel(/Monatliches Einkommen/i).fill('1000');
 			await page.getByLabel(/Monatliche Fixkosten/i).fill('500');
 			await page.getByLabel(/Gewünschte Rate/i).fill('200');
 			await page.getByLabel(/Beschäftigungsstatus/i).selectOption('employed');
+			await page.getByLabel(/Nein/i).check();
 			
 			await page.getByRole('button', { name: /Als Entwurf speichern/i }).click();
 			
-			await expect(page.getByText(/Einkommen muss größer als 0/i)).toBeVisible();
+			await expect(page.getByText(/mindestens 2 Zeichen/i)).toBeVisible();
 		});
+
+		test('should show validation error for income equal to 0', async ({ page }) => {
+				await page.goto('/applications/new');
+			
+				await page.getByLabel(/Name/i).fill('Test User');
+				await page.getByLabel(/Monatliches Einkommen/i).fill('0');
+				await page.getByLabel(/Monatliche Fixkosten/i).fill('0');
+				await page.getByLabel(/Gewünschte Rate/i).fill('200');
+				await page.getByLabel(/Beschäftigungsstatus/i).selectOption('employed');
+				await page.getByLabel(/Nein/i).check();
+			
+				await page.getByRole('button', { name: /Als Entwurf speichern/i }).click();
+			
+				await expect(page.getByText(/Einkommen muss positiv sein/i)).toBeVisible();
+			});
 
 		test('should show validation error when desired rate exceeds available income', async ({ page }) => {
 			await page.goto('/applications/new');
 			
 			await page.getByLabel(/Name/i).fill('Test User');
 			await page.getByLabel(/Monatliches Einkommen/i).fill('3000');
-			await page.getByLabel(/Monatliche Fixkosten/i).fill('2800');
-			await page.getByLabel(/Gewünschte Rate/i).fill('500');
+			await page.getByLabel(/Monatliche Fixkosten/i).fill('2000');
+			await page.getByLabel(/Gewünschte Rate/i).fill('1500');
 			await page.getByLabel(/Beschäftigungsstatus/i).selectOption('employed');
+			await page.getByLabel(/Nein/i).check();
 			
 			await page.getByRole('button', { name: /Als Entwurf speichern/i }).click();
 			
-			await expect(page.getByText(/gewünschte Rate.*verfügbares Einkommen/i)).toBeVisible();
+			await expect(page.getByText(/kann nicht höher sein als das verfügbare Einkommen/i)).toBeVisible();
 		});
 
 		test('should successfully create a draft application', async ({ page }) => {
@@ -72,6 +82,7 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await page.getByLabel(/Monatliche Fixkosten/i).fill('1500');
 			await page.getByLabel(/Gewünschte Rate/i).fill('500');
 			await page.getByLabel(/Beschäftigungsstatus/i).selectOption('employed');
+			await page.getByLabel(/Nein/i).check();
 			
 			await page.getByRole('button', { name: /Als Entwurf speichern/i }).click();
 			
@@ -87,11 +98,12 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await page.getByLabel(/Monatliche Fixkosten/i).fill('2000');
 			await page.getByLabel(/Gewünschte Rate/i).fill('600');
 			await page.getByLabel(/Beschäftigungsstatus/i).selectOption('employed');
+			await page.getByLabel(/Nein/i).check();
 			
-			await page.getByRole('button', { name: /Direkt einreichen/i }).click();
+			await page.getByRole('button', { name: /Antrag einreichen/i }).click();
 			
-			await expect(page).toHaveURL(/\/applications\/\d+/);
-			await expect(page.getByText(/Eingereicht/i)).toBeVisible();
+		await expect(page).toHaveURL(/\/applications\/\d+/);
+			await expect(page.getByText('Eingereicht', { exact: true })).toBeVisible();
 		});
 	});
 
@@ -103,30 +115,32 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await page.getByLabel(/Monatliche Fixkosten/i).fill('1200');
 			await page.getByLabel(/Gewünschte Rate/i).fill('400');
 			await page.getByLabel(/Beschäftigungsstatus/i).selectOption('employed');
+			await page.getByLabel(/Nein/i).check();
 			await page.getByRole('button', { name: /Als Entwurf speichern/i }).click();
 			
 			await page.goto('/applications');
-			await expect(page.getByText('Draft Test')).toBeVisible();
-			await expect(page.getByText(/Entwurf/i)).toBeVisible();
+				await expect(page.getByText('Draft Test').first()).toBeVisible();
+				await expect(page.getByText('Entwurf', { exact: true }).first()).toBeVisible();
 		});
 
 		test('should allow editing a draft application', async ({ page }) => {
-			await page.goto('/applications/new');
-			await page.getByLabel(/Name/i).fill('Edit Test');
-			await page.getByLabel(/Monatliches Einkommen/i).fill('3000');
-			await page.getByLabel(/Monatliche Fixkosten/i).fill('1000');
-			await page.getByLabel(/Gewünschte Rate/i).fill('350');
-			await page.getByLabel(/Beschäftigungsstatus/i).selectOption('employed');
-			await page.getByRole('button', { name: /Als Entwurf speichern/i }).click();
+				await page.goto('/applications/new');
+				await page.getByLabel(/Name/i).fill('Edit Test');
+				await page.getByLabel(/Monatliches Einkommen/i).fill('3000');
+				await page.getByLabel(/Monatliche Fixkosten/i).fill('1000');
+				await page.getByLabel(/Gewünschte Rate/i).fill('350');
+				await page.getByLabel(/Beschäftigungsstatus/i).selectOption('employed');
+				await page.getByLabel(/Nein/i).check();
+				await page.getByRole('button', { name: /Als Entwurf speichern/i }).click();
 			
-			await page.getByRole('link', { name: /Bearbeiten/i }).click();
-			await expect(page).toHaveURL(/\/applications\/\d+\/edit/);
+				await page.getByRole('link', { name: /Bearbeiten/i }).click();
+				await expect(page).toHaveURL(/\/applications\/\d+\/edit/);
 			
-			await page.getByLabel(/Name/i).fill('Edit Test Updated');
-			await page.getByRole('button', { name: /Änderungen speichern/i }).click();
+				await page.getByLabel(/Name/i).fill('Edit Test Updated');
+				await page.getByRole('button', { name: /Als Entwurf speichern/i }).click();
 			
-			await expect(page.getByText('Edit Test Updated')).toBeVisible();
-		});
+				await expect(page.getByText('Edit Test Updated')).toBeVisible();
+			});
 
 		test('should filter applications by status', async ({ page }) => {
 			await page.goto('/applications');
@@ -147,6 +161,7 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await page.getByLabel(/Monatliche Fixkosten/i).fill('1800');
 			await page.getByLabel(/Gewünschte Rate/i).fill('500');
 			await page.getByLabel(/Beschäftigungsstatus/i).selectOption('employed');
+			await page.getByLabel(/Nein/i).check();
 			await page.getByRole('button', { name: /Als Entwurf speichern/i }).click();
 			
 			await page.getByRole('button', { name: /Einreichen/i }).click();
@@ -161,7 +176,8 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await page.getByLabel(/Monatliche Fixkosten/i).fill('1500');
 			await page.getByLabel(/Gewünschte Rate/i).fill('450');
 			await page.getByLabel(/Beschäftigungsstatus/i).selectOption('employed');
-			await page.getByRole('button', { name: /Direkt einreichen/i }).click();
+			await page.getByLabel(/Nein/i).check();
+			await page.getByRole('button', { name: /Antrag einreichen/i }).click();
 			
 			await expect(page.getByRole('link', { name: /Bearbeiten/i })).not.toBeVisible();
 		});
@@ -175,10 +191,11 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await page.getByLabel(/Monatliche Fixkosten/i).fill('2000');
 			await page.getByLabel(/Gewünschte Rate/i).fill('500');
 			await page.getByLabel(/Beschäftigungsstatus/i).selectOption('employed');
-			await page.getByRole('button', { name: /Direkt einreichen/i }).click();
+			await page.getByLabel(/Nein/i).check();
+			await page.getByRole('button', { name: /Antrag einreichen/i }).click();
 			
-			await expect(page.getByText(/Score/i)).toBeVisible();
-			await expect(page.getByText(/Punkte/i)).toBeVisible();
+		await expect(page.getByRole('heading', { name: 'Bewertung', exact: true })).toBeVisible();
+				await expect(page.getByText(/von 100/i)).toBeVisible();
 		});
 
 		test('should display scoring reasons', async ({ page }) => {
@@ -188,7 +205,8 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await page.getByLabel(/Monatliche Fixkosten/i).fill('1500');
 			await page.getByLabel(/Gewünschte Rate/i).fill('400');
 			await page.getByLabel(/Beschäftigungsstatus/i).selectOption('employed');
-			await page.getByRole('button', { name: /Direkt einreichen/i }).click();
+			await page.getByLabel(/Nein/i).check();
+			await page.getByRole('button', { name: /Antrag einreichen/i }).click();
 			
 			await expect(page.getByText(/Bewertungsgründe|Entscheidungsgründe/i)).toBeVisible();
 		});
@@ -200,7 +218,8 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await page.getByLabel(/Monatliche Fixkosten/i).fill('2000');
 			await page.getByLabel(/Gewünschte Rate/i).fill('500');
 			await page.getByLabel(/Beschäftigungsstatus/i).selectOption('employed');
-			await page.getByRole('button', { name: /Direkt einreichen/i }).click();
+			await page.getByLabel(/Nein/i).check();
+			await page.getByRole('button', { name: /Antrag einreichen/i }).click();
 			
 			const greenIndicator = page.locator('.bg-green-500, [class*="green"]');
 			await expect(greenIndicator.first()).toBeVisible();
@@ -214,7 +233,7 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await page.getByLabel(/Gewünschte Rate/i).fill('300');
 			await page.getByLabel(/Beschäftigungsstatus/i).selectOption('unemployed');
 			await page.getByLabel(/Ja/i).check();
-			await page.getByRole('button', { name: /Direkt einreichen/i }).click();
+			await page.getByRole('button', { name: /Antrag einreichen/i }).click();
 			
 			const redIndicator = page.locator('.bg-red-500, [class*="red"]');
 			await expect(redIndicator.first()).toBeVisible();
@@ -234,6 +253,7 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await page.getByLabel(/Monatliche Fixkosten/i).fill('1500');
 			await page.getByLabel(/Gewünschte Rate/i).fill('400');
 			await page.getByLabel(/Beschäftigungsstatus/i).selectOption('employed');
+			await page.getByLabel(/Nein/i).check();
 			await page.getByRole('button', { name: /Als Entwurf speichern/i }).click();
 			
 			await expect(page.getByText('Detail View Test')).toBeVisible();

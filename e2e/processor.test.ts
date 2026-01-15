@@ -15,9 +15,9 @@ test.describe('Antragsbearbeiter (Processor) Workflows', () => {
 
 	test.describe('Eingereichte Anträge einsehen (View Submitted Applications)', () => {
 		test('should navigate to processor view', async ({ page }) => {
-			await page.goto('/processor');
-			await expect(page.locator('h1')).toContainText(/Antragsbearbeitung|Bearbeiter/i);
-		});
+				await page.goto('/processor');
+				await expect(page.locator('h1')).toContainText(/Anträge bearbeiten/i);
+			});
 
 		test('should display statistics overview', async ({ page }) => {
 			await page.goto('/processor');
@@ -53,12 +53,13 @@ test.describe('Antragsbearbeiter (Processor) Workflows', () => {
 			}
 			
 			await page.goto('/applications/new');
-			await page.getByLabel(/Name/i).fill('Processor Review Test');
-			await page.getByLabel(/Monatliches Einkommen/i).fill('4500');
-			await page.getByLabel(/Monatliche Fixkosten/i).fill('1800');
-			await page.getByLabel(/Gewünschte Rate/i).fill('500');
-			await page.getByLabel(/Beschäftigungsstatus/i).selectOption('employed');
-			await page.getByRole('button', { name: /Direkt einreichen/i }).click();
+				await page.getByLabel(/Name/i).fill('Processor Review Test');
+				await page.getByLabel(/Monatliches Einkommen/i).fill('4500');
+				await page.getByLabel(/Monatliche Fixkosten/i).fill('1800');
+				await page.getByLabel(/Gewünschte Rate/i).fill('500');
+				await page.getByLabel(/Beschäftigungsstatus/i).selectOption('employed');
+				await page.getByLabel(/Nein/i).check();
+				await page.getByRole('button', { name: /Antrag einreichen/i }).click();
 			
 			const debugToggle2 = page.getByRole('button', { name: /Debug/i });
 			if (await debugToggle2.isVisible()) {
@@ -115,12 +116,13 @@ test.describe('Antragsbearbeiter (Processor) Workflows', () => {
 			}
 			
 			await page.goto('/applications/new');
-			await page.getByLabel(/Name/i).fill('Approve Test');
-			await page.getByLabel(/Monatliches Einkommen/i).fill('5000');
-			await page.getByLabel(/Monatliche Fixkosten/i).fill('2000');
-			await page.getByLabel(/Gewünschte Rate/i).fill('500');
-			await page.getByLabel(/Beschäftigungsstatus/i).selectOption('employed');
-			await page.getByRole('button', { name: /Direkt einreichen/i }).click();
+				await page.getByLabel(/Name/i).fill('Approve Test');
+				await page.getByLabel(/Monatliches Einkommen/i).fill('5000');
+				await page.getByLabel(/Monatliche Fixkosten/i).fill('2000');
+				await page.getByLabel(/Gewünschte Rate/i).fill('500');
+				await page.getByLabel(/Beschäftigungsstatus/i).selectOption('employed');
+				await page.getByLabel(/Nein/i).check();
+				await page.getByRole('button', { name: /Antrag einreichen/i }).click();
 			
 			const url = page.url();
 			const match = url.match(/\/applications\/(\d+)/);
@@ -153,12 +155,13 @@ test.describe('Antragsbearbeiter (Processor) Workflows', () => {
 			}
 			
 			await page.goto('/applications/new');
-			await page.getByLabel(/Name/i).fill('Approve With Comment');
-			await page.getByLabel(/Monatliches Einkommen/i).fill('5500');
-			await page.getByLabel(/Monatliche Fixkosten/i).fill('2000');
-			await page.getByLabel(/Gewünschte Rate/i).fill('500');
-			await page.getByLabel(/Beschäftigungsstatus/i).selectOption('employed');
-			await page.getByRole('button', { name: /Direkt einreichen/i }).click();
+				await page.getByLabel(/Name/i).fill('Approve With Comment');
+				await page.getByLabel(/Monatliches Einkommen/i).fill('5500');
+				await page.getByLabel(/Monatliche Fixkosten/i).fill('2000');
+				await page.getByLabel(/Gewünschte Rate/i).fill('500');
+				await page.getByLabel(/Beschäftigungsstatus/i).selectOption('employed');
+				await page.getByLabel(/Nein/i).check();
+				await page.getByRole('button', { name: /Antrag einreichen/i }).click();
 			
 			const url = page.url();
 			const match = url.match(/\/applications\/(\d+)/);
@@ -206,12 +209,13 @@ test.describe('Antragsbearbeiter (Processor) Workflows', () => {
 			}
 			
 			await page.goto('/applications/new');
-			await page.getByLabel(/Name/i).fill('Reject Test');
-			await page.getByLabel(/Monatliches Einkommen/i).fill('2500');
-			await page.getByLabel(/Monatliche Fixkosten/i).fill('2000');
-			await page.getByLabel(/Gewünschte Rate/i).fill('300');
-			await page.getByLabel(/Beschäftigungsstatus/i).selectOption('unemployed');
-			await page.getByRole('button', { name: /Direkt einreichen/i }).click();
+				await page.getByLabel(/Name/i).fill('Reject Test');
+				await page.getByLabel(/Monatliches Einkommen/i).fill('2500');
+				await page.getByLabel(/Monatliche Fixkosten/i).fill('2000');
+				await page.getByLabel(/Gewünschte Rate/i).fill('300');
+				await page.getByLabel(/Beschäftigungsstatus/i).selectOption('unemployed');
+				await page.getByLabel(/Nein/i).check();
+				await page.getByRole('button', { name: /Antrag einreichen/i }).click();
 			
 			const url = page.url();
 			const match = url.match(/\/applications\/(\d+)/);
@@ -252,13 +256,13 @@ test.describe('Antragsbearbeiter (Processor) Workflows', () => {
 			}
 			
 			await page.goto('/applications/new');
-			await page.getByLabel(/Name/i).fill('Reject With Comment');
-			await page.getByLabel(/Monatliches Einkommen/i).fill('2500');
-			await page.getByLabel(/Monatliche Fixkosten/i).fill('2000');
-			await page.getByLabel(/Gewünschte Rate/i).fill('300');
-			await page.getByLabel(/Beschäftigungsstatus/i).selectOption('unemployed');
-			await page.getByLabel(/Ja/i).check();
-			await page.getByRole('button', { name: /Direkt einreichen/i }).click();
+				await page.getByLabel(/Name/i).fill('Reject With Comment');
+				await page.getByLabel(/Monatliches Einkommen/i).fill('2500');
+				await page.getByLabel(/Monatliche Fixkosten/i).fill('2000');
+				await page.getByLabel(/Gewünschte Rate/i).fill('300');
+				await page.getByLabel(/Beschäftigungsstatus/i).selectOption('unemployed');
+				await page.getByLabel(/Ja/i).check();
+				await page.getByRole('button', { name: /Antrag einreichen/i }).click();
 			
 			const url = page.url();
 			const match = url.match(/\/applications\/(\d+)/);
@@ -316,12 +320,13 @@ test.describe('Antragsbearbeiter (Processor) Workflows', () => {
 			}
 			
 			await page.goto('/applications/new');
-			await page.getByLabel(/Name/i).fill('Comment Display Test');
-			await page.getByLabel(/Monatliches Einkommen/i).fill('5000');
-			await page.getByLabel(/Monatliche Fixkosten/i).fill('2000');
-			await page.getByLabel(/Gewünschte Rate/i).fill('500');
-			await page.getByLabel(/Beschäftigungsstatus/i).selectOption('employed');
-			await page.getByRole('button', { name: /Direkt einreichen/i }).click();
+				await page.getByLabel(/Name/i).fill('Comment Display Test');
+				await page.getByLabel(/Monatliches Einkommen/i).fill('5000');
+				await page.getByLabel(/Monatliche Fixkosten/i).fill('2000');
+				await page.getByLabel(/Gewünschte Rate/i).fill('500');
+				await page.getByLabel(/Beschäftigungsstatus/i).selectOption('employed');
+				await page.getByLabel(/Nein/i).check();
+				await page.getByRole('button', { name: /Antrag einreichen/i }).click();
 			
 			const url = page.url();
 			const match = url.match(/\/applications\/(\d+)/);
