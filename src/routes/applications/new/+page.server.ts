@@ -1,0 +1,52 @@
+import type { Actions } from './$types';
+import { fail, redirect } from '@sveltejs/kit';
+import { createApplication, submitApplication } from '$lib/server/services/repository';
+import { applicationWithBusinessRulesSchema } from '$lib/server/services/validation';
+import { ZodError } from 'zod';
+
+export const actions: Actions = {
+	default: async ({ request, cookies }) => {
+		const formData = await request.formData();
+		const userId = cookies.get('userId') || 'applicant-1';
+		
+		const rawData = {
+			name: formData.get('name') as string,
+			income: parseFloat(formData.get('income') as string),
+			fixedCosts: parseFloat(formData.get('fixedCosts') as string),
+			desiredRate: parseFloat(formData.get('desiredRate') as string),
+			employmentStatus: formData.get('employmentStatus') as string,
+			hasPaymentDefault: formData.get('hasPaymentDefault') === 'true'
+		};
+
+		try {
+			const validatedData = applicationWithBusinessRulesSchema.parse(rawData);
+			const action = formData.get('action');
+
+			const application = await createApplication({
+				...validatedData,
+				status: 'draft',
+				createdBy: userId
+			});
+
+			if (action === 'submit' && application) {
+				await submitApplication(application.id);
+				throw redirect(303, `/applications/${application.id}?submitted=true`);
+			}
+
+			throw redirect(303, `/applications/${application.id}`);
+		} catch (error) {
+			if (error instanceof ZodError) {
+				const errors: Record<string, string[]> = {};
+				error.issues.forEach((issue) => {
+					const path = issue.path.join('.');
+					if (!errors[path]) {
+						errors[path] = [];
+					}
+					errors[path].push(issue.message);
+				});
+				return fail(400, { errors, values: rawData });
+			}
+			throw error;
+		}
+	}
+};
