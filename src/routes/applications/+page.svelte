@@ -53,32 +53,32 @@
 <div class="space-y-6">
 	<div class="flex justify-between items-center">
 		<div>
-			<h1 class="text-2xl font-bold text-gray-900">Meine Anträge</h1>
-			<p class="text-gray-600 mt-1">Übersicht über alle Ihre Kreditanträge</p>
+			<h1 class="text-2xl font-bold text-primary">Meine Anträge</h1>
+			<p class="text-secondary mt-1">Übersicht über alle Ihre Kreditanträge</p>
 		</div>
 		<a
 			href="/applications/new"
-			class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors"
+			class="btn-primary inline-flex items-center px-4 py-2"
 		>
 			<Plus class="w-5 h-5 mr-2" />
 			Neuer Antrag
 		</a>
 	</div>
 
-	<div class="bg-white rounded-lg shadow-sm border border-gray-200">
-		<div class="p-4 border-b border-gray-200">
+	<div class="card">
+		<div class="p-4 border-b border-default">
 			<div class="flex items-center gap-4">
-				<Filter class="w-5 h-5 text-gray-400" />
+				<Filter class="w-5 h-5 text-secondary" />
 				<select
 					onchange={handleFilterChange}
 					value={data.statusFilter || ''}
-					class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+					class="rounded-md border-default shadow-sm sm:text-sm"
 				>
 					{#each statusOptions as option}
 						<option value={option.value}>{option.label}</option>
 					{/each}
 				</select>
-				<span class="text-sm text-gray-500">
+				<span class="text-sm text-secondary">
 					{data.applications.length} Antrag/Anträge gefunden
 				</span>
 			</div>

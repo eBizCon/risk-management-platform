@@ -43,56 +43,56 @@
 </script>
 
 <div class="overflow-x-auto">
-	<table class="min-w-full divide-y divide-gray-200">
-		<thead class="bg-gray-50">
+	<table class="min-w-full divide-y border-default">
+		<thead class="table-header">
 			<tr>
-				<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+				<th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
 					Name
 				</th>
-				<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+				<th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
 					Status
 				</th>
-				<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+				<th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
 					Score
 				</th>
-				<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+				<th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
 					Ampel
 				</th>
-				<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+				<th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
 					Rate
 				</th>
-				<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+				<th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
 					Erstellt
 				</th>
 				{#if showActions}
-					<th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+					<th scope="col" class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider">
 						Aktionen
 					</th>
 				{/if}
 			</tr>
 		</thead>
-		<tbody class="bg-white divide-y divide-gray-200">
+		<tbody class="surface-bg divide-y border-default">
 			{#each applications as app}
-				<tr class="hover:bg-gray-50">
+				<tr class="table-row">
 					<td class="px-6 py-4 whitespace-nowrap">
-						<div class="text-sm font-medium text-gray-900">{app.name}</div>
-						<div class="text-sm text-gray-500">{employmentStatusLabels[app.employmentStatus]}</div>
+						<div class="text-sm font-medium text-primary">{app.name}</div>
+						<div class="text-sm text-secondary">{employmentStatusLabels[app.employmentStatus]}</div>
 					</td>
 					<td class="px-6 py-4 whitespace-nowrap">
 						<StatusBadge status={app.status} />
 					</td>
 					<td class="px-6 py-4 whitespace-nowrap">
-						<span class="text-sm font-medium {app.score !== null ? (app.score >= 75 ? 'text-green-600' : app.score >= 50 ? 'text-yellow-600' : 'text-red-600') : 'text-gray-400'}">
+						<span class="text-sm font-medium" class:score-high={app.score !== null && app.score >= 75} class:score-medium={app.score !== null && app.score >= 50 && app.score < 75} class:score-low={app.score !== null && app.score < 50} class:text-secondary={app.score === null}>
 							{app.score !== null ? app.score : '-'}
 						</span>
 					</td>
 					<td class="px-6 py-4 whitespace-nowrap">
 						<TrafficLight status={app.trafficLight} showLabel={false} />
 					</td>
-					<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+					<td class="px-6 py-4 whitespace-nowrap text-sm text-secondary">
 						{formatCurrency(app.desiredRate)}
 					</td>
-					<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+					<td class="px-6 py-4 whitespace-nowrap text-sm text-secondary">
 						{formatDate(app.createdAt)}
 					</td>
 					{#if showActions}
@@ -100,7 +100,7 @@
 							<div class="flex justify-end gap-2">
 								<button
 									onclick={() => onView?.(app.id)}
-									class="text-indigo-600 hover:text-indigo-900 p-1"
+									class="action-btn-view p-1"
 									title="Ansehen"
 								>
 									<Eye class="w-4 h-4" />
@@ -108,14 +108,14 @@
 								{#if isApplicantView && app.status === 'draft'}
 									<button
 										onclick={() => onEdit?.(app.id)}
-										class="text-gray-600 hover:text-gray-900 p-1"
+										class="action-btn-edit p-1"
 										title="Bearbeiten"
 									>
 										<Edit class="w-4 h-4" />
 									</button>
 									<button
 										onclick={() => onDelete?.(app.id)}
-										class="text-red-600 hover:text-red-900 p-1"
+										class="action-btn-delete p-1"
 										title="Löschen"
 									>
 										<Trash2 class="w-4 h-4" />
@@ -127,7 +127,7 @@
 				</tr>
 			{:else}
 				<tr>
-					<td colspan={showActions ? 7 : 6} class="px-6 py-8 text-center text-gray-500">
+					<td colspan={showActions ? 7 : 6} class="px-6 py-8 text-center text-secondary">
 						Keine Anträge vorhanden
 					</td>
 				</tr>
@@ -135,3 +135,24 @@
 		</tbody>
 	</table>
 </div>
+
+<style>
+	.action-btn-view {
+		color: var(--brand-primary);
+	}
+	.action-btn-view:hover {
+		color: var(--brand-primary-hover);
+	}
+	.action-btn-edit {
+		color: var(--text-muted);
+	}
+	.action-btn-edit:hover {
+		color: var(--text);
+	}
+	.action-btn-delete {
+		color: var(--danger);
+	}
+	.action-btn-delete:hover {
+		opacity: 0.8;
+	}
+</style>

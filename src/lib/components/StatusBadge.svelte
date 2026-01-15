@@ -7,15 +7,14 @@
 	}
 
 	let { status }: Props = $props();
-
-	const statusClasses: Record<ApplicationStatus, string> = {
-		draft: 'bg-gray-100 text-gray-800',
-		submitted: 'bg-blue-100 text-blue-800',
-		approved: 'bg-green-100 text-green-800',
-		rejected: 'bg-red-100 text-red-800'
-	};
 </script>
 
-<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {statusClasses[status]}">
+<span 
+	class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
+	class:status-draft={status === 'draft'}
+	class:status-submitted={status === 'submitted'}
+	class:status-approved={status === 'approved'}
+	class:status-rejected={status === 'rejected'}
+>
 	{statusLabels[status]}
 </span>

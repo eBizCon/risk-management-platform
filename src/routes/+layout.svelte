@@ -7,20 +7,20 @@
 	let { children } = $props();
 </script>
 
-<div class="min-h-screen bg-gray-50">
-	<nav class="bg-white shadow-sm border-b border-gray-200">
+<div class="min-h-screen page-bg">
+	<nav class="shadow-sm surface-bg border-b border-default">
 		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 			<div class="flex justify-between h-16">
 				<div class="flex">
 					<div class="flex-shrink-0 flex items-center">
-						<a href="/" class="text-xl font-bold text-indigo-600">
+						<a href="/" class="text-xl font-bold text-brand">
 							Risikomanagement
 						</a>
 					</div>
 					<div class="hidden sm:ml-8 sm:flex sm:space-x-4">
 						<a
 							href="/"
-							class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-indigo-600 hover:bg-gray-50 rounded-md"
+							class="nav-link inline-flex items-center px-3 py-2 text-sm font-medium rounded-md"
 						>
 							<Home class="w-4 h-4 mr-2" />
 							Startseite
@@ -28,14 +28,14 @@
 						{#if $isApplicant}
 							<a
 								href="/applications"
-								class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-indigo-600 hover:bg-gray-50 rounded-md"
+								class="nav-link inline-flex items-center px-3 py-2 text-sm font-medium rounded-md"
 							>
 								<FileText class="w-4 h-4 mr-2" />
 								Meine Anträge
 							</a>
 							<a
 								href="/applications/new"
-								class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-indigo-600 hover:bg-gray-50 rounded-md"
+								class="nav-link inline-flex items-center px-3 py-2 text-sm font-medium rounded-md"
 							>
 								<ClipboardList class="w-4 h-4 mr-2" />
 								Neuer Antrag
@@ -44,7 +44,7 @@
 						{#if $isProcessor}
 							<a
 								href="/processor"
-								class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-indigo-600 hover:bg-gray-50 rounded-md"
+								class="nav-link inline-flex items-center px-3 py-2 text-sm font-medium rounded-md"
 							>
 								<ClipboardList class="w-4 h-4 mr-2" />
 								Anträge bearbeiten
@@ -53,8 +53,8 @@
 					</div>
 				</div>
 				<div class="flex items-center">
-					<div class="text-sm text-gray-500">
-						<span class="font-medium text-gray-900">{$currentUser.name}</span>
+					<div class="text-sm text-secondary">
+						<span class="font-medium text-primary">{$currentUser.name}</span>
 						<span class="mx-1">|</span>
 						<span>{$isApplicant ? 'Antragsteller' : 'Antragsbearbeiter'}</span>
 					</div>

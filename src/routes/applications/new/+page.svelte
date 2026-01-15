@@ -14,15 +14,15 @@
 	<div class="flex items-center gap-4">
 		<a
 			href="/applications"
-			class="inline-flex items-center text-gray-600 hover:text-gray-900"
+			class="back-link inline-flex items-center"
 		>
 			<ArrowLeft class="w-5 h-5 mr-1" />
 			Zurück
 		</a>
 	</div>
 
-	<div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-		<h1 class="text-2xl font-bold text-gray-900 mb-6">Neuen Kreditantrag erstellen</h1>
+	<div class="card p-6">
+		<h1 class="text-2xl font-bold text-primary mb-6">Neuen Kreditantrag erstellen</h1>
 		
 		<ApplicationForm errors={form?.errors} />
 	</div>

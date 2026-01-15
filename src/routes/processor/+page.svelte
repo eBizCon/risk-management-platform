@@ -36,71 +36,71 @@
 
 <div class="space-y-6">
 	<div>
-		<h1 class="text-2xl font-bold text-gray-900">Anträge bearbeiten</h1>
-		<p class="text-gray-600 mt-1">Übersicht aller eingereichten Kreditanträge</p>
+		<h1 class="text-2xl font-bold text-primary">Anträge bearbeiten</h1>
+		<p class="text-secondary mt-1">Übersicht aller eingereichten Kreditanträge</p>
 	</div>
 
 	<div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
-		<div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+		<div class="card p-4">
 			<div class="flex items-center gap-3">
-				<div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-					<FileText class="w-5 h-5 text-gray-600" />
+				<div class="w-10 h-10 stat-icon-neutral rounded-lg flex items-center justify-center">
+					<FileText class="w-5 h-5" />
 				</div>
 				<div>
-					<div class="text-2xl font-bold text-gray-900">{data.stats.total}</div>
-					<div class="text-sm text-gray-500">Gesamt</div>
+					<div class="text-2xl font-bold text-primary">{data.stats.total}</div>
+					<div class="text-sm text-secondary">Gesamt</div>
 				</div>
 			</div>
 		</div>
-		<div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+		<div class="card p-4">
 			<div class="flex items-center gap-3">
-				<div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-					<Clock class="w-5 h-5 text-blue-600" />
+				<div class="w-10 h-10 stat-icon-info rounded-lg flex items-center justify-center">
+					<Clock class="w-5 h-5" />
 				</div>
 				<div>
-					<div class="text-2xl font-bold text-blue-600">{data.stats.submitted}</div>
-					<div class="text-sm text-gray-500">Offen</div>
+					<div class="text-2xl font-bold stat-value-info">{data.stats.submitted}</div>
+					<div class="text-sm text-secondary">Offen</div>
 				</div>
 			</div>
 		</div>
-		<div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+		<div class="card p-4">
 			<div class="flex items-center gap-3">
-				<div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-					<CheckCircle class="w-5 h-5 text-green-600" />
+				<div class="w-10 h-10 stat-icon-success rounded-lg flex items-center justify-center">
+					<CheckCircle class="w-5 h-5" />
 				</div>
 				<div>
-					<div class="text-2xl font-bold text-green-600">{data.stats.approved}</div>
-					<div class="text-sm text-gray-500">Genehmigt</div>
+					<div class="text-2xl font-bold stat-value-success">{data.stats.approved}</div>
+					<div class="text-sm text-secondary">Genehmigt</div>
 				</div>
 			</div>
 		</div>
-		<div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+		<div class="card p-4">
 			<div class="flex items-center gap-3">
-				<div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-					<XCircle class="w-5 h-5 text-red-600" />
+				<div class="w-10 h-10 stat-icon-danger rounded-lg flex items-center justify-center">
+					<XCircle class="w-5 h-5" />
 				</div>
 				<div>
-					<div class="text-2xl font-bold text-red-600">{data.stats.rejected}</div>
-					<div class="text-sm text-gray-500">Abgelehnt</div>
+					<div class="text-2xl font-bold stat-value-danger">{data.stats.rejected}</div>
+					<div class="text-sm text-secondary">Abgelehnt</div>
 				</div>
 			</div>
 		</div>
 	</div>
 
-	<div class="bg-white rounded-lg shadow-sm border border-gray-200">
-		<div class="p-4 border-b border-gray-200">
+	<div class="card">
+		<div class="p-4 border-b border-default">
 			<div class="flex items-center gap-4">
-				<Filter class="w-5 h-5 text-gray-400" />
+				<Filter class="w-5 h-5 text-secondary" />
 				<select
 					onchange={handleFilterChange}
 					value={data.statusFilter || ''}
-					class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+					class="rounded-md border-default shadow-sm sm:text-sm"
 				>
 					{#each statusOptions as option}
 						<option value={option.value}>{option.label}</option>
 					{/each}
 				</select>
-				<span class="text-sm text-gray-500">
+				<span class="text-sm text-secondary">
 					{data.applications.length} Antrag/Anträge gefunden
 				</span>
 			</div>
