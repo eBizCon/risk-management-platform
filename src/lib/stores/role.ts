@@ -9,7 +9,7 @@ export interface User {
 	role: UserRole;
 }
 
-const ROLE_STORAGE_KEY = 'risk-management-user-role';
+const ROLE_COOKIE_NAME = 'risk-management-user-role';
 
 const defaultApplicant: User = {
 	id: 'applicant-1',
@@ -23,9 +23,29 @@ const defaultProcessor: User = {
 	role: 'processor'
 };
 
+function getCookie(name: string): string | null {
+	if (!browser) return null;
+	const cookies = document.cookie.split(';');
+	for (const cookie of cookies) {
+		const [cookieName, cookieValue] = cookie.trim().split('=');
+		if (cookieName === name) {
+			return cookieValue;
+		}
+	}
+	return null;
+}
+
+function setCookie(name: string, value: string): void {
+	if (!browser) return;
+	// Set cookie with path=/ to make it available across all pages
+	// Set SameSite=Lax for security while allowing same-site navigation
+	// Set max-age to 1 year (31536000 seconds)
+	document.cookie = `${name}=${value}; path=/; max-age=31536000; SameSite=Lax`;
+}
+
 function getInitialUser(): User {
 	if (browser) {
-		const savedRole = localStorage.getItem(ROLE_STORAGE_KEY);
+		const savedRole = getCookie(ROLE_COOKIE_NAME);
 		if (savedRole === 'processor') {
 			return defaultProcessor;
 		}
@@ -39,9 +59,7 @@ function createUserStore() {
 	return {
 		subscribe,
 		setRole: (role: UserRole) => {
-			if (browser) {
-				localStorage.setItem(ROLE_STORAGE_KEY, role);
-			}
+			setCookie(ROLE_COOKIE_NAME, role);
 			if (role === 'applicant') {
 				set(defaultApplicant);
 			} else {
@@ -51,9 +69,7 @@ function createUserStore() {
 		switchRole: () => {
 			update((user) => {
 				const newRole = user.role === 'applicant' ? 'processor' : 'applicant';
-				if (browser) {
-					localStorage.setItem(ROLE_STORAGE_KEY, newRole);
-				}
+				setCookie(ROLE_COOKIE_NAME, newRole);
 				if (newRole === 'processor') {
 					return defaultProcessor;
 				}
