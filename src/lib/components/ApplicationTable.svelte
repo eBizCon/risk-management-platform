@@ -42,7 +42,7 @@
 	}
 </script>
 
-<div class="overflow-x-auto">
+<div class="overflow-x-auto" data-testid="application-table">
 	<table class="min-w-full divide-y border-default">
 		<thead class="table-header">
 			<tr>
@@ -73,9 +73,9 @@
 		</thead>
 		<tbody class="surface-bg divide-y border-default">
 			{#each applications as app}
-				<tr class="table-row">
+				<tr class="table-row" data-testid="application-row-{app.id}">
 					<td class="px-6 py-4 whitespace-nowrap">
-						<div class="text-sm font-medium text-primary">{app.name}</div>
+						<div class="text-sm font-medium text-primary" data-testid="application-name-{app.id}">{app.name}</div>
 						<div class="text-sm text-secondary">{employmentStatusLabels[app.employmentStatus]}</div>
 					</td>
 					<td class="px-6 py-4 whitespace-nowrap">

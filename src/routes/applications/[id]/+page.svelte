@@ -59,14 +59,17 @@
 				<ArrowLeft class="w-5 h-5 mr-1" />
 				Zurück
 			</a>
-			<h1 class="text-2xl font-bold text-primary">Antrag #{app.id}</h1>
-			<StatusBadge status={app.status} />
+			<h1 class="text-2xl font-bold text-primary" data-testid="application-title">Antrag #{app.id}</h1>
+			<div data-testid="status-badge-container">
+				<StatusBadge status={app.status} />
+			</div>
 		</div>
 		{#if app.status === 'draft'}
 			<div class="flex gap-3">
 				<a
 					href="/applications/{app.id}/edit"
 					class="btn-secondary inline-flex items-center px-4 py-2"
+					data-testid="edit-application"
 				>
 					<Edit class="w-4 h-4 mr-2" />
 					Bearbeiten
@@ -159,7 +162,7 @@
 
 		<div class="space-y-6">
 			<div class="card p-6">
-				<h2 class="text-lg font-semibold text-primary mb-4">Bewertung</h2>
+				<h2 class="text-lg font-semibold text-primary mb-4" data-testid="scoring-heading">Bewertung</h2>
 				<ScoreDisplay
 					score={app.score}
 					trafficLight={app.trafficLight}

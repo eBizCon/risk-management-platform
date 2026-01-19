@@ -19,7 +19,7 @@
 	];
 </script>
 
-<form method="POST" use:enhance class="space-y-6">
+<form method="POST" use:enhance class="space-y-6" data-testid="application-form">
 	{#if application?.id}
 		<input type="hidden" name="id" value={application.id} />
 	{/if}
@@ -34,6 +34,7 @@
 			required
 			class="mt-1 block w-full rounded-md border-default shadow-sm sm:text-sm"
 			placeholder="Vor- und Nachname"
+			data-testid="input-name"
 		/>
 		{#if errors.name}
 			<p class="mt-1 error-text">{errors.name[0]}</p>
@@ -53,6 +54,7 @@
 				step="0.01"
 				class="mt-1 block w-full rounded-md border-default shadow-sm sm:text-sm"
 				placeholder="z.B. 3500"
+				data-testid="input-income"
 			/>
 			{#if errors.income}
 				<p class="mt-1 error-text">{errors.income[0]}</p>
@@ -71,6 +73,7 @@
 				step="0.01"
 				class="mt-1 block w-full rounded-md border-default shadow-sm sm:text-sm"
 				placeholder="z.B. 1500"
+				data-testid="input-fixed-costs"
 			/>
 			{#if errors.fixedCosts}
 				<p class="mt-1 error-text">{errors.fixedCosts[0]}</p>
@@ -89,6 +92,7 @@
 				step="0.01"
 				class="mt-1 block w-full rounded-md border-default shadow-sm sm:text-sm"
 				placeholder="z.B. 500"
+				data-testid="input-desired-rate"
 			/>
 			{#if errors.desiredRate}
 				<p class="mt-1 error-text">{errors.desiredRate[0]}</p>
@@ -103,6 +107,7 @@
 			name="employmentStatus"
 			required
 			class="mt-1 block w-full rounded-md border-default shadow-sm sm:text-sm"
+			data-testid="select-employment-status"
 		>
 			<option value="">Bitte wählen...</option>
 			{#each employmentOptions as option}
@@ -127,6 +132,7 @@
 						value="true"
 						checked={application?.hasPaymentDefault === true}
 						class="h-4 w-4 border-default"
+						data-testid="radio-payment-default-yes"
 					/>
 					<span class="ml-2 text-sm text-primary">Ja</span>
 				</label>
@@ -137,6 +143,7 @@
 						value="false"
 						checked={application?.hasPaymentDefault === false}
 						class="h-4 w-4 border-default"
+						data-testid="radio-payment-default-no"
 					/>
 					<span class="ml-2 text-sm text-primary">Nein</span>
 				</label>
@@ -154,6 +161,7 @@
 			value="save"
 			disabled={isSubmitting}
 			class="btn-secondary"
+			data-testid="btn-save-draft"
 		>
 			Als Entwurf speichern
 		</button>
@@ -163,6 +171,7 @@
 			value="submit"
 			disabled={isSubmitting}
 			class="btn-primary"
+			data-testid="btn-submit-application"
 		>
 			Antrag einreichen
 		</button>

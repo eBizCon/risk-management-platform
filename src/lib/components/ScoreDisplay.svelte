@@ -12,7 +12,7 @@
 	let { score, trafficLight, reasons = [], showReasons = false }: Props = $props();
 </script>
 
-<div class="space-y-3">
+<div class="space-y-3" data-testid="score-display">
 	<div class="flex items-center gap-4">
 		<div class="text-center">
 			<div 
@@ -21,6 +21,7 @@
 				class:score-medium={score !== null && score >= 50 && score < 75}
 				class:score-low={score !== null && score < 50}
 				class:text-secondary={score === null}
+				data-testid="score-value"
 			>
 				{score !== null ? score : '-'}
 			</div>
@@ -30,8 +31,8 @@
 	</div>
 
 	{#if showReasons && reasons.length > 0}
-		<div class="mt-4 space-y-2">
-			<h4 class="text-sm font-medium text-primary">Bewertungsgründe:</h4>
+		<div class="mt-4 space-y-2" data-testid="scoring-reasons">
+			<h4 class="text-sm font-medium text-primary" data-testid="scoring-reasons-title">Bewertungsgründe:</h4>
 			<ul class="space-y-1">
 				{#each reasons as reason}
 					<li class="text-sm text-secondary flex items-start gap-2">

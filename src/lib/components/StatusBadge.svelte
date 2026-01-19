@@ -15,6 +15,7 @@
 	class:status-submitted={status === 'submitted'}
 	class:status-approved={status === 'approved'}
 	class:status-rejected={status === 'rejected'}
+	data-testid="status-badge-{status}"
 >
 	{statusLabels[status]}
 </span>
