@@ -72,6 +72,7 @@
 					Bearbeiten
 				</a>
 				<button
+					data-testid="submit-application"
 					onclick={handleSubmit}
 					class="btn-primary inline-flex items-center px-4 py-2"
 				>
