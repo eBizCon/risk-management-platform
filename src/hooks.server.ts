@@ -1,7 +1,7 @@
 import { error, type Handle } from '@sveltejs/kit';
 import { getSession, SESSION_COOKIE_NAME } from '$lib/server/services/auth/session';
 
-const PUBLIC_PATHS = new Set(['/', '/login', '/auth/callback', '/logout', '/robots.txt', '/favicon.ico']);
+const PUBLIC_PATHS = new Set(['/', '/login', '/auth/callback', '/logout', '/robots.txt', '/favicon.ico', '/api/test/session']);
 
 const isPublicPath = (pathname: string): boolean => {
   if (PUBLIC_PATHS.has(pathname)) {
