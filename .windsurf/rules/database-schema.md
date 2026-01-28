@@ -1,3 +1,7 @@
+---
+trigger: model_decision
+description: When you have to change or add database access logic
+---
 # Database Schema & Drizzle Rule
 
 Ensure type safety and consistency across the database layer.

@@ -1,24 +1,26 @@
+---
+trigger: model_decision
+description: When you have to change or add styling
+---
 # Styling & CSS Rule
 
-Ensure consistent styling across the application using TailwindCSS and Svelte's scoped styles.
+Ensure consistent styling across the application using TailwindCSS 4.0 and Svelte's scoped styles.
 
-## TailwindCSS
-- Use Tailwind utility classes for most styling needs directly in the HTML/Svelte templates.
-- Leverage the custom theme variables defined in `src/app.css` (e.g., `text-primary`, `bg-surface`).
+## TailwindCSS 4.0 (@theme)
+- Use the `@theme` block in `src/app.css` as the **Single Source of Truth** for all design tokens (colors, spacing, etc.).
+- Avoid defining variables in `:root` and mapping them to `@theme`. Define them directly in `@theme`.
+- Tailwind 4.0 automatically makes these variables available as CSS variables (e.g., `--color-brand-primary`).
 
-## Global Styles (`src/app.css`)
-- Define global styles, CSS variables, and complex reusable utility classes (using `@apply`) in `src/app.css`.
-- Use this file for:
-  - Theme definitions (`@theme`)
-  - Typography defaults
-  - Common UI patterns (e.g., `.btn-primary`, `.card`)
-  - Layout resets
+## Utility-First (Priority 1)
+- **Always prefer Tailwind utility classes** over custom CSS in components.
+- Avoid using `var(--color-...)` directly in a component's `<style>` tag if a corresponding Tailwind utility exists (e.g., use `text-brand-primary` instead of `color: var(--color-brand-primary)`).
+- Use Tailwind modifiers (`hover:`, `focus:`, `disabled:`, etc.) for state-based styling.
 
-## Component-Specific Styles
-- Use the `<style>` tag within Svelte components for styling that is unique to that component.
-- Avoid polluting the global `src/app.css` with component-specific logic.
-- Prefer Tailwind classes within the `<style>` tag via `@apply` if custom CSS logic is needed but should remain scoped.
+## Global Styles Pattern (Priority 2)
+- Define reusable UI patterns (e.g., `.btn-primary`, `.card`) in `src/app.css` using `@apply`.
+- This keeps components clean while maintaining consistent design patterns.
 
-## Design Tokens
-- Always use the predefined CSS variables for colors, spacing, and shadows to maintain design consistency.
-- Reference: `src/app.css` for the authoritative list of brand and status colors.
+## Component-Specific Styles (Last Resort)
+- Only use the `<style>` tag in Svelte components for complex layout logic or third-party overrides that cannot be handled by Tailwind utilities.
+- Do NOT use the `<style>` tag for simple color or spacing changes.
+

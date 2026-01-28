@@ -1,3 +1,7 @@
+---
+trigger: model_decision
+description: When you work within an Svelte 5 frontend
+---
 # Svelte 5 Runes Rule
 
 Always use Svelte 5 Runes for state management and component logic.

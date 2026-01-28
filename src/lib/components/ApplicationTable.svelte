@@ -100,7 +100,7 @@
 							<div class="flex justify-end gap-2">
 								<button
 									onclick={() => onView?.(app.id)}
-									class="action-btn-view p-1"
+									class="text-brand-primary hover:text-brand-primary-hover p-1"
 									title="Ansehen"
 								>
 									<Eye class="w-4 h-4" />
@@ -108,14 +108,14 @@
 								{#if isApplicantView && app.status === 'draft'}
 									<button
 										onclick={() => onEdit?.(app.id)}
-										class="action-btn-edit p-1"
+										class="text-text-muted hover:text-text p-1"
 										title="Bearbeiten"
 									>
 										<Edit class="w-4 h-4" />
 									</button>
 									<button
 										onclick={() => onDelete?.(app.id)}
-										class="action-btn-delete p-1"
+										class="text-danger hover:opacity-80 p-1"
 										title="Löschen"
 									>
 										<Trash2 class="w-4 h-4" />
@@ -135,24 +135,3 @@
 		</tbody>
 	</table>
 </div>
-
-<style>
-	.action-btn-view {
-		color: var(--brand-primary);
-	}
-	.action-btn-view:hover {
-		color: var(--brand-primary-hover);
-	}
-	.action-btn-edit {
-		color: var(--text-muted);
-	}
-	.action-btn-edit:hover {
-		color: var(--text);
-	}
-	.action-btn-delete {
-		color: var(--danger);
-	}
-	.action-btn-delete:hover {
-		opacity: 0.8;
-	}
-</style>

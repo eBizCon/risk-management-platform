@@ -1,3 +1,6 @@
+---
+trigger: always_on
+---
 # Backend Architecture Rule
 
 Maintain a strict separation between the transport layer (API/Routes) and the data/logic layer.

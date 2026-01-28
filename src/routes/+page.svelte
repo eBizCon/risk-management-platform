@@ -19,7 +19,7 @@
 
 	<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
 		<div class="card p-6">
-			<div class="w-12 h-12 feature-icon-brand rounded-lg flex items-center justify-center mb-4">
+			<div class="w-12 h-12 rounded-lg flex items-center justify-center mb-4 bg-brand-primary-soft text-brand-primary">
 				<Shield class="w-6 h-6" />
 			</div>
 			<h3 class="text-lg font-semibold text-primary mb-2">Automatische Bewertung</h3>
@@ -29,7 +29,7 @@
 		</div>
 
 		<div class="card p-6">
-			<div class="w-12 h-12 feature-icon-success rounded-lg flex items-center justify-center mb-4">
+			<div class="w-12 h-12 rounded-lg flex items-center justify-center mb-4 bg-success/15 text-success">
 				<TrendingUp class="w-6 h-6" />
 			</div>
 			<h3 class="text-lg font-semibold text-primary mb-2">Transparente Entscheidungen</h3>
@@ -39,7 +39,7 @@
 		</div>
 
 		<div class="card p-6">
-			<div class="w-12 h-12 feature-icon-info rounded-lg flex items-center justify-center mb-4">
+			<div class="w-12 h-12 rounded-lg flex items-center justify-center mb-4 bg-info/15 text-info">
 				<Users class="w-6 h-6" />
 			</div>
 			<h3 class="text-lg font-semibold text-primary mb-2">Einfache Verwaltung</h3>
@@ -87,18 +87,3 @@
 		{/if}
 	</div>
 </div>
-
-<style>
-	.feature-icon-brand {
-		background-color: var(--brand-primary-soft);
-		color: var(--brand-primary);
-	}
-	.feature-icon-success {
-		background-color: color-mix(in srgb, var(--success) 15%, transparent);
-		color: var(--success);
-	}
-	.feature-icon-info {
-		background-color: color-mix(in srgb, var(--info) 15%, transparent);
-		color: var(--info);
-	}
-</style>
