@@ -44,6 +44,7 @@ test.describe('Antragsbearbeiter (Processor) Workflows', () => {
 			await page.getByLabel(/Beschäftigungsstatus/i).selectOption('employed');
 			await page.getByLabel(/Nein/i).check();
 			await page.getByRole('button', { name: /Antrag einreichen/i }).click();
+			await page.waitForURL(/\/applications\/\d+/);
 
 			await clearTestSessions(page);
 			await createTestSession(page, 'processor');
@@ -51,32 +52,32 @@ test.describe('Antragsbearbeiter (Processor) Workflows', () => {
 
 		test('should display application details in processor view', async ({ page }) => {
 			await page.goto('/processor');
-
-			const applicationLink = page.getByRole('link', { name: /Details|Prüfen|Anzeigen/i }).first();
-			if (await applicationLink.isVisible()) {
-				await applicationLink.click();
+		
+			const viewButton = page.getByRole('button', { name: /Ansehen/i }).first();
+			if (await viewButton.isVisible()) {
+				await viewButton.click();
 				await expect(page).toHaveURL(/\/processor\/\d+/);
 			}
 		});
 
 		test('should show scoring information in detail view', async ({ page }) => {
 			await page.goto('/processor');
-
-			const applicationLink = page.getByRole('link', { name: /Details|Prüfen|Anzeigen/i }).first();
-			if (await applicationLink.isVisible()) {
-				await applicationLink.click();
-				await expect(page.getByText(/Score|Bewertung/i)).toBeVisible();
+		
+			const viewButton = page.getByRole('button', { name: /Ansehen/i }).first();
+			if (await viewButton.isVisible()) {
+				await viewButton.click();
+				await expect(page.getByRole('heading', { name: /Automatische Bewertung/i })).toBeVisible();
 			}
 		});
 
 		test('should show financial details', async ({ page }) => {
 			await page.goto('/processor');
-
-			const applicationLink = page.getByRole('link', { name: /Details|Prüfen|Anzeigen/i }).first();
-			if (await applicationLink.isVisible()) {
-				await applicationLink.click();
-				await expect(page.getByText(/Einkommen|Income/i)).toBeVisible();
-				await expect(page.getByText(/Fixkosten|Fixed Costs/i)).toBeVisible();
+		
+			const viewButton = page.getByRole('button', { name: /Ansehen/i }).first();
+			if (await viewButton.isVisible()) {
+				await viewButton.click();
+				await expect(page.getByRole('heading', { name: /Finanzielle Situation/i })).toBeVisible();
+				await expect(page.getByText('Monatliches Einkommen')).toBeVisible();
 			}
 		});
 	});

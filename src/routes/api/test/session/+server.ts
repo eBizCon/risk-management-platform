@@ -2,7 +2,7 @@ import { json, error } from '@sveltejs/kit';
 import { dev } from '$app/environment';
 import { env } from '$env/dynamic/private';
 import { z } from 'zod';
-import { createSession, deleteSession, clearSessions, SESSION_COOKIE_NAME } from '$lib/server/services/auth/session';
+import { createSession, deleteSession, SESSION_COOKIE_NAME } from '$lib/server/services/auth/session';
 import type { RequestHandler } from './$types';
 
 const requestSchema = z.object({
@@ -52,7 +52,6 @@ export const DELETE: RequestHandler = async ({ cookies }) => {
 
 	const sessionId = cookies.get(SESSION_COOKIE_NAME);
 
-	clearSessions();
 	deleteSession(cookies, sessionId);
 
 	return new Response(null, { status: 204 });

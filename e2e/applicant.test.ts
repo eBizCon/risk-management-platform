@@ -4,12 +4,18 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 
 	test.describe('Kreditantrag erstellen (Create Credit Application)', () => {
 		test('should display the home page with role-specific content', async ({ authenticatedPage }) => {
+			await authenticatedPage.goto('/');
 			await expect(authenticatedPage.locator('h1')).toContainText('Risikomanagement');
-			await expect(authenticatedPage.getByRole('link', { name: /Neuer Antrag/i })).toBeVisible();
+			await expect(
+				authenticatedPage.getByRole('link', { name: /Neuen Antrag erstellen/i })
+			).toBeVisible();
 		});
 
 		test('should navigate to new application form', async ({ authenticatedPage }) => {
-			await authenticatedPage.getByRole('link', { name: /Neuer Antrag/i }).click();
+			await authenticatedPage.goto('/');
+			await authenticatedPage
+				.getByRole('link', { name: /Neuen Antrag erstellen/i })
+				.click();
 			await expect(authenticatedPage).toHaveURL('/applications/new');
 			await expect(authenticatedPage.locator('h1')).toContainText('Kreditantrag erstellen');
 		});
