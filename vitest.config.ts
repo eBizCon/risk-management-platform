@@ -12,7 +12,9 @@ export default defineConfig({
 	resolve: {
 		alias: {
 			$lib: '/src/lib',
-			'$app/environment': '/src/lib/test/app-environment'
+			'$app/environment': '/src/lib/test/app-environment',
+			'$env/static/private': '/src/lib/test/env-static-private',
+			'$env/dynamic/private': '/src/lib/test/env-dynamic-private'
 		}
 	}
 });
