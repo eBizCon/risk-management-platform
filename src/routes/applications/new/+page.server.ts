@@ -1,13 +1,17 @@
 import type { Actions } from './$types';
-import { fail, redirect } from '@sveltejs/kit';
+import { fail, redirect, error } from '@sveltejs/kit';
 import { createApplication, submitApplication } from '$lib/server/services/repositories/application.repository';
 import { applicationWithBusinessRulesSchema } from '$lib/server/services/validation';
 import { ZodError } from 'zod';
 
 export const actions: Actions = {
-	default: async ({ request, cookies }) => {
+	default: async ({ request, locals }) => {
+		if (!locals.user) {
+			throw error(401, 'Login erforderlich');
+		}
+
 		const formData = await request.formData();
-		const userId = cookies.get('userId') || 'applicant-1';
+		const userId = locals.user.id;
 		
 		const rawData = {
 			name: formData.get('name') as string,

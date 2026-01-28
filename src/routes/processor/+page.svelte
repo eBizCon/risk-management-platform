@@ -35,7 +35,7 @@
 	<title>Anträge bearbeiten - Risikomanagement</title>
 </svelte:head>
 
-<RoleGuard requiredRole="processor" redirectTo="/applications">
+<RoleGuard requiredRole="processor">
 <div class="space-y-6">
 	<div>
 		<h1 class="text-2xl font-bold text-primary">Anträge bearbeiten</h1>

@@ -1,32 +1,28 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
-	import { browser } from '$app/environment';
-	import { currentUser, type UserRole } from '$lib/stores/role';
+	import { page } from '$app/stores';
 	import type { Snippet } from 'svelte';
 
 	interface Props {
-		requiredRole: UserRole;
-		redirectTo: string;
+		requiredRole: App.UserRole;
 		children: Snippet;
 	}
 
-	let { requiredRole, redirectTo, children }: Props = $props();
+	let { requiredRole, children }: Props = $props();
 
-	$effect(() => {
-		if (browser && $currentUser.role !== requiredRole) {
-			goto(redirectTo);
-		}
-	});
-
-	const hasAccess = $derived($currentUser.role === requiredRole);
+	const currentRole = $derived($page.data.user?.role ?? null);
+	const hasAccess = $derived(currentRole === requiredRole);
 </script>
 
 {#if hasAccess}
 	{@render children()}
 {:else}
-	<div class="flex items-center justify-center min-h-[50vh]">
-		<div class="text-center">
-			<p class="text-secondary">Zugriff nicht erlaubt. Sie werden weitergeleitet...</p>
+	<div class="flex items-center justify-center min-h-[50vh]" data-testid="role-guard-forbidden">
+		<div class="text-center space-y-2">
+			<p class="text-lg font-semibold text-primary">Keine Berechtigung</p>
+			<p class="text-secondary">Bitte melden Sie sich mit einem berechtigten Konto an.</p>
+			<a href="/login" class="btn-primary inline-block px-4 py-2" data-testid="role-guard-login-link">
+				Zum Login
+			</a>
 		</div>
 	</div>
 {/if}

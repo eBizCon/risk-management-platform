@@ -2,11 +2,18 @@
 // for information about these interfaces
 declare global {
 	namespace App {
-		// interface Error {}
-		// interface Locals {}
-		// interface PageData {}
-		// interface PageState {}
-		// interface Platform {}
+		type UserRole = 'applicant' | 'processor'
+
+		interface User {
+			id: string
+			name: string
+			role: UserRole
+			idToken?: string
+		}
+
+		interface Locals {
+			user?: User
+		}
 	}
 }
 

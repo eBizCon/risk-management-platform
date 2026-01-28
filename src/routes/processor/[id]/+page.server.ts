@@ -4,7 +4,15 @@ import { getApplicationById, processApplication } from '$lib/server/services/rep
 import { processorDecisionSchema } from '$lib/server/services/validation';
 import { ZodError } from 'zod';
 
-export const load: PageServerLoad = async ({ params }) => {
+export const load: PageServerLoad = async ({ params, locals }) => {
+	if (!locals.user) {
+		throw error(401, 'Login erforderlich');
+	}
+
+	if (locals.user.role !== 'processor') {
+		throw error(403, 'Keine Berechtigung');
+	}
+
 	const id = parseInt(params.id);
 	
 	if (isNaN(id)) {
@@ -23,7 +31,15 @@ export const load: PageServerLoad = async ({ params }) => {
 };
 
 export const actions: Actions = {
-	default: async ({ request, params }) => {
+	default: async ({ request, params, locals }) => {
+		if (!locals.user) {
+			throw error(401, 'Login erforderlich');
+		}
+
+		if (locals.user.role !== 'processor') {
+			throw error(403, 'Keine Berechtigung');
+		}
+
 		const id = parseInt(params.id);
 		const formData = await request.formData();
 		

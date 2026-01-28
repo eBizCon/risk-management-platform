@@ -1,6 +1,10 @@
 <script lang="ts">
-	import { isApplicant, isProcessor } from '$lib/stores/role';
-	import { FileText, ClipboardCheck, ArrowRight, Shield, TrendingUp, Users } from 'lucide-svelte';
+	import { page } from '$app/stores';
+	import { FileText, ClipboardCheck, ArrowRight, Shield, TrendingUp, Users, LogIn } from 'lucide-svelte';
+
+	const user = $derived($page.data.user ?? null);
+	const isApplicant = $derived(user?.role === 'applicant');
+	const isProcessor = $derived(user?.role === 'processor');
 </script>
 
 <svelte:head>
@@ -50,7 +54,7 @@
 	</div>
 
 	<div class="card p-8 mt-8">
-		{#if $isApplicant}
+		{#if isApplicant}
 			<h2 class="text-2xl font-bold text-primary mb-4">Als Antragsteller</h2>
 			<p class="text-secondary mb-6">
 				Erstellen Sie neue Kreditanträge, speichern Sie Entwürfe und verfolgen Sie den Status Ihrer eingereichten Anträge.
@@ -71,7 +75,7 @@
 					Meine Anträge ansehen
 				</a>
 			</div>
-		{:else}
+		{:else if isProcessor}
 			<h2 class="text-2xl font-bold text-primary mb-4">Als Antragsbearbeiter</h2>
 			<p class="text-secondary mb-6">
 				Prüfen Sie eingereichte Anträge, treffen Sie fundierte Entscheidungen und verfolgen Sie die Bearbeitungshistorie.
@@ -82,6 +86,16 @@
 			>
 				<ClipboardCheck class="w-5 h-5 mr-2" />
 				Anträge bearbeiten
+				<ArrowRight class="w-5 h-5 ml-2" />
+			</a>
+		{:else}
+			<h2 class="text-2xl font-bold text-primary mb-4">Starten Sie jetzt</h2>
+			<p class="text-secondary mb-6">
+				Melden Sie sich an, um Anträge zu stellen oder zu bearbeiten.
+			</p>
+			<a href="/login" class="btn-primary inline-flex items-center px-6 py-3" data-testid="hero-login">
+				<LogIn class="w-5 h-5 mr-2" />
+				Zum Login
 				<ArrowRight class="w-5 h-5 ml-2" />
 			</a>
 		{/if}

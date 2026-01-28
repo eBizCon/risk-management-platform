@@ -1,5 +1,6 @@
 export type { Application, ApplicationStatus, EmploymentStatus, TrafficLight } from './server/db/schema';
-export type { UserRole, User } from './stores/role';
+export type UserRole = App.UserRole;
+export type User = App.User;
 
 export const employmentStatusLabels: Record<string, string> = {
 	employed: 'Angestellt',

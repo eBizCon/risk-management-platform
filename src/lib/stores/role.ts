@@ -84,4 +84,4 @@ export const currentUser = createUserStore();
 export const isApplicant = derived(currentUser, ($user) => $user.role === 'applicant');
 export const isProcessor = derived(currentUser, ($user) => $user.role === 'processor');
 
-export const debugMode = writable(true);
+export const debugMode = writable(false);
