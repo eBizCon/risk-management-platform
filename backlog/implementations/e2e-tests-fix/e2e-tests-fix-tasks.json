@@ -1,0 +1,478 @@
+{
+  "source_skill": "plan-user-story-implementation-blueprint",
+  "user_story": {
+    "title": "E2E-Tests ohne OIDC-Provider",
+    "as_a": "Entwickler",
+    "i_want": "die E2E-Tests ohne OIDC-Provider ausführen können",
+    "so_that": "ich automatisierte Tests der Anwendungslogik lokal und in der CI/CD-Pipeline durchführen kann"
+  },
+  "global_constraints": [
+    "Session-Erstellung muss ohne OIDC-Provider funktionieren",
+    "Test-Helper-Funktionen nur im Test-Kontext verfügbar",
+    "Bestehende E2E-Tests minimal anpassen",
+    "Produktive OIDC-Authentifizierung bleibt unverändert",
+    "Test-Endpoint nur in dev-Mode oder mit TEST env variable aktiv",
+    "Strikte Validierung mit Zod",
+    "Playwright Fixtures für automatisches Cleanup verwenden",
+    "Test-Isolation gewährleisten"
+  ],
+  "tasks": [
+    {
+      "id": "T-001",
+      "title": "Test-API-Endpoint für Session-Erstellung",
+      "user_story": {
+        "title": "E2E-Tests ohne OIDC-Provider",
+        "as_a": "Entwickler",
+        "i_want": "die E2E-Tests ohne OIDC-Provider ausführen können",
+        "so_that": "ich automatisierte Tests der Anwendungslogik lokal und in der CI/CD-Pipeline durchführen kann"
+      },
+      "constraints": [
+        "Session-Erstellung muss ohne OIDC-Provider funktionieren",
+        "Test-Helper-Funktionen nur im Test-Kontext verfügbar",
+        "Produktive OIDC-Authentifizierung bleibt unverändert",
+        "Test-Endpoint nur in dev-Mode oder mit TEST env variable aktiv",
+        "Strikte Validierung mit Zod",
+        "Endpoint muss in Production 404 zurückgeben"
+      ],
+      "goal": "Test-API-Endpoint erstellt, der Sessions ohne OIDC erstellen und löschen kann",
+      "blueprint_references": [
+        "Abschnitt 4.3: src/routes/api/test/session/+server.ts (NEU)",
+        "Abschnitt 5: API Contract - POST /api/test/session",
+        "Abschnitt 5: API Contract - DELETE /api/test/session",
+        "Abschnitt 7: Risiko - Test-Endpoint in Production"
+      ],
+      "implementation_details": [
+        "Erstelle SvelteKit API Route unter src/routes/api/test/session/+server.ts",
+        "POST Handler: Prüfe dev-Mode oder TEST env variable, return 404 wenn Production",
+        "POST Handler: Parse request.json() → { role, id, name }",
+        "POST Handler: Validiere mit Zod: role in ['applicant', 'processor'], id/name sind strings",
+        "POST Handler: Bei invalid → return 400 mit Fehlermeldung",
+        "POST Handler: Erstelle user object und rufe createSession(cookies, user)",
+        "POST Handler: Return 200 mit { sessionId }",
+        "DELETE Handler: Prüfe dev-Mode oder TEST env variable, return 404 wenn Production",
+        "DELETE Handler: Hole sessionId aus cookies",
+        "DELETE Handler: Rufe clearSessions() und deleteSession(cookies, sessionId)",
+        "DELETE Handler: Return 204",
+        "Importiere createSession, deleteSession, clearSessions aus $lib/server/services/auth/session",
+        "Importiere dev aus $app/environment",
+        "Importiere z aus zod für Validierung"
+      ],
+      "scope": [
+        "POST /api/test/session Endpoint mit Validierung",
+        "DELETE /api/test/session Endpoint",
+        "Production-Mode Check (dev oder TEST env)",
+        "Zod-Schema für Request-Validierung",
+        "Integration mit bestehendem Session-Service"
+      ],
+      "out_of_scope": [
+        "Unit-Tests für den Endpoint (eigener Task)",
+        "Änderungen am Session-Service",
+        "OIDC-Authentifizierung",
+        "Frontend-Komponenten"
+      ],
+      "artifacts": [
+        "src/routes/api/test/session/+server.ts (NEU)",
+        "POST Handler Methode",
+        "DELETE Handler Methode",
+        "Zod Validation Schema"
+      ],
+      "acceptance_criteria": [
+        "POST /api/test/session erstellt Session mit gültigen Daten und returnt 200 mit sessionId",
+        "POST /api/test/session validiert role und returnt 400 bei invalid role",
+        "POST /api/test/session returnt 404 in Production-Mode (dev=false, TEST nicht gesetzt)",
+        "DELETE /api/test/session löscht Sessions und returnt 204",
+        "DELETE /api/test/session returnt 404 in Production-Mode",
+        "Session-Cookie wird korrekt gesetzt"
+      ],
+      "checks": [
+        "npm run check",
+        "Manueller Test: curl -X POST http://localhost:4173/api/test/session -d '{\"role\":\"applicant\",\"id\":\"123\",\"name\":\"Test\"}' -H 'Content-Type: application/json'",
+        "Manueller Test: curl -X DELETE http://localhost:4173/api/test/session"
+      ],
+      "notes": [
+        "Annahme: dev aus $app/environment ist true im Preview-Modus",
+        "Risiko: Test-Endpoint muss in Production blockiert sein"
+      ]
+    },
+    {
+      "id": "T-002",
+      "title": "Auth-Helper für Playwright Tests",
+      "user_story": {
+        "title": "E2E-Tests ohne OIDC-Provider",
+        "as_a": "Entwickler",
+        "i_want": "die E2E-Tests ohne OIDC-Provider ausführen können",
+        "so_that": "ich automatisierte Tests der Anwendungslogik lokal und in der CI/CD-Pipeline durchführen kann"
+      },
+      "constraints": [
+        "Session-Erstellung muss ohne OIDC-Provider funktionieren",
+        "Test-Helper-Funktionen nur im Test-Kontext verfügbar",
+        "Test-Isolation gewährleisten",
+        "Verwendet Test-API-Endpoint aus T-001"
+      ],
+      "goal": "Helper-Funktionen erstellt, die Sessions für Playwright Tests über API erstellen",
+      "blueprint_references": [
+        "Abschnitt 4.1: e2e/helpers/auth.ts (NEU)",
+        "Abschnitt 5: API Contract - POST /api/test/session",
+        "Abschnitt 5: API Contract - DELETE /api/test/session"
+      ],
+      "implementation_details": [
+        "Erstelle e2e/helpers/auth.ts",
+        "Implementiere createTestSession(page, role, userData?)",
+        "createTestSession: Merge userData mit Defaults (id: crypto.randomUUID(), name: 'Test User ${role}')",
+        "createTestSession: POST request an /api/test/session mit { role, id, name }",
+        "createTestSession: Extrahiere session-Cookie aus Response",
+        "createTestSession: Setze Cookie via page.context().addCookies([...])",
+        "Implementiere clearTestSessions(page)",
+        "clearTestSessions: DELETE request an /api/test/session",
+        "clearTestSessions: Lösche Session-Cookies aus page.context()",
+        "Error Handling: Aussagekräftige Fehlermeldungen bei API-Fehlern"
+      ],
+      "scope": [
+        "createTestSession Funktion",
+        "clearTestSessions Funktion",
+        "Cookie-Handling über Playwright API",
+        "UUID-Generierung für Test-User-IDs"
+      ],
+      "out_of_scope": [
+        "Playwright Fixtures (eigener Task)",
+        "Test-API-Endpoint (vorheriger Task)",
+        "Tatsächliche E2E-Tests"
+      ],
+      "artifacts": [
+        "e2e/helpers/auth.ts (NEU)",
+        "createTestSession Funktion",
+        "clearTestSessions Funktion"
+      ],
+      "acceptance_criteria": [
+        "createTestSession erstellt Session über API und setzt Cookie im Browser-Context",
+        "clearTestSessions löscht Sessions über API und entfernt Cookie",
+        "User-Defaults werden korrekt gesetzt (UUID für id, generierter Name)",
+        "Error wird geworfen wenn API nicht erreichbar",
+        "TypeScript-Typen sind korrekt (Page aus @playwright/test)"
+      ],
+      "checks": [
+        "npm run check",
+        "TypeScript-Kompilierung erfolgreich"
+      ],
+      "notes": [
+        "Abhängigkeit: T-001 muss abgeschlossen sein",
+        "Helper wird in Fixtures (T-003) verwendet"
+      ]
+    },
+    {
+      "id": "T-003",
+      "title": "Playwright Fixtures für authentifizierte Tests",
+      "user_story": {
+        "title": "E2E-Tests ohne OIDC-Provider",
+        "as_a": "Entwickler",
+        "i_want": "die E2E-Tests ohne OIDC-Provider ausführen können",
+        "so_that": "ich automatisierte Tests der Anwendungslogik lokal und in der CI/CD-Pipeline durchführen kann"
+      },
+      "constraints": [
+        "Test-Isolation gewährleisten",
+        "Playwright Fixtures für automatisches Cleanup verwenden",
+        "Verwendet Auth-Helper aus T-002",
+        "Test-Helper-Funktionen nur im Test-Kontext verfügbar"
+      ],
+      "goal": "Playwright Fixtures implementiert, die automatisch authentifizierte Pages/Contexts bereitstellen",
+      "blueprint_references": [
+        "Abschnitt 4.2: e2e/fixtures.ts (NEU)",
+        "Abschnitt 3: Test-Isolation als Kernanforderung",
+        "Abschnitt 6: E2E Tests - Szenario 3 Test-Isolation"
+      ],
+      "implementation_details": [
+        "Erstelle e2e/fixtures.ts",
+        "Importiere test, expect von @playwright/test",
+        "Importiere createTestSession, clearTestSessions aus ./helpers/auth",
+        "Definiere TestFixtures Type: { authenticatedPage: Page, authenticatedContext: BrowserContext, userRole: 'applicant' | 'processor' }",
+        "Erstelle test = base.extend<TestFixtures>({ ... })",
+        "userRole Fixture: Default 'applicant', kann pro Test überschrieben werden",
+        "authenticatedPage Fixture: Erstelle Page, rufe createTestSession(page, userRole), yield page, cleanup mit clearTestSessions + close",
+        "authenticatedContext Fixture: Erstelle BrowserContext, erstelle Page, rufe createTestSession, yield context, cleanup mit clearTestSessions + close",
+        "Verwende try/finally für Cleanup um sicherzustellen dass Page/Context immer geschlossen wird",
+        "Exportiere test und expect"
+      ],
+      "scope": [
+        "Custom Playwright Fixtures",
+        "userRole Fixture",
+        "authenticatedPage Fixture",
+        "authenticatedContext Fixture",
+        "Automatisches Cleanup nach jedem Test"
+      ],
+      "out_of_scope": [
+        "Anpassung der bestehenden Tests (eigene Tasks)",
+        "Auth-Helper Implementierung (vorheriger Task)"
+      ],
+      "artifacts": [
+        "e2e/fixtures.ts (NEU)",
+        "TestFixtures Type Definition",
+        "test extend mit custom fixtures",
+        "Export von test und expect"
+      ],
+      "acceptance_criteria": [
+        "authenticatedPage Fixture stellt Page mit gesetzter Session bereit",
+        "userRole kann pro Test überschrieben werden",
+        "Cleanup erfolgt automatisch nach jedem Test (clearTestSessions + close)",
+        "Try/finally garantiert Cleanup auch bei Test-Fehlern",
+        "TypeScript-Typen sind korrekt"
+      ],
+      "checks": [
+        "npm run check",
+        "TypeScript-Kompilierung erfolgreich"
+      ],
+      "notes": [
+        "Abhängigkeit: T-002 muss abgeschlossen sein",
+        "Wird in T-004 und T-005 verwendet",
+        "Risiko: clearSessions() löscht ALLE Sessions, aber Playwright workers sind isoliert"
+      ]
+    },
+    {
+      "id": "T-004",
+      "title": "Applicant E2E-Tests auf Fixtures umstellen",
+      "user_story": {
+        "title": "E2E-Tests ohne OIDC-Provider",
+        "as_a": "Entwickler",
+        "i_want": "die E2E-Tests ohne OIDC-Provider ausführen können",
+        "so_that": "ich automatisierte Tests der Anwendungslogik lokal und in der CI/CD-Pipeline durchführen kann"
+      },
+      "constraints": [
+        "Bestehende E2E-Tests minimal anpassen",
+        "Test-Isolation gewährleisten",
+        "Verwendet Fixtures aus T-003",
+        "Keine funktionalen Änderungen an den Tests"
+      ],
+      "goal": "Applicant E2E-Tests verwenden neue Fixtures statt Cookie-Manipulation",
+      "blueprint_references": [
+        "Abschnitt 4.4: e2e/applicant.test.ts (ändern)",
+        "Abschnitt 6: E2E Tests - Szenario 1"
+      ],
+      "implementation_details": [
+        "Öffne e2e/applicant.test.ts",
+        "Ändere Import: import { test, expect } from './fixtures' statt @playwright/test",
+        "Entferne beforeEach Block (Zeilen 4-13) mit Cookie-Manipulation",
+        "Ersetze page Parameter mit authenticatedPage in allen Tests",
+        "Beispiel: test('...', async ({ authenticatedPage }) => { await authenticatedPage.goto('/') ... })",
+        "Keine funktionalen Änderungen an Test-Logik",
+        "Stelle sicher dass alle Tests weiterhin kompilieren"
+      ],
+      "scope": [
+        "Import-Änderung zu ./fixtures",
+        "Entfernen von beforeEach mit Cookie-Manipulation",
+        "Umbenennung page → authenticatedPage in allen Tests",
+        "Keine Änderung der Test-Logik"
+      ],
+      "out_of_scope": [
+        "Neue Tests hinzufügen",
+        "Test-Logik ändern",
+        "Processor-Tests (eigener Task)"
+      ],
+      "artifacts": [
+        "e2e/applicant.test.ts (geändert)"
+      ],
+      "acceptance_criteria": [
+        "Import von test und expect erfolgt aus ./fixtures",
+        "beforeEach Block mit Cookie-Manipulation ist entfernt",
+        "Alle Tests verwenden authenticatedPage statt page",
+        "Tests kompilieren ohne TypeScript-Fehler",
+        "Alle Tests laufen erfolgreich durch (npm run test:e2e)"
+      ],
+      "checks": [
+        "npm run check",
+        "npm run test:e2e -- e2e/applicant.test.ts"
+      ],
+      "notes": [
+        "Abhängigkeit: T-001, T-002, T-003 müssen abgeschlossen sein",
+        "Tests sollten nach Änderung unveränderte Ergebnisse liefern"
+      ]
+    },
+    {
+      "id": "T-005",
+      "title": "Processor E2E-Tests auf Fixtures umstellen",
+      "user_story": {
+        "title": "E2E-Tests ohne OIDC-Provider",
+        "as_a": "Entwickler",
+        "i_want": "die E2E-Tests ohne OIDC-Provider ausführen können",
+        "so_that": "ich automatisierte Tests der Anwendungslogik lokal und in der CI/CD-Pipeline durchführen kann"
+      },
+      "constraints": [
+        "Bestehende E2E-Tests minimal anpassen",
+        "Test-Isolation gewährleisten",
+        "Verwendet Fixtures aus T-003",
+        "Rollenwechsel innerhalb Tests muss funktionieren",
+        "Keine funktionalen Änderungen an den Tests"
+      ],
+      "goal": "Processor E2E-Tests verwenden neue Fixtures statt Cookie-Manipulation, inkl. Rollenwechsel",
+      "blueprint_references": [
+        "Abschnitt 4.5: e2e/processor.test.ts (ändern)",
+        "Abschnitt 6: E2E Tests - Szenario 2"
+      ],
+      "implementation_details": [
+        "Öffne e2e/processor.test.ts",
+        "Ändere Import: import { test, expect } from './fixtures' statt @playwright/test",
+        "Importiere createTestSession aus ./helpers/auth für Rollenwechsel",
+        "Entferne beforeEach Block (Zeilen 4-12) mit Cookie-Manipulation",
+        "Für Tests ohne Rollenwechsel: Ersetze page mit authenticatedPage, setze userRole: 'processor'",
+        "Für Tests mit Rollenwechsel (z.B. Zeilen 42-67): Verwende page und manuelle createTestSession Calls",
+        "Beispiel Rollenwechsel: await createTestSession(page, 'applicant'); ... await createTestSession(page, 'processor');",
+        "Stelle sicher dass alle Tests weiterhin kompilieren"
+      ],
+      "scope": [
+        "Import-Änderung zu ./fixtures",
+        "Import von createTestSession für Rollenwechsel",
+        "Entfernen von beforeEach mit Cookie-Manipulation",
+        "Anpassung von Tests ohne Rollenwechsel auf authenticatedPage",
+        "Anpassung von Tests mit Rollenwechsel auf manuelle createTestSession Calls",
+        "Keine Änderung der Test-Logik"
+      ],
+      "out_of_scope": [
+        "Neue Tests hinzufügen",
+        "Test-Logik ändern",
+        "Applicant-Tests (vorheriger Task)"
+      ],
+      "artifacts": [
+        "e2e/processor.test.ts (geändert)"
+      ],
+      "acceptance_criteria": [
+        "Import von test und expect erfolgt aus ./fixtures",
+        "beforeEach Block mit Cookie-Manipulation ist entfernt",
+        "Tests ohne Rollenwechsel verwenden authenticatedPage mit userRole: 'processor'",
+        "Tests mit Rollenwechsel verwenden page und createTestSession",
+        "Tests kompilieren ohne TypeScript-Fehler",
+        "Alle Tests laufen erfolgreich durch (npm run test:e2e)"
+      ],
+      "checks": [
+        "npm run check",
+        "npm run test:e2e -- e2e/processor.test.ts"
+      ],
+      "notes": [
+        "Abhängigkeit: T-001, T-002, T-003 müssen abgeschlossen sein",
+        "Spezialfall: Tests mit Rollenwechsel benötigen manuelle Session-Erstellung",
+        "Tests sollten nach Änderung unveränderte Ergebnisse liefern"
+      ]
+    },
+    {
+      "id": "T-006",
+      "title": "Unit-Tests für Test-API-Endpoint",
+      "user_story": {
+        "title": "E2E-Tests ohne OIDC-Provider",
+        "as_a": "Entwickler",
+        "i_want": "die E2E-Tests ohne OIDC-Provider ausführen können",
+        "so_that": "ich automatisierte Tests der Anwendungslogik lokal und in der CI/CD-Pipeline durchführen kann"
+      },
+      "constraints": [
+        "Strikte Validierung mit Zod",
+        "Test-Endpoint nur in dev-Mode oder mit TEST env variable aktiv",
+        "Folge bestehendem Teststil (Vitest)"
+      ],
+      "goal": "Unit-Tests für Test-API-Endpoint vorhanden, die alle Szenarien abdecken",
+      "blueprint_references": [
+        "Abschnitt 6: Unit Tests - src/routes/api/test/session/+server.test.ts",
+        "Abschnitt 4.3: API Endpoint Logik"
+      ],
+      "implementation_details": [
+        "Erstelle src/routes/api/test/session/+server.test.ts",
+        "Importiere POST, DELETE Handler",
+        "Importiere vi, describe, it, expect von vitest",
+        "Mock: createMockRequest, createMockCookies",
+        "Test: POST erstellt Session mit gültigen Daten (Status 200, sessionId, Cookie gesetzt)",
+        "Test: POST validiert role und returnt 400 bei invalid role ('admin')",
+        "Test: POST validiert fehlende Felder und returnt 400",
+        "Test: POST nicht verfügbar in Production (dev=false, TEST nicht gesetzt → 404)",
+        "Test: DELETE löscht Sessions (Status 204, Cookie gelöscht)",
+        "Test: DELETE nicht verfügbar in Production (404)",
+        "Verwende vi.mock für $app/environment und Session-Service wenn nötig"
+      ],
+      "scope": [
+        "Unit-Tests für POST Handler (Happy Path, Validierung, Production-Check)",
+        "Unit-Tests für DELETE Handler (Happy Path, Production-Check)",
+        "Mocking von Request, Cookies, Environment"
+      ],
+      "out_of_scope": [
+        "Integration-Tests",
+        "E2E-Tests (bereits in anderen Tasks)",
+        "Session-Service Tests (existieren bereits)"
+      ],
+      "artifacts": [
+        "src/routes/api/test/session/+server.test.ts (NEU)",
+        "Mock-Utilities für Request/Cookies"
+      ],
+      "acceptance_criteria": [
+        "Alle 6 Testfälle aus Blueprint sind implementiert",
+        "Tests laufen mit npm run test erfolgreich durch",
+        "Code Coverage für +server.ts ist >90%",
+        "Mocks sind korrekt implementiert"
+      ],
+      "checks": [
+        "npm run test -- src/routes/api/test/session",
+        "npm run test"
+      ],
+      "notes": [
+        "Optional aber empfohlen",
+        "Abhängigkeit: T-001 muss abgeschlossen sein",
+        "Erhöht Vertrauen in Test-API-Endpoint"
+      ]
+    },
+    {
+      "id": "T-007",
+      "title": "E2E-Test-Suite verifizieren und dokumentieren",
+      "user_story": {
+        "title": "E2E-Tests ohne OIDC-Provider",
+        "as_a": "Entwickler",
+        "i_want": "die E2E-Tests ohne OIDC-Provider ausführen können",
+        "so_that": "ich automatisierte Tests der Anwendungslogik lokal und in der CI/CD-Pipeline durchführen kann"
+      },
+      "constraints": [
+        "Test-Isolation gewährleisten",
+        "Alle bestehenden E2E-Tests müssen erfolgreich laufen"
+      ],
+      "goal": "Alle E2E-Tests laufen erfolgreich ohne OIDC-Provider, Verifikation dokumentiert",
+      "blueprint_references": [
+        "Abschnitt 6: E2E Tests - Kritische Journeys",
+        "Abschnitt 9: Verifikation"
+      ],
+      "implementation_details": [
+        "Stelle sicher dass Preview-Server läuft",
+        "Führe npm run test:e2e aus",
+        "Verifiziere dass alle applicant.test.ts Tests durchlaufen",
+        "Verifiziere dass alle processor.test.ts Tests durchlaufen",
+        "Verifiziere Test-Isolation: Führe Tests mehrmals aus, prüfe auf Flakiness",
+        "Verifiziere Session-Cleanup: Prüfe dass keine Sessions nach Tests verbleiben",
+        "Optional: Führe npm run test:e2e:ui aus zur visuellen Verifikation",
+        "Dokumentiere Ergebnisse: Anzahl Tests, Pass/Fail, Laufzeit"
+      ],
+      "scope": [
+        "Ausführung aller E2E-Tests",
+        "Verifikation von Test-Ergebnissen",
+        "Prüfung auf Flakiness/Isolation-Probleme",
+        "Dokumentation der Ergebnisse"
+      ],
+      "out_of_scope": [
+        "Neue Tests schreiben",
+        "Test-Code ändern (sollte bereits in T-004, T-005 erledigt sein)"
+      ],
+      "artifacts": [
+        "Test-Ergebnisse (Pass/Fail)",
+        "Test-Report (HTML von Playwright)",
+        "Dokumentation der Verifikation"
+      ],
+      "acceptance_criteria": [
+        "Alle E2E-Tests in applicant.test.ts laufen erfolgreich",
+        "Alle E2E-Tests in processor.test.ts laufen erfolgreich",
+        "Tests sind nicht flaky (3 Durchläufe ohne Fehler)",
+        "Kein OIDC-Provider wird benötigt",
+        "Test-Isolation ist gewährleistet",
+        "Verifikation ist dokumentiert"
+      ],
+      "checks": [
+        "npm run test:e2e",
+        "npm run test:e2e:ui (optional)",
+        "npm run test:all"
+      ],
+      "notes": [
+        "Abhängigkeit: Alle vorherigen Tasks (T-001 bis T-005) müssen abgeschlossen sein",
+        "Final Task zur Bestätigung dass User Story erfüllt ist",
+        "Bei Fehlern: Zurück zu vorherigen Tasks zur Fehlerbehebung"
+      ]
+    }
+  ]
+}
