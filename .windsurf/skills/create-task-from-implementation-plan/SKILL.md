@@ -1,5 +1,5 @@
 ---
-name: split-implementation-blueprint-into-tasks
+name: create-tasklist-from-implementation-plan
 description: Takes the output of "plan-user-story-implementation-blueprint" (implementation blueprint in markdown) and produces a strict JSON task list. Each task contains all relevant blueprint details (incl. user story + constraints if present) so a separate executor skill can implement tasks iteratively without needing the original blueprint.
 ---
 

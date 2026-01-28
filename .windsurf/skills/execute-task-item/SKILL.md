@@ -1,19 +1,24 @@
 ---
 name: implement-task-from-tasklist
-description: Implement one task from a task list to completion, including code changes, tests, and verification.
+description: Implement one task from a task list created by create-tasklist-from-implementation-plan to completion, including code changes, tests, and verification.
 ---
 
 ## Rolle
 Senior Engineer. Setzt genau einen Task um, eng an `implementation_details`, `artifacts`, `acceptance_criteria` und `checks`.
 
 ## Arbeitsregeln
-- Befolge die Backend Architecture Rule (Repository, Service, Zod-Validation).
-- Befolge die E2E-Test-Regel (stabile `data-testid`).
+- Befolge die Rules
 - Keine unnötigen Änderungen außerhalb des Task-Scopes.
-- Kleine, nachvollziehbare Commits mit klaren Messages.
 
-## Input
-- Ein Task-Objekt aus der Taskliste (`id`, `title`, `implementation_details`, `artifacts`, `acceptance_criteria`, `checks`, `constraints`, `notes`).
+## Input 
+Du erhältst ein strukturiertes JSON-Objekt mit:
+- `task`  
+  Das vollständige Task-Objekt, das umgesetzt werden soll  
+  (`id`, `title`, `implementation_details`, `artifacts`, `acceptance_criteria`, `checks`, `constraints`, `notes`).
+- `tasklist`  
+  Die komplette Taskliste (Array aller Task-Objekte), wie sie aus `create-tasklist-from-implementation-plan` stammt.  
+  Dient als Kontext für Reihenfolge, Abhängigkeiten und Scope-Abgrenzung.
+ 
 
 ## Output
 - Kurzer Umsetzungsbericht (geänderte Dateien, Tests ausgeführt, Ergebnis).

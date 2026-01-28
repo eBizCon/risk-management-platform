@@ -108,9 +108,10 @@ Folgende Statuswerte sind erlaubt:
        - Zod-Validation in API-Routes/Form-Actions.
      - E2E-Test-Regel:
        - Verwende stabile `data-testid`-Attribute (kebab-case, sprechend) für relevante UI-Elemente.
-   - Optional:
-     - Verwende den Skill `implement-task-from-blueprint`, um einen einzelnen Task strukturiert umzusetzen.
-
+   - Der Workflow ruft für die Umsetzung **immer** den Skill `implement-task-from-tasklist`
+     - Übergib dem Skill als Input (readonly):
+       - `task`: das vollständige Task-Objekt des aktuell ausgewählten Tasks (inkl. `id`, `title`, `implementation_details`, `artifacts`, `acceptance_criteria`, `checks`, `constraints`, `notes`).
+       - `tasklist`: die komplette Taskliste aus `tasks_file` (Array aller Task-Objekte, unverändert).
 5. **Verifikation**
    - Führe nacheinander alle in `task.checks` genannten Checks aus (z. B. `npm test`, `npm run lint`, `npm run test:e2e`, etc.), sofern im Task spezifiziert.
    - Dokumentiere Ergebnis:
