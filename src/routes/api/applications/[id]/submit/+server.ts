@@ -1,6 +1,6 @@
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { submitApplication } from '$lib/server/services/repository';
+import { submitApplication } from '$lib/server/services/repositories/application.repository';
 
 export const POST: RequestHandler = async ({ params }) => {
 	const id = parseInt(params.id);

@@ -1,6 +1,6 @@
 import type { PageServerLoad, Actions } from './$types';
 import { error, fail, redirect } from '@sveltejs/kit';
-import { getApplicationById, updateApplication, submitApplication } from '$lib/server/services/repository';
+import { getApplicationById, updateApplication, submitApplication } from '$lib/server/services/repositories/application.repository';
 import { applicationWithBusinessRulesSchema } from '$lib/server/services/validation';
 import { ZodError } from 'zod';
 

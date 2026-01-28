@@ -1,5 +1,5 @@
 import type { PageServerLoad } from './$types';
-import { getApplicationsByUser } from '$lib/server/services/repository';
+import { getApplicationsByUser } from '$lib/server/services/repositories/application.repository';
 
 export const load: PageServerLoad = async ({ url, cookies }) => {
 	const userId = cookies.get('userId') || 'applicant-1';

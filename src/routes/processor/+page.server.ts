@@ -1,10 +1,11 @@
 import type { PageServerLoad } from './$types';
-import { getAllApplications } from '$lib/server/services/repository';
+import { getApplicationsByStatus } from '$lib/server/services/repositories/application.repository';
+import type { ApplicationStatus } from '$lib/server/db/schema';
 
 export const load: PageServerLoad = async ({ url }) => {
-	const statusFilter = url.searchParams.get('status');
+	const statusFilter = url.searchParams.get('status') as ApplicationStatus | null;
 	
-	const allApplications = await getAllApplications();
+	const allApplications = await getApplicationsByStatus(statusFilter || 'submitted');
 	
 	const applications = statusFilter
 		? allApplications.filter(app => app.status === statusFilter)

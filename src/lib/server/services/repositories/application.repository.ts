@@ -1,7 +1,7 @@
 import { eq, and } from 'drizzle-orm';
-import { db, applications } from '../db';
-import type { Application, NewApplication, ApplicationStatus } from '../db/schema';
-import { calculateScore } from './scoring';
+import { db, applications } from '../../db';
+import type { Application, NewApplication, ApplicationStatus } from '../../db/schema';
+import { calculateScore } from '../scoring';
 
 export async function createApplication(data: Omit<NewApplication, 'id' | 'createdAt' | 'score' | 'trafficLight' | 'scoringReasons'>): Promise<Application> {
 	const scoring = calculateScore(
