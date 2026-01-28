@@ -1,6 +1,10 @@
 <script lang="ts">
-	import { isApplicant, isProcessor } from '$lib/stores/role';
-	import { FileText, ClipboardCheck, ArrowRight, Shield, TrendingUp, Users } from 'lucide-svelte';
+	import { page } from '$app/stores';
+	import { FileText, ClipboardCheck, ArrowRight, Shield, TrendingUp, Users, LogIn } from 'lucide-svelte';
+
+	const user = $derived($page.data.user ?? null);
+	const isApplicant = $derived(user?.role === 'applicant');
+	const isProcessor = $derived(user?.role === 'processor');
 </script>
 
 <svelte:head>
@@ -19,7 +23,7 @@
 
 	<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
 		<div class="card p-6">
-			<div class="w-12 h-12 feature-icon-brand rounded-lg flex items-center justify-center mb-4">
+			<div class="w-12 h-12 rounded-lg flex items-center justify-center mb-4 bg-brand-primary-soft text-brand-primary">
 				<Shield class="w-6 h-6" />
 			</div>
 			<h3 class="text-lg font-semibold text-primary mb-2">Automatische Bewertung</h3>
@@ -29,7 +33,7 @@
 		</div>
 
 		<div class="card p-6">
-			<div class="w-12 h-12 feature-icon-success rounded-lg flex items-center justify-center mb-4">
+			<div class="w-12 h-12 rounded-lg flex items-center justify-center mb-4 bg-success/15 text-success">
 				<TrendingUp class="w-6 h-6" />
 			</div>
 			<h3 class="text-lg font-semibold text-primary mb-2">Transparente Entscheidungen</h3>
@@ -39,7 +43,7 @@
 		</div>
 
 		<div class="card p-6">
-			<div class="w-12 h-12 feature-icon-info rounded-lg flex items-center justify-center mb-4">
+			<div class="w-12 h-12 rounded-lg flex items-center justify-center mb-4 bg-info/15 text-info">
 				<Users class="w-6 h-6" />
 			</div>
 			<h3 class="text-lg font-semibold text-primary mb-2">Einfache Verwaltung</h3>
@@ -50,7 +54,7 @@
 	</div>
 
 	<div class="card p-8 mt-8">
-		{#if $isApplicant}
+		{#if isApplicant}
 			<h2 class="text-2xl font-bold text-primary mb-4">Als Antragsteller</h2>
 			<p class="text-secondary mb-6">
 				Erstellen Sie neue Kreditanträge, speichern Sie Entwürfe und verfolgen Sie den Status Ihrer eingereichten Anträge.
@@ -71,7 +75,7 @@
 					Meine Anträge ansehen
 				</a>
 			</div>
-		{:else}
+		{:else if isProcessor}
 			<h2 class="text-2xl font-bold text-primary mb-4">Als Antragsbearbeiter</h2>
 			<p class="text-secondary mb-6">
 				Prüfen Sie eingereichte Anträge, treffen Sie fundierte Entscheidungen und verfolgen Sie die Bearbeitungshistorie.
@@ -84,21 +88,16 @@
 				Anträge bearbeiten
 				<ArrowRight class="w-5 h-5 ml-2" />
 			</a>
+		{:else}
+			<h2 class="text-2xl font-bold text-primary mb-4">Starten Sie jetzt</h2>
+			<p class="text-secondary mb-6">
+				Melden Sie sich an, um Anträge zu stellen oder zu bearbeiten.
+			</p>
+			<a href="/login" class="btn-primary inline-flex items-center px-6 py-3" data-testid="hero-login">
+				<LogIn class="w-5 h-5 mr-2" />
+				Zum Login
+				<ArrowRight class="w-5 h-5 ml-2" />
+			</a>
 		{/if}
 	</div>
 </div>
-
-<style>
-	.feature-icon-brand {
-		background-color: var(--brand-primary-soft);
-		color: var(--brand-primary);
-	}
-	.feature-icon-success {
-		background-color: color-mix(in srgb, var(--success) 15%, transparent);
-		color: var(--success);
-	}
-	.feature-icon-info {
-		background-color: color-mix(in srgb, var(--info) 15%, transparent);
-		color: var(--info);
-	}
-</style>

@@ -1,0 +1,534 @@
+[
+  {
+    "id": "auth-oidc-01",
+    "title": "Add OIDC dependency and environment-based configuration contract",
+    "goal": "Introduce the OIDC client library and define the required environment variables for issuer/client/redirect/logout and role claim mapping.",
+    "global_constraints": {
+      "roles_source_of_truth": "OIDC Provider only",
+      "allowed_roles": [
+        "applicant",
+        "processor"
+      ],
+      "protected_scope": "Everything except / and /login and technical auth routes",
+      "api_behavior": "No redirects for /api/**; respond with 401/403",
+      "frontend_behavior": "No automatic redirect to /login; show message with link to /login",
+      "logout": "Must also perform RP-initiated logout at provider (end_session_endpoint)",
+      "role_change_effective": "Next login"
+    },
+    "scope": [
+      "Add npm dependency for OIDC client",
+      "Define ENV keys used by server-side auth modules",
+      "Decide how base URLs are determined (prefer ENV for redirect URIs)"
+    ],
+    "files": {
+      "create": [],
+      "update": [
+        "package.json"
+      ],
+      "delete": []
+    },
+    "implementation_notes": {
+      "dependency": {
+        "package": "openid-client",
+        "reason": "Authorization Code + PKCE, discovery, userinfo, RP-initiated logout"
+      },
+      "env_keys": [
+        "OIDC_ISSUER",
+        "OIDC_CLIENT_ID",
+        "OIDC_CLIENT_SECRET (optional)",
+        "OIDC_REDIRECT_URI",
+        "OIDC_POST_LOGOUT_REDIRECT_URI",
+        "OIDC_SCOPE",
+        "OIDC_ROLES_CLAIM_PATH"
+      ]
+    },
+    "acceptance_criteria": [
+      "Project installs and builds with openid-client added",
+      "ENV keys are referenced consistently from server-side auth code (no hardcoded issuer/client values)"
+    ],
+    "tests": {
+      "unit": [],
+      "e2e": []
+    },
+    "verification_commands": [
+      "npm run check",
+      "npm run build"
+    ]
+  },
+  {
+    "id": "auth-oidc-02",
+    "title": "Define SvelteKit locals user typing",
+    "goal": "Type `event.locals.user` to carry authenticated identity + role and optionally id_token for SSO logout.",
+    "global_constraints": {
+      "allowed_roles": [
+        "applicant",
+        "processor"
+      ],
+      "logout": "Needs id_token_hint support (store idToken in session)"
+    },
+    "scope": [
+      "Add/extend types in src/app.d.ts for locals.user"
+    ],
+    "files": {
+      "create": [],
+      "update": [
+        "src/app.d.ts"
+      ],
+      "delete": []
+    },
+    "implementation_notes": {
+      "locals_user_shape": {
+        "id": "string",
+        "name": "string",
+        "role": "applicant|processor",
+        "idToken": "string (optional but required for SSO logout redirect URL)"
+      }
+    },
+    "acceptance_criteria": [
+      "TypeScript recognizes `event.locals.user` in hooks/routes without `any`",
+      "Role type is constrained to applicant|processor"
+    ],
+    "tests": {
+      "unit": [],
+      "e2e": []
+    },
+    "verification_commands": [
+      "npm run check"
+    ]
+  },
+  {
+    "id": "auth-oidc-03",
+    "title": "Implement server-side session service (in-memory + httpOnly cookie)",
+    "goal": "Create minimal session storage to persist authenticated user between requests and support logout.",
+    "global_constraints": {
+      "session_storage": "In-memory only (no DB/Redis in this iteration)",
+      "cookie_security": "httpOnly, SameSite=Lax, secure in production, path=/"
+    },
+    "scope": [
+      "Create session store module (Map-based)",
+      "Create helpers for create/get/delete session",
+      "TTL handling (e.g., fixed maxAge)"
+    ],
+    "files": {
+      "create": [
+        "src/lib/server/services/auth/session.ts",
+        "src/lib/server/services/auth/session.test.ts"
+      ],
+      "update": [],
+      "delete": []
+    },
+    "implementation_notes": {
+      "cookie_name": "session",
+      "pseudocode": [
+        "createSession(cookies, user): sessionId = crypto.randomUUID(); store.set(sessionId,{user,expiresAt}); cookies.set('session', sessionId, {httpOnly:true,sameSite:'lax',path:'/',secure:isProd,maxAge}); return sessionId;",
+        "getSession(sessionId): lookup; if missing return null; if expired delete and return null; return user;",
+        "deleteSession(cookies, sessionId): store.delete(sessionId); cookies.delete('session',{path:'/'});"
+      ]
+    },
+    "acceptance_criteria": [
+      "Session can be created and read across requests via cookie",
+      "Expired sessions are treated as logged out"
+    ],
+    "tests": {
+      "unit": [
+        "create/get/delete session",
+        "TTL expiration removes/invalidates session"
+      ],
+      "e2e": []
+    },
+    "verification_commands": [
+      "npm run test",
+      "npm run check"
+    ]
+  },
+  {
+    "id": "auth-oidc-04",
+    "title": "Implement OIDC service (discovery, auth URL, token exchange, role extraction, logout URL)",
+    "goal": "Provide reusable, testable OIDC primitives for login callback and provider logout, including configurable role claim mapping.",
+    "global_constraints": {
+      "allowed_roles": [
+        "applicant",
+        "processor"
+      ],
+      "roles_claim_path": "Configurable via OIDC_ROLES_CLAIM_PATH",
+      "logout": "RP-initiated logout via end_session_endpoint with id_token_hint"
+    },
+    "depends_on": [
+      "auth-oidc-01"
+    ],
+    "scope": [
+      "OIDC discovery via issuer URL",
+      "PKCE auth URL generation",
+      "Callback token exchange (authorizationCodeGrant)",
+      "Role extraction via dot-path traversal",
+      "Provider logout URL (buildEndSessionUrl)"
+    ],
+    "files": {
+      "create": [
+        "src/lib/server/services/auth/oidc.ts",
+        "src/lib/server/services/auth/oidc.test.ts"
+      ],
+      "update": [],
+      "delete": []
+    },
+    "implementation_notes": {
+      "pseudocode": [
+        "config = await client.discovery(new URL(process.env.OIDC_ISSUER), process.env.OIDC_CLIENT_ID, ...)",
+        "codeVerifier = client.randomPKCECodeVerifier(); codeChallenge = await client.calculatePKCECodeChallenge(codeVerifier); state = client.randomState(); url = client.buildAuthorizationUrl(config,{redirect_uri,scope,code_challenge:codeChallenge,code_challenge_method:'S256',state})",
+        "tokens = await client.authorizationCodeGrant(config, request, { pkceCodeVerifier: codeVerifier, expectedState: state })",
+        "logoutUrl = client.buildEndSessionUrl(config,{post_logout_redirect_uri,id_token_hint:idToken})"
+      ],
+      "role_extraction": {
+        "input": "claims object (id_token claims and/or userinfo)",
+        "config": "OIDC_ROLES_CLAIM_PATH",
+        "behavior": "Traverse dot-path, normalize to string[], filter to allowed_roles, return roles[]"
+      }
+    },
+    "acceptance_criteria": [
+      "Auth URL generation returns url + codeVerifier (+ optional state)",
+      "Token exchange returns idToken and extracted roles (filtered to allowed roles)",
+      "Logout URL builder includes post_logout_redirect_uri and id_token_hint when configured"
+    ],
+    "tests": {
+      "unit": [
+        "Role extraction: supports dot-path traversal and normalization",
+        "Role extraction: filters to applicant/processor",
+        "Logout URL builder: includes required parameters (mocked config)"
+      ],
+      "e2e": []
+    },
+    "verification_commands": [
+      "npm run test",
+      "npm run check"
+    ]
+  },
+  {
+    "id": "auth-oidc-05",
+    "title": "Implement login, callback, and logout routes (server) + login page (UI)",
+    "goal": "Provide the end-to-end OIDC redirect and callback flow plus logout endpoint, without auto-redirecting on protected page access.",
+    "global_constraints": {
+      "public_routes": [
+        "/",
+        "/login",
+        "/auth/callback",
+        "/logout"
+      ],
+      "frontend_behavior": "User explicitly clicks Login; protected pages do not auto-redirect to login",
+      "logout": "Delete app session then redirect to provider end_session_endpoint",
+      "temporary_cookies": "Store PKCE verifier/state in short-lived httpOnly cookies"
+    },
+    "depends_on": [
+      "auth-oidc-03",
+      "auth-oidc-04",
+      "auth-oidc-02"
+    ],
+    "scope": [
+      "Login page with Login button",
+      "Login server endpoint that redirects to provider and sets PKCE/state cookies",
+      "Callback endpoint to exchange code, validate role, create session",
+      "Logout endpoint to delete session and redirect to provider logout"
+    ],
+    "files": {
+      "create": [
+        "src/routes/login/+page.svelte",
+        "src/routes/login/+server.ts",
+        "src/routes/auth/callback/+server.ts",
+        "src/routes/logout/+server.ts"
+      ],
+      "update": [],
+      "delete": []
+    },
+    "implementation_notes": {
+      "testids": [
+        "auth-login-button"
+      ],
+      "temporary_cookies": [
+        "pkce_verifier (httpOnly, maxAge ~300s)",
+        "oidc_state (httpOnly, maxAge ~300s)",
+        "returnTo (optional, httpOnly, maxAge ~300s)"
+      ],
+      "role_validation": "If no valid role extracted (applicant/processor), treat as forbidden (403) and show UI message via error handling."
+    },
+    "acceptance_criteria": [
+      "GET /login renders a page with a Login action (data-testid auth-login-button)",
+      "GET /login (server) redirects to provider and stores PKCE verifier/state",
+      "GET /auth/callback creates app session on success and clears temporary cookies",
+      "GET /logout clears app session and redirects to provider logout endpoint"
+    ],
+    "tests": {
+      "unit": [],
+      "e2e": [
+        "At minimum: navigation to /login shows Login button",
+        "Optional: verify /logout redirects (URL contains provider end_session endpoint when configured)"
+      ]
+    },
+    "verification_commands": [
+      "npm run build",
+      "npm run test:e2e"
+    ]
+  },
+  {
+    "id": "auth-oidc-06",
+    "title": "Add central AuthN/AuthZ enforcement in src/hooks.server.ts",
+    "goal": "Enforce authentication and authorization consistently for pages and API routes with the required redirect/no-redirect behavior.",
+    "global_constraints": {
+      "api_behavior": "No redirects; use 401/403",
+      "frontend_behavior": "No auto-redirect to /login; show error message with login link",
+      "protected_scope": "Everything except /, /login, /auth/callback, /logout"
+    },
+    "depends_on": [
+      "auth-oidc-03",
+      "auth-oidc-02"
+    ],
+    "scope": [
+      "Load session from cookie and populate locals.user",
+      "Public vs protected routing rules",
+      "Role checks for applicant vs processor areas",
+      "API behavior 401/403 with JSON or SvelteKit error"
+    ],
+    "files": {
+      "create": [
+        "src/hooks.server.ts"
+      ],
+      "update": [],
+      "delete": []
+    },
+    "implementation_notes": {
+      "role_rules": [
+        "Paths starting with /applications require role applicant",
+        "Paths starting with /processor require role processor"
+      ],
+      "page_behavior": [
+        "If not logged in and protected page: throw error(401, 'Login erforderlich')",
+        "If wrong role on protected page: throw error(403, 'Keine Berechtigung')"
+      ],
+      "api_behavior": [
+        "If not logged in: return/throw 401",
+        "If wrong role: return/throw 403",
+        "Never redirect for /api/**"
+      ]
+    },
+    "acceptance_criteria": [
+      "Protected pages return 401/403 instead of redirecting to /login",
+      "Protected API routes return 401/403 and never redirect",
+      "Correct role separation between /applications and /processor"
+    ],
+    "tests": {
+      "unit": [],
+      "e2e": [
+        "Visiting /applications without login shows 401 UI (via error page)",
+        "Visiting /processor without login shows 401 UI (via error page)"
+      ]
+    },
+    "verification_commands": [
+      "npm run check",
+      "npm run build",
+      "npm run test:e2e"
+    ]
+  },
+  {
+    "id": "auth-oidc-07",
+    "title": "Implement global error UI for 401/403 and remove client-side auto-redirect guards",
+    "goal": "Ensure the frontend shows a clear message (not an automatic redirect) for unauthorized/forbidden access, and provide a login link.",
+    "global_constraints": {
+      "frontend_behavior": "No automatic redirect to login",
+      "message_requirement": "Show 'Login erforderlich' for 401 and 'Keine Berechtigung' for 403, each with link to /login"
+    },
+    "depends_on": [
+      "auth-oidc-06",
+      "auth-oidc-05"
+    ],
+    "scope": [
+      "Create src/routes/+error.svelte for 401/403 handling",
+      "Add stable data-testid selectors",
+      "Remove or change existing client-side role redirect logic (RoleGuard component) so it does not navigate automatically"
+    ],
+    "files": {
+      "create": [
+        "src/routes/+error.svelte"
+      ],
+      "update": [
+        "src/lib/components/RoleGuard.svelte"
+      ],
+      "delete": []
+    },
+    "implementation_notes": {
+      "testids": [
+        "auth-error-unauthorized",
+        "auth-error-forbidden",
+        "auth-error-login-link"
+      ],
+      "role_guard_change": "Remove goto-based redirect effect; it may still render an informative message, but must not auto-navigate."
+    },
+    "acceptance_criteria": [
+      "401 on pages renders an error UI with login link (no auto-redirect)",
+      "403 on pages renders 'Keine Berechtigung' UI with login link (no auto-redirect)",
+      "RoleGuard no longer triggers automatic navigation"
+    ],
+    "tests": {
+      "unit": [],
+      "e2e": [
+        "Unauthorized page shows auth-error-unauthorized",
+        "Forbidden page shows auth-error-forbidden"
+      ]
+    },
+    "verification_commands": [
+      "npm run build",
+      "npm run test:e2e"
+    ]
+  },
+  {
+    "id": "auth-oidc-08",
+    "title": "Expose authenticated user to the UI and update layout to show login/logout state",
+    "goal": "Replace the current client-side role cookie store usage with server-provided user state and show login/logout affordances.",
+    "global_constraints": {
+      "roles_source_of_truth": "OIDC Provider only",
+      "remove_debug_role_auth": "Existing role cookie switcher must not be the auth source"
+    },
+    "depends_on": [
+      "auth-oidc-06",
+      "auth-oidc-05"
+    ],
+    "scope": [
+      "Create +layout.server.ts to return user from locals",
+      "Update +layout.svelte to render login link when logged out and logout link when logged in",
+      "Stop using currentUser/isApplicant/isProcessor from role.ts for auth decisions"
+    ],
+    "files": {
+      "create": [
+        "src/routes/+layout.server.ts"
+      ],
+      "update": [
+        "src/routes/+layout.svelte"
+      ],
+      "delete": []
+    },
+    "implementation_notes": {
+      "ui_requirements": [
+        "If user is null: show link to /login",
+        "If user exists: show user name + role + link to /logout"
+      ],
+      "note_on_existing_store": "role.ts and RoleSwitcher currently control UI/role; after this task, UI should be based on server session data instead."
+    },
+    "acceptance_criteria": [
+      "Layout correctly reflects logged-in/logged-out state",
+      "Logout link is available when logged in",
+      "Navigation does not depend on risk-management-user-role cookie anymore"
+    ],
+    "tests": {
+      "unit": [],
+      "e2e": [
+        "Logged-out state shows login link",
+        "After successful login, layout shows user info and logout link"
+      ]
+    },
+    "verification_commands": [
+      "npm run build",
+      "npm run test:e2e"
+    ]
+  },
+  {
+    "id": "auth-oidc-09",
+    "title": "Update page server loads/actions and API routes to use locals.user and enforce access rules",
+    "goal": "Remove userId/role cookie fallbacks from server-side logic and ensure API returns proper 401/403 instead of relying on redirects.",
+    "global_constraints": {
+      "api_behavior": "401/403 only, no redirects",
+      "no_default_user": "Do not fallback to applicant-1/processor-1 for protected functionality"
+    },
+    "depends_on": [
+      "auth-oidc-06",
+      "auth-oidc-02"
+    ],
+    "scope": [
+      "Replace usage of cookies.get('userId') fallback with locals.user.id",
+      "Ensure routes fail predictably when locals.user missing (should be prevented by hooks)",
+      "Optionally add explicit role checks for API handlers where needed (defense in depth)"
+    ],
+    "files": {
+      "create": [],
+      "update": [
+        "src/routes/applications/+page.server.ts",
+        "src/routes/applications/new/+page.server.ts",
+        "src/routes/processor/+page.server.ts",
+        "src/routes/processor/[id]/+page.server.ts",
+        "src/routes/applications/[id]/+page.server.ts",
+        "src/routes/applications/[id]/edit/+page.server.ts",
+        "src/routes/api/applications/[id]/+server.ts"
+      ],
+      "delete": []
+    },
+    "implementation_notes": {
+      "examples_to_change": [
+        "Replace `const userId = cookies.get('userId') || 'applicant-1'` with `const userId = locals.user.id`",
+        "Ensure API handlers return errors for missing/unauthorized access instead of silently succeeding"
+      ]
+    },
+    "acceptance_criteria": [
+      "No server route uses fallback userId values for protected operations",
+      "API endpoints respond with 401/403 when not authenticated/authorized",
+      "Applicant vs processor access boundaries are enforced server-side"
+    ],
+    "tests": {
+      "unit": [],
+      "e2e": [
+        "Calling protected API without auth fails with 401",
+        "Calling role-restricted API with wrong role fails with 403 (if applicable)"
+      ]
+    },
+    "verification_commands": [
+      "npm run test",
+      "npm run test:e2e"
+    ]
+  },
+  {
+    "id": "auth-oidc-10",
+    "title": "Update Playwright E2E tests for OIDC-based auth and non-redirect access behavior",
+    "goal": "Replace legacy role-cookie test setup with a flow compatible with OIDC sessions and validate new UX requirements (messages instead of auto-redirect).",
+    "global_constraints": {
+      "selector_strategy": "Prefer data-testid selectors",
+      "e2e_policy": "Do not add workarounds that make tests pass without testing real functionality",
+      "frontend_behavior": "No auto-redirect to /login"
+    },
+    "depends_on": [
+      "auth-oidc-07",
+      "auth-oidc-08",
+      "auth-oidc-06"
+    ],
+    "scope": [
+      "Remove setting `risk-management-user-role` cookie in e2e tests",
+      "Add new tests for unauthorized/forbidden UI via +error.svelte",
+      "Decide test strategy for OIDC provider in CI/local (real provider or agreed test IdP setup)"
+    ],
+    "files": {
+      "create": [],
+      "update": [
+        "e2e/applicant.test.ts",
+        "e2e/processor.test.ts"
+      ],
+      "delete": []
+    },
+    "implementation_notes": {
+      "required_updates": [
+        "Replace role cookie setup with navigating to /login and using auth-login-button (and provider login if available)",
+        "Add assertions for auth-error-unauthorized/auth-error-forbidden and auth-error-login-link",
+        "Where selectors are not stable, add/adjust data-testid in UI (only for interactive elements and messages)"
+      ],
+      "oidc_test_dependency": "Running full OIDC login in E2E requires a locally reachable IdP during tests; coordinate how it will be started/configured."
+    },
+    "acceptance_criteria": [
+      "E2E no longer depends on risk-management-user-role cookie",
+      "E2E validates that protected pages show message with login link instead of auto-redirect",
+      "Core applicant and processor journeys remain covered after auth changes"
+    ],
+    "tests": {
+      "unit": [],
+      "e2e": [
+        "Unauthorized access shows message + login link",
+        "Role separation shows forbidden message + login link"
+      ]
+    },
+    "verification_commands": [
+      "npm run test:e2e"
+    ]
+  }
+]

@@ -1,7 +1,9 @@
-import { eq, and } from 'drizzle-orm';
-import { db, applications } from '../db';
-import type { Application, NewApplication, ApplicationStatus } from '../db/schema';
-import { calculateScore } from './scoring';
+import { eq, and, desc, count } from 'drizzle-orm';
+import { db, applications } from '../../db';
+import type { Application, NewApplication, ApplicationStatus } from '../../db/schema';
+import { calculateScore } from '../scoring';
+
+export const PAGE_SIZE = 10;
 
 export async function createApplication(data: Omit<NewApplication, 'id' | 'createdAt' | 'score' | 'trafficLight' | 'scoringReasons'>): Promise<Application> {
 	const scoring = calculateScore(
@@ -129,6 +131,57 @@ export async function getApplicationsByStatus(status: ApplicationStatus): Promis
 
 export async function getAllApplications(): Promise<Application[]> {
 	return db.select().from(applications).all();
+}
+
+export async function getProcessorApplicationsPaginated(params: {
+	status?: ApplicationStatus;
+	page: number;
+	pageSize: number;
+}): Promise<{ items: Application[]; totalCount: number }> {
+	const whereClause = params.status ? eq(applications.status, params.status) : undefined;
+	const totalQuery = db.select({ value: count() }).from(applications);
+	const totalResult = whereClause ? totalQuery.where(whereClause).get() : totalQuery.get();
+	const totalCount = totalResult?.value ?? 0;
+	const itemsQuery = db
+		.select()
+		.from(applications)
+		.orderBy(desc(applications.createdAt))
+		.limit(params.pageSize)
+		.offset((params.page - 1) * params.pageSize);
+	const items = whereClause ? itemsQuery.where(whereClause).all() : itemsQuery.all();
+
+	return { items, totalCount };
+}
+
+export async function getProcessorApplicationStats(): Promise<{
+	total: number;
+	submitted: number;
+	approved: number;
+	rejected: number;
+}> {
+	const total = db.select({ value: count() }).from(applications).get()?.value ?? 0;
+	const submitted = db
+		.select({ value: count() })
+		.from(applications)
+		.where(eq(applications.status, 'submitted'))
+		.get()?.value ?? 0;
+	const approved = db
+		.select({ value: count() })
+		.from(applications)
+		.where(eq(applications.status, 'approved'))
+		.get()?.value ?? 0;
+	const rejected = db
+		.select({ value: count() })
+		.from(applications)
+		.where(eq(applications.status, 'rejected'))
+		.get()?.value ?? 0;
+
+	return {
+		total,
+		submitted,
+		approved,
+		rejected
+	};
 }
 
 export async function deleteApplication(id: number): Promise<boolean> {

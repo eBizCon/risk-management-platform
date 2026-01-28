@@ -48,7 +48,7 @@
 	<title>Antrag #{app.id} - Risikomanagement</title>
 </svelte:head>
 
-<RoleGuard requiredRole="applicant" redirectTo="/processor">
+<RoleGuard requiredRole="applicant">
 <div class="space-y-6">
 	<div class="flex items-center justify-between">
 		<div class="flex items-center gap-4">

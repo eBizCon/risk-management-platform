@@ -41,7 +41,7 @@
 	<title>Antrag #{app.id} prüfen - Risikomanagement</title>
 </svelte:head>
 
-<RoleGuard requiredRole="processor" redirectTo="/applications">
+<RoleGuard requiredRole="processor">
 <div class="space-y-6">
 	<div class="flex items-center gap-4">
 		<a

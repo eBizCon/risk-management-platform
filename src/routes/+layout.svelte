@@ -1,10 +1,12 @@
 <script lang="ts">
 	import '../app.css';
-	import { currentUser, isApplicant, isProcessor } from '$lib/stores/role';
-	import RoleSwitcher from '$lib/components/RoleSwitcher.svelte';
-	import { FileText, ClipboardList, Home } from 'lucide-svelte';
+	import { FileText, ClipboardList, Home, LogIn, LogOut } from 'lucide-svelte';
 
-	let { children } = $props();
+	let { data, children } = $props();
+
+	const user = $derived(data.user ?? null);
+	const isApplicant = $derived(user?.role === 'applicant');
+	const isProcessor = $derived(user?.role === 'processor');
 </script>
 
 <div class="min-h-screen page-bg">
@@ -25,7 +27,7 @@
 							<Home class="w-4 h-4 mr-2" />
 							Startseite
 						</a>
-						{#if $isApplicant}
+						{#if isApplicant}
 							<a
 								href="/applications"
 								class="nav-link inline-flex items-center px-3 py-2 text-sm font-medium rounded-md"
@@ -41,7 +43,7 @@
 								Neuer Antrag
 							</a>
 						{/if}
-						{#if $isProcessor}
+						{#if isProcessor}
 							<a
 								href="/processor"
 								class="nav-link inline-flex items-center px-3 py-2 text-sm font-medium rounded-md"
@@ -52,12 +54,22 @@
 						{/if}
 					</div>
 				</div>
-				<div class="flex items-center">
-					<div class="text-sm text-secondary">
-						<span class="font-medium text-primary">{$currentUser.name}</span>
-						<span class="mx-1">|</span>
-						<span>{$isApplicant ? 'Antragsteller' : 'Antragsbearbeiter'}</span>
-					</div>
+				<div class="flex items-center gap-4">
+					{#if user}
+						<div class="text-sm text-secondary text-right">
+							<div class="font-medium text-primary">{user.name}</div>
+							<div>{isApplicant ? 'Antragsteller' : 'Antragsbearbeiter'}</div>
+						</div>
+						<a href="/logout" class="btn-secondary inline-flex items-center px-3 py-2" data-testid="nav-logout">
+							<LogOut class="w-4 h-4 mr-2" />
+							Logout
+						</a>
+					{:else}
+						<a href="/login" class="btn-primary inline-flex items-center px-3 py-2" data-testid="nav-login">
+							<LogIn class="w-4 h-4 mr-2" />
+							Login
+						</a>
+					{/if}
 				</div>
 			</div>
 		</div>
@@ -66,6 +78,4 @@
 	<main class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
 		{@render children()}
 	</main>
-
-	<RoleSwitcher />
 </div>

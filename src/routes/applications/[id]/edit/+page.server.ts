@@ -1,10 +1,18 @@
 import type { PageServerLoad, Actions } from './$types';
 import { error, fail, redirect } from '@sveltejs/kit';
-import { getApplicationById, updateApplication, submitApplication } from '$lib/server/services/repository';
+import { getApplicationById, updateApplication, submitApplication } from '$lib/server/services/repositories/application.repository';
 import { applicationWithBusinessRulesSchema } from '$lib/server/services/validation';
 import { ZodError } from 'zod';
 
-export const load: PageServerLoad = async ({ params }) => {
+export const load: PageServerLoad = async ({ params, locals }) => {
+	if (!locals.user) {
+		throw error(401, 'Login erforderlich');
+	}
+
+	if (locals.user.role !== 'applicant') {
+		throw error(403, 'Keine Berechtigung');
+	}
+
 	const id = parseInt(params.id);
 	
 	if (isNaN(id)) {
@@ -17,6 +25,10 @@ export const load: PageServerLoad = async ({ params }) => {
 		throw error(404, 'Antrag nicht gefunden');
 	}
 
+	if (application.createdBy !== locals.user.id) {
+		throw error(403, 'Keine Berechtigung');
+	}
+
 	if (application.status !== 'draft') {
 		throw error(403, 'Nur Entwürfe können bearbeitet werden');
 	}
@@ -27,7 +39,15 @@ export const load: PageServerLoad = async ({ params }) => {
 };
 
 export const actions: Actions = {
-	default: async ({ request, params }) => {
+	default: async ({ request, params, locals }) => {
+		if (!locals.user) {
+			throw error(401, 'Login erforderlich');
+		}
+
+		if (locals.user.role !== 'applicant') {
+			throw error(403, 'Keine Berechtigung');
+		}
+
 		const id = parseInt(params.id);
 		const formData = await request.formData();
 		
@@ -41,6 +61,11 @@ export const actions: Actions = {
 		};
 
 		try {
+			const existing = await getApplicationById(id);
+			if (!existing || existing.createdBy !== locals.user.id) {
+				throw error(403, 'Keine Berechtigung');
+			}
+
 			const validatedData = applicationWithBusinessRulesSchema.parse(rawData);
 			const action = formData.get('action');
 
