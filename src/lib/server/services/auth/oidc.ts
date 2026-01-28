@@ -1,3 +1,4 @@
+import { dev } from '$app/environment';
 import * as client from 'openid-client';
 import { OIDC_ALLOWED_ROLES, getOidcEnv, type OidcEnvConfig } from './env';
 
@@ -24,7 +25,13 @@ export const getOidcConfiguration = async (): Promise<OidcConfiguration> => {
 	if (!configCache) {
 		configCache = (async () => {
 			const env = getOidcEnv();
-			const configuration = await client.discovery(new URL(env.issuer), env.clientId, env.clientSecret);
+			const configuration = await client.discovery(
+				new URL(env.issuer),
+				env.clientId,
+				env.clientSecret,
+				undefined,
+				dev ? { execute: [client.allowInsecureRequests] } : undefined
+			);
 			return { config: configuration, env };
 		})();
 	}
@@ -61,14 +68,19 @@ export const exchangeAuthorizationCode = async (
 		expectedState: params.expectedState
 	});
 
-	const claims = tokens.claims();
 	const idToken = tokens.id_token;
 	if (!idToken) {
 		throw new Error('Missing id_token in token response');
 	}
 
-	const roles = extractRolesFromClaims(claims, env.rolesClaimPath, OIDC_ALLOWED_ROLES);
+	const accessToken = tokens.access_token;
+	if (!accessToken) {
+		throw new Error('Missing access_token in token response');
+	}
 
+	const accessClaims = decodeJwtPayload(accessToken);
+	const roles = extractRolesFromClaims(accessClaims, env.rolesClaimPath, OIDC_ALLOWED_ROLES);
+	console.log(roles);
 	return { tokens, idToken, roles };
 };
 
@@ -86,6 +98,19 @@ export const buildLogoutUrl = async (idToken: string): Promise<string | null> =>
 	});
 
 	return url.toString();
+};
+
+const decodeJwtPayload = (token: string): unknown => {
+	const parts = token.split('.');
+	if (parts.length < 2) {
+		throw new Error('Invalid JWT format for access_token');
+	}
+
+	const payload = parts[1];
+	const padded = payload.padEnd(payload.length + ((4 - (payload.length % 4)) % 4), '=');
+	const normalized = padded.replace(/-/g, '+').replace(/_/g, '/');
+	const json = Buffer.from(normalized, 'base64').toString('utf8');
+	return JSON.parse(json) as unknown;
 };
 
 export const extractRolesFromClaims = (

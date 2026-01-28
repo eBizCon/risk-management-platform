@@ -18,6 +18,7 @@ export const GET: RequestHandler = async ({ request, cookies }) => {
   }
 
   const { tokens, idToken, roles } = await exchangeAuthorizationCode(request, { codeVerifier, expectedState });
+  console.log({tokens, idToken, roles})
 
   if (!roles.length) {
     deleteTempCookies(cookies);
