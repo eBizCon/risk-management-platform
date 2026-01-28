@@ -80,7 +80,6 @@ export const exchangeAuthorizationCode = async (
 
 	const accessClaims = decodeJwtPayload(accessToken);
 	const roles = extractRolesFromClaims(accessClaims, env.rolesClaimPath, OIDC_ALLOWED_ROLES);
-	console.log(roles);
 	return { tokens, idToken, roles };
 };
 
