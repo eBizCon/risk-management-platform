@@ -24,3 +24,7 @@ Strukturierter Workflow von einem initialen Input bis zu einer freigegebenen Ums
   - Ask the user if they want to document the plan
   - If yes, ask the user to provide a file name and location for the document
   - Create the document with the plan
+4. Ask the user if they want to create a task list for the plan
+  - If yes, ask the user to provide a file name and location for the task list. The default location is backlog/implementation/<user-story-name>/<user-story-name>-tasks.json
+  - if no, continue without creating a task list
+  - Create the task list for the given location
