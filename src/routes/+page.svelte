@@ -13,15 +13,15 @@
 
 <div class="space-y-8">
 	<div class="text-center">
-		<h1 class="text-4xl font-bold text-primary mb-4">
+		<h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-primary mb-4">
 			Willkommen zur Risikomanagement-Plattform
 		</h1>
-		<p class="text-xl text-secondary max-w-2xl mx-auto">
+		<p class="text-lg sm:text-xl text-secondary max-w-2xl mx-auto">
 			Ihre zentrale Anlaufstelle für die Beantragung und Bearbeitung von Kreditanträgen mit automatischer Risikobewertung.
 		</p>
 	</div>
 
-	<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
+	<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-12">
 		<div class="card p-6">
 			<div class="w-12 h-12 rounded-lg flex items-center justify-center mb-4 bg-brand-primary-soft text-brand-primary">
 				<Shield class="w-6 h-6" />
@@ -59,10 +59,10 @@
 			<p class="text-secondary mb-6">
 				Erstellen Sie neue Kreditanträge, speichern Sie Entwürfe und verfolgen Sie den Status Ihrer eingereichten Anträge.
 			</p>
-			<div class="flex flex-wrap gap-4">
+			<div class="flex flex-col sm:flex-row gap-4">
 				<a
 					href="/applications/new"
-					class="btn-primary inline-flex items-center px-6 py-3"
+					class="btn-primary inline-flex items-center px-6 py-3 w-full sm:w-auto"
 				>
 					<FileText class="w-5 h-5 mr-2" />
 					Neuen Antrag erstellen
@@ -70,7 +70,7 @@
 				</a>
 				<a
 					href="/applications"
-					class="btn-secondary inline-flex items-center px-6 py-3"
+					class="btn-secondary inline-flex items-center px-6 py-3 w-full sm:w-auto"
 				>
 					Meine Anträge ansehen
 				</a>
@@ -80,20 +80,22 @@
 			<p class="text-secondary mb-6">
 				Prüfen Sie eingereichte Anträge, treffen Sie fundierte Entscheidungen und verfolgen Sie die Bearbeitungshistorie.
 			</p>
-			<a
-				href="/processor"
-				class="btn-primary inline-flex items-center px-6 py-3"
-			>
-				<ClipboardCheck class="w-5 h-5 mr-2" />
-				Anträge bearbeiten
-				<ArrowRight class="w-5 h-5 ml-2" />
-			</a>
+			<div class="flex flex-col sm:flex-row gap-4">
+				<a
+					href="/processor"
+					class="btn-primary inline-flex items-center px-6 py-3 w-full sm:w-auto"
+				>
+					<ClipboardCheck class="w-5 h-5 mr-2" />
+					Anträge bearbeiten
+					<ArrowRight class="w-5 h-5 ml-2" />
+				</a>
+			</div>
 		{:else}
 			<h2 class="text-2xl font-bold text-primary mb-4">Starten Sie jetzt</h2>
 			<p class="text-secondary mb-6">
 				Melden Sie sich an, um Anträge zu stellen oder zu bearbeiten.
 			</p>
-			<a href="/login" class="btn-primary inline-flex items-center px-6 py-3" data-testid="hero-login">
+			<a href="/login" class="btn-primary inline-flex items-center px-6 py-3 w-full sm:w-auto" data-testid="hero-login">
 				<LogIn class="w-5 h-5 mr-2" />
 				Zum Login
 				<ArrowRight class="w-5 h-5 ml-2" />

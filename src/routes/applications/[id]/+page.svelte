@@ -58,8 +58,9 @@
 </svelte:head>
 
 <RoleGuard requiredRole="applicant">
+
 <div class="space-y-6">
-	<div class="flex items-center justify-between">
+	<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
 		<div class="flex items-center gap-4">
 			<a
 				href="/applications"
@@ -74,10 +75,10 @@
 			</div>
 		</div>
 		{#if app.status === 'draft'}
-			<div class="flex gap-3">
+			<div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
 				<a
 					href="/applications/{app.id}/edit"
-					class="btn-secondary inline-flex items-center px-4 py-2"
+					class="btn-secondary inline-flex items-center px-4 py-2 w-full sm:w-auto"
 					data-testid="edit-application"
 				>
 					<Edit class="w-4 h-4 mr-2" />
@@ -86,7 +87,7 @@
 				<button
 					data-testid="submit-application"
 					onclick={handleOpenConfirm}
-					class="btn-primary inline-flex items-center px-4 py-2"
+					class="btn-primary inline-flex items-center px-4 py-2 w-full sm:w-auto"
 				>
 					<Send class="w-4 h-4 mr-2" />
 					Einreichen
@@ -101,7 +102,7 @@
 		</div>
 	{/if}
 
-	<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+	<div class="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-3 gap-6">
 		<div class="lg:col-span-2 space-y-6">
 			<div class="card p-6">
 				<h2 class="text-lg font-semibold text-primary mb-4">Persönliche Daten</h2>
@@ -123,7 +124,7 @@
 
 			<div class="card p-6">
 				<h2 class="text-lg font-semibold text-primary mb-4">Finanzielle Details</h2>
-				<dl class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+				<dl class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 					<div>
 						<dt class="dl-label">Monatliches Einkommen</dt>
 						<dd class="mt-1 dl-value">{formatCurrency(app.income)}</dd>
@@ -136,7 +137,7 @@
 						<dt class="dl-label">Verfügbares Einkommen</dt>
 						<dd class="mt-1 dl-value font-medium">{formatCurrency(app.income - app.fixedCosts)}</dd>
 					</div>
-					<div class="sm:col-span-3">
+					<div class="sm:col-span-2">
 						<dt class="dl-label">Gewünschte Rate</dt>
 						<dd class="mt-1 text-lg text-primary font-semibold">{formatCurrency(app.desiredRate)}</dd>
 					</div>
@@ -145,7 +146,7 @@
 
 			<div class="card p-6">
 				<h2 class="text-lg font-semibold text-primary mb-4">Zeitstempel</h2>
-				<dl class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+				<dl class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 					<div>
 						<dt class="dl-label">Erstellt am</dt>
 						<dd class="mt-1 dl-value">{formatDate(app.createdAt)}</dd>

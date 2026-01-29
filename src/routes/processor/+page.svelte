@@ -51,7 +51,7 @@
 		<p class="text-secondary mt-1">Übersicht aller eingereichten Kreditanträge</p>
 	</div>
 
-	<div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+	<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
 		<div class="card p-4">
 			<div class="flex items-center gap-3">
 				<div class="w-10 h-10 stat-icon-neutral rounded-lg flex items-center justify-center">
@@ -99,8 +99,8 @@
 	</div>
 
 	<div class="card">
-		<div class="p-4 border-b border-default">
-			<div class="flex items-center gap-4">
+		<div class="px-4 py-4 border-b border-default">
+			<div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
 				<Filter class="w-5 h-5 text-secondary" />
 				<select
 					onchange={handleFilterChange}

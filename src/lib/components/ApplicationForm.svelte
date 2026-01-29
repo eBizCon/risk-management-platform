@@ -68,7 +68,7 @@
 		{/if}
 	</div>
 
-	<div class="grid grid-cols-1 gap-6 sm:grid-cols-3">
+	<div class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
 		<div>
 			<label for="income" class="form-label block">Monatliches Einkommen (EUR)</label>
 			<input
@@ -151,7 +151,7 @@
 	<div>
 		<fieldset>
 			<legend class="form-label block">Zahlungsverzug in der Vergangenheit?</legend>
-			<div class="mt-2 space-x-6 flex">
+			<div class="mt-2 flex flex-col sm:flex-row gap-4 sm:gap-6">
 				<label class="inline-flex items-center">
 					<input
 						type="radio"
@@ -181,13 +181,13 @@
 		{/if}
 	</div>
 
-	<div class="flex justify-end gap-3 pt-4 border-t border-default">
+	<div class="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-default">
 		<button
 			type="submit"
 			name="action"
 			value="save"
 			disabled={isSubmitting}
-			class="btn-secondary"
+			class="btn-secondary w-full sm:w-auto"
 			data-testid="btn-save-draft"
 		>
 			Als Entwurf speichern
@@ -197,7 +197,7 @@
 			name="action"
 			value="submit"
 			disabled={isSubmitting}
-			class="btn-primary"
+			class="btn-primary w-full sm:w-auto"
 			data-testid="btn-submit-application"
 			onclick={handleSubmitClick}
 		>

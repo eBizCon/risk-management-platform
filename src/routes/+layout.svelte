@@ -1,25 +1,45 @@
 <script lang="ts">
 	import '../app.css';
-	import { FileText, ClipboardList, Home, LogIn, LogOut } from 'lucide-svelte';
+	import MobileMenu from '$lib/components/MobileMenu.svelte';
+	import { ClipboardList, FileText, Home, LogIn, LogOut, Menu } from 'lucide-svelte';
 
 	let { data, children } = $props();
 
 	const user = $derived(data.user ?? null);
 	const isApplicant = $derived(user?.role === 'applicant');
 	const isProcessor = $derived(user?.role === 'processor');
+
+	let mobileMenuOpen = $state(false);
+
+	const toggleMobileMenu = () => {
+		mobileMenuOpen = !mobileMenuOpen;
+	};
+
+	const closeMobileMenu = () => {
+		mobileMenuOpen = false;
+	};
 </script>
 
 <div class="min-h-screen page-bg">
 	<nav class="shadow-sm surface-bg border-b border-default">
 		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 			<div class="flex justify-between h-16">
-				<div class="flex">
-					<div class="flex-shrink-0 flex items-center">
+				<div class="flex items-center gap-3">
+					<button
+						type="button"
+						class="sm:hidden btn-secondary inline-flex items-center justify-center w-10 h-10"
+						onclick={toggleMobileMenu}
+						data-testid="nav-mobile-toggle"
+						aria-label="Menü öffnen"
+					>
+						<Menu class="w-5 h-5" />
+					</button>
+					<div class="shrink-0 flex items-center">
 						<a href="/" class="text-xl font-bold text-brand">
 							Risikomanagement
 						</a>
 					</div>
-					<div class="hidden sm:ml-8 sm:flex sm:space-x-4">
+					<div class="hidden sm:ml-8 sm:flex sm:space-x-2">
 						<a
 							href="/"
 							class="nav-link inline-flex items-center px-3 py-2 text-sm font-medium rounded-md"
@@ -74,6 +94,14 @@
 			</div>
 		</div>
 	</nav>
+
+	<MobileMenu
+		isOpen={mobileMenuOpen}
+		onClose={closeMobileMenu}
+		{user}
+		{isApplicant}
+		{isProcessor}
+	/>
 
 	<main class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
 		{@render children()}

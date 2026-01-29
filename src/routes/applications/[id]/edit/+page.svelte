@@ -13,10 +13,10 @@
 
 <RoleGuard requiredRole="applicant">
 <div class="space-y-6">
-	<div class="flex items-center gap-4">
+	<div class="flex flex-col sm:flex-row sm:items-center gap-3">
 		<a
 			href="/applications/{data.application.id}"
-			class="back-link inline-flex items-center"
+			class="back-link inline-flex items-center w-full sm:w-auto"
 		>
 			<ArrowLeft class="w-5 h-5 mr-1" />
 			Zurück
