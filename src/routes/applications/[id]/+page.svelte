@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
+	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
 	import StatusBadge from '$lib/components/StatusBadge.svelte';
 	import ScoreDisplay from '$lib/components/ScoreDisplay.svelte';
 	import RoleGuard from '$lib/components/RoleGuard.svelte';
@@ -13,6 +14,7 @@
 	const app = $derived(data.application);
 	const reasons = $derived(app.scoringReasons ? JSON.parse(app.scoringReasons) : []);
 	const showSubmittedMessage = $derived($page.url.searchParams.get('submitted') === 'true');
+	let showConfirmDialog = $state(false);
 
 	function formatDate(dateString: string | null): string {
 		if (!dateString) return '-';
@@ -32,15 +34,22 @@
 		}).format(value);
 	}
 
-	async function handleSubmit() {
-		if (confirm('Möchten Sie diesen Antrag wirklich einreichen? Nach der Einreichung ist keine Bearbeitung mehr möglich.')) {
-			const response = await fetch(`/api/applications/${app.id}/submit`, {
-				method: 'POST'
-			});
-			if (response.ok) {
-				window.location.reload();
-			}
+	function handleOpenConfirm() {
+		showConfirmDialog = true;
+	}
+
+	async function handleConfirmSubmit() {
+		showConfirmDialog = false;
+		const response = await fetch(`/api/applications/${app.id}/submit`, {
+			method: 'POST'
+		});
+		if (response.ok) {
+			window.location.reload();
 		}
+	}
+
+	function handleCancelSubmit() {
+		showConfirmDialog = false;
 	}
 </script>
 
@@ -76,7 +85,7 @@
 				</a>
 				<button
 					data-testid="submit-application"
-					onclick={handleSubmit}
+					onclick={handleOpenConfirm}
 					class="btn-primary inline-flex items-center px-4 py-2"
 				>
 					<Send class="w-4 h-4 mr-2" />
@@ -172,5 +181,14 @@
 			</div>
 		</div>
 	</div>
+
+	<ConfirmDialog
+		open={showConfirmDialog}
+		message="Möchten Sie diesen Antrag wirklich einreichen? Nach der Einreichung ist keine Bearbeitung mehr möglich."
+		confirmText="Antrag einreichen"
+		cancelText="Abbrechen"
+		onConfirm={handleConfirmSubmit}
+		onCancel={handleCancelSubmit}
+	/>
 </div>
 </RoleGuard>

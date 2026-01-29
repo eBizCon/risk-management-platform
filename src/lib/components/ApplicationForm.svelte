@@ -1,4 +1,5 @@
 <script lang="ts">
+	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
 	import type { Application, EmploymentStatus } from '$lib/types';
 	import { employmentStatusLabels } from '$lib/types';
 	import { enhance } from '$app/forms';
@@ -17,9 +18,35 @@
 		{ value: 'unemployed', label: employmentStatusLabels.unemployed },
 		{ value: 'retired', label: employmentStatusLabels.retired }
 	];
+
+	let showConfirmDialog = $state(false);
+	let pendingAction = $state<'submit' | null>(null);
+	let formRef: HTMLFormElement | null = null;
+	let hiddenSubmitButtonRef: HTMLButtonElement | null = null;
+
+	function handleSubmitClick(event: Event) {
+		event.preventDefault();
+		if (isSubmitting) return;
+		if (formRef && !formRef.reportValidity()) return;
+		pendingAction = 'submit';
+		showConfirmDialog = true;
+	}
+
+	function handleConfirmSubmit() {
+		if (pendingAction === 'submit') {
+			showConfirmDialog = false;
+			pendingAction = null;
+			hiddenSubmitButtonRef?.click();
+		}
+	}
+
+	function handleCancelSubmit() {
+		showConfirmDialog = false;
+		pendingAction = null;
+	}
 </script>
 
-<form method="POST" use:enhance class="space-y-6" data-testid="application-form">
+<form method="POST" use:enhance class="space-y-6" data-testid="application-form" bind:this={formRef}>
 	{#if application?.id}
 		<input type="hidden" name="id" value={application.id} />
 	{/if}
@@ -166,14 +193,33 @@
 			Als Entwurf speichern
 		</button>
 		<button
-			type="submit"
+			type="button"
 			name="action"
 			value="submit"
 			disabled={isSubmitting}
 			class="btn-primary"
 			data-testid="btn-submit-application"
+			onclick={handleSubmitClick}
 		>
 			Antrag einreichen
 		</button>
+		<button
+			type="submit"
+			name="action"
+			value="submit"
+			class="hidden"
+			aria-hidden="true"
+			tabindex="-1"
+			bind:this={hiddenSubmitButtonRef}
+		></button>
 	</div>
+
+	<ConfirmDialog
+		open={showConfirmDialog}
+		message="Möchten Sie diesen Antrag wirklich einreichen? Nach der Einreichung ist keine Bearbeitung mehr möglich."
+		confirmText="Antrag einreichen"
+		cancelText="Abbrechen"
+		onConfirm={handleConfirmSubmit}
+		onCancel={handleCancelSubmit}
+	/>
 </form>

@@ -44,6 +44,8 @@ test.describe('Antragsbearbeiter (Processor) Workflows', () => {
 			await page.getByLabel(/Beschäftigungsstatus/i).selectOption('employed');
 			await page.getByLabel(/Nein/i).check();
 			await page.getByRole('button', { name: /Antrag einreichen/i }).click();
+			await page.getByTestId('confirm-dialog-confirm').click();
+
 			await page.waitForURL(/\/applications\/\d+/);
 
 			await clearTestSessions(page);
@@ -52,7 +54,7 @@ test.describe('Antragsbearbeiter (Processor) Workflows', () => {
 
 		test('should display application details in processor view', async ({ page }) => {
 			await page.goto('/processor');
-		
+
 			const viewButton = page.getByRole('button', { name: /Ansehen/i }).first();
 			if (await viewButton.isVisible()) {
 				await viewButton.click();
@@ -62,7 +64,7 @@ test.describe('Antragsbearbeiter (Processor) Workflows', () => {
 
 		test('should show scoring information in detail view', async ({ page }) => {
 			await page.goto('/processor');
-		
+
 			const viewButton = page.getByRole('button', { name: /Ansehen/i }).first();
 			if (await viewButton.isVisible()) {
 				await viewButton.click();
@@ -72,7 +74,7 @@ test.describe('Antragsbearbeiter (Processor) Workflows', () => {
 
 		test('should show financial details', async ({ page }) => {
 			await page.goto('/processor');
-		
+
 			const viewButton = page.getByRole('button', { name: /Ansehen/i }).first();
 			if (await viewButton.isVisible()) {
 				await viewButton.click();
@@ -95,6 +97,7 @@ test.describe('Antragsbearbeiter (Processor) Workflows', () => {
 			await page.getByLabel(/Beschäftigungsstatus/i).selectOption('employed');
 			await page.getByLabel(/Nein/i).check();
 			await page.getByRole('button', { name: /Antrag einreichen/i }).click();
+			await page.getByTestId('confirm-dialog-confirm').click();
 
 			const url = page.url();
 			const match = url.match(/\/applications\/(\d+)/);
@@ -121,6 +124,7 @@ test.describe('Antragsbearbeiter (Processor) Workflows', () => {
 			await page.getByLabel(/Beschäftigungsstatus/i).selectOption('employed');
 			await page.getByLabel(/Nein/i).check();
 			await page.getByRole('button', { name: /Antrag einreichen/i }).click();
+			await page.getByTestId('confirm-dialog-confirm').click();
 
 			const url = page.url();
 			const match = url.match(/\/applications\/(\d+)/);
@@ -162,6 +166,7 @@ test.describe('Antragsbearbeiter (Processor) Workflows', () => {
 			await page.getByLabel(/Beschäftigungsstatus/i).selectOption('unemployed');
 			await page.getByLabel(/Nein/i).check();
 			await page.getByRole('button', { name: /Antrag einreichen/i }).click();
+			await page.getByTestId('confirm-dialog-confirm').click();
 
 			const url = page.url();
 			const match = url.match(/\/applications\/(\d+)/);
@@ -196,6 +201,7 @@ test.describe('Antragsbearbeiter (Processor) Workflows', () => {
 			await page.getByLabel(/Beschäftigungsstatus/i).selectOption('unemployed');
 			await page.getByLabel(/Ja/i).check();
 			await page.getByRole('button', { name: /Antrag einreichen/i }).click();
+			await page.getByTestId('confirm-dialog-confirm').click();
 
 			const url = page.url();
 			const match = url.match(/\/applications\/(\d+)/);
@@ -249,6 +255,7 @@ test.describe('Antragsbearbeiter (Processor) Workflows', () => {
 			await page.getByLabel(/Beschäftigungsstatus/i).selectOption('employed');
 			await page.getByLabel(/Nein/i).check();
 			await page.getByRole('button', { name: /Antrag einreichen/i }).click();
+			await page.getByTestId('confirm-dialog-confirm').click();
 
 			const url = page.url();
 			const match = url.match(/\/applications\/(\d+)/);

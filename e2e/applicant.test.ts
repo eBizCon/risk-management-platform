@@ -1,4 +1,5 @@
 import { test, expect } from './fixtures';
+import type { Page } from '@playwright/test';
 
 test.describe('Antragsteller (Applicant) Workflows', () => {
 
@@ -104,6 +105,8 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await authenticatedPage.getByTestId('radio-payment-default-no').check();
 
 			await authenticatedPage.getByTestId('btn-submit-application').click();
+			await expect(authenticatedPage.getByTestId('confirm-dialog')).toBeVisible();
+			await authenticatedPage.getByTestId('confirm-dialog-confirm').click();
 
 			await expect(authenticatedPage).toHaveURL(/\/applications\/\d+/);
 			await expect(authenticatedPage.getByTestId('status-badge-submitted')).toBeVisible();
@@ -125,25 +128,6 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await expect(authenticatedPage.getByTestId('application-table')).toBeVisible();
 			await expect(authenticatedPage.getByTestId('status-badge-draft').first()).toBeVisible();
 		});
-
-		// test('should allow editing a draft application', async ({ page }) => {
-		// 	await page.goto('/applications/new');
-		// 	await page.getByTestId('input-name').fill('Edit Test');
-		// 	await page.getByTestId('input-income').fill('3000');
-		// 	await page.getByTestId('input-fixed-costs').fill('1000');
-		// 	await page.getByTestId('input-desired-rate').fill('350');
-		// 	await page.getByTestId('select-employment-status').selectOption('employed');
-		// 	await page.getByTestId('radio-payment-default-no').check();
-		// 	await page.getByTestId('btn-save-draft').click();
-
-		// 	await page.getByTestId('edit-application').click();
-		// 	await expect(page).toHaveURL(/\/applications\/\d+\/edit/);
-
-		// 	await page.getByTestId('input-name').fill('Edit Test Updated');
-		// 	await page.getByTestId('btn-save-draft').click();
-		// 	await expect(page.getByTestId('application-name-title' + page.url().split('/').pop())).toContainText('Edit Test Updated');
-
-		// });
 
 		test('should filter applications by status', async ({ authenticatedPage }) => {
 			await authenticatedPage.goto('/applications');
@@ -168,11 +152,10 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await authenticatedPage.getByTestId('btn-save-draft').click();
 
 			await authenticatedPage.getByTestId('submit-application').click();
-			authenticatedPage.on('dialog', async dialog => {
-				await dialog.accept();
-				await authenticatedPage.waitForLoadState('networkidle');
-				await expect(authenticatedPage.getByTestId('status-badge-submitted')).toBeVisible();
-			});
+			await expect(authenticatedPage.getByTestId('confirm-dialog')).toBeVisible();
+			await authenticatedPage.getByTestId('confirm-dialog-confirm').click();
+			await authenticatedPage.waitForLoadState('networkidle');
+			await expect(authenticatedPage.getByTestId('status-badge-submitted')).toBeVisible();
 		});
 
 		test('should not allow editing after submission', async ({ authenticatedPage }) => {
@@ -184,8 +167,79 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await authenticatedPage.getByTestId('select-employment-status').selectOption('employed');
 			await authenticatedPage.getByTestId('radio-payment-default-no').check();
 			await authenticatedPage.getByTestId('btn-submit-application').click();
-
+			await authenticatedPage.getByTestId('confirm-dialog-confirm').click();
 			await expect(authenticatedPage.getByTestId('edit-application')).not.toBeVisible();
+		});
+	});
+
+	test.describe('Bestätigungsdialog für Einreichung', () => {
+		async function fillApplicationForm(page: Page) {
+			await page.goto('/applications/new');
+			await page.getByTestId('input-name').fill('Dialog Test');
+			await page.getByTestId('input-income').fill('4500');
+			await page.getByTestId('input-fixed-costs').fill('1500');
+			await page.getByTestId('input-desired-rate').fill('500');
+			await page.getByTestId('select-employment-status').selectOption('employed');
+			await page.getByTestId('radio-payment-default-no').check();
+		}
+
+		test('should show confirmation dialog when submitting new application', async ({ authenticatedPage }) => {
+			await fillApplicationForm(authenticatedPage);
+
+			await authenticatedPage.getByTestId('btn-submit-application').click();
+
+			await expect(authenticatedPage.getByTestId('confirm-dialog')).toBeVisible();
+			await expect(authenticatedPage.getByTestId('confirm-dialog-confirm')).toBeVisible();
+			await expect(authenticatedPage.getByTestId('confirm-dialog-cancel')).toBeVisible();
+		});
+
+		test('should submit application after confirming dialog', async ({ authenticatedPage }) => {
+			await fillApplicationForm(authenticatedPage);
+
+			await authenticatedPage.getByTestId('btn-submit-application').click();
+			await authenticatedPage.getByTestId('confirm-dialog-confirm').click();
+
+			await expect(authenticatedPage).toHaveURL(/\/applications\/\d+/);
+			await expect(authenticatedPage.getByTestId('status-badge-submitted')).toBeVisible();
+			await expect(authenticatedPage.getByTestId('confirm-dialog')).not.toBeVisible();
+		});
+
+		test('should not submit application when canceling dialog', async ({ authenticatedPage }) => {
+			await fillApplicationForm(authenticatedPage);
+
+			await authenticatedPage.getByTestId('btn-submit-application').click();
+			await authenticatedPage.getByTestId('confirm-dialog-cancel').click();
+
+			await expect(authenticatedPage).toHaveURL('/applications/new');
+			await expect(authenticatedPage.getByTestId('confirm-dialog')).not.toBeVisible();
+		});
+
+		test('should show confirmation dialog when submitting from edit page', async ({ authenticatedPage }) => {
+			await fillApplicationForm(authenticatedPage);
+			await authenticatedPage.getByTestId('btn-save-draft').click();
+			await authenticatedPage.getByTestId('edit-application').click();
+			await authenticatedPage.getByTestId('btn-submit-application').click();
+
+			await expect(authenticatedPage.getByTestId('confirm-dialog')).toBeVisible();
+		});
+
+		test('should show confirmation dialog when submitting from detail page', async ({ authenticatedPage }) => {
+			await fillApplicationForm(authenticatedPage);
+			await authenticatedPage.getByTestId('btn-save-draft').click();
+
+			await authenticatedPage.getByTestId('submit-application').click();
+
+			await expect(authenticatedPage.getByTestId('confirm-dialog')).toBeVisible();
+		});
+
+		test('should close dialog when pressing ESC key', async ({ authenticatedPage }) => {
+			await fillApplicationForm(authenticatedPage);
+
+			await authenticatedPage.getByTestId('btn-submit-application').click();
+			await authenticatedPage.keyboard.press('Escape');
+
+			await expect(authenticatedPage.getByTestId('confirm-dialog')).not.toBeVisible();
+			await expect(authenticatedPage).toHaveURL('/applications/new');
 		});
 	});
 
@@ -199,7 +253,7 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await authenticatedPage.getByTestId('select-employment-status').selectOption('employed');
 			await authenticatedPage.getByTestId('radio-payment-default-no').check();
 			await authenticatedPage.getByTestId('btn-submit-application').click();
-
+			await authenticatedPage.getByTestId('confirm-dialog-confirm').click();
 			await expect(authenticatedPage.getByTestId('scoring-heading')).toBeVisible();
 			await expect(authenticatedPage.getByTestId('score-value')).toBeVisible();
 		});
@@ -213,7 +267,7 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await authenticatedPage.getByTestId('select-employment-status').selectOption('employed');
 			await authenticatedPage.getByTestId('radio-payment-default-no').check();
 			await authenticatedPage.getByTestId('btn-submit-application').click();
-
+	await authenticatedPage.getByTestId('confirm-dialog-confirm').click();
 			await expect(authenticatedPage.getByTestId('scoring-reasons')).toBeVisible();
 		});
 
@@ -226,7 +280,7 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await authenticatedPage.getByTestId('select-employment-status').selectOption('employed');
 			await authenticatedPage.getByTestId('radio-payment-default-no').check();
 			await authenticatedPage.getByTestId('btn-submit-application').click();
-
+			await authenticatedPage.getByTestId('confirm-dialog-confirm').click();
 			await expect(authenticatedPage.getByTestId('traffic-light-green')).toBeVisible();
 		});
 
@@ -254,7 +308,7 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await expect(authenticatedPage.getByTestId('input-income')).toHaveValue('2500');
 
 			await authenticatedPage.getByTestId('btn-submit-application').click();
-
+			await authenticatedPage.getByTestId('confirm-dialog-confirm').click();
 			await expect(authenticatedPage).toHaveURL(/\/applications\/\d+/, { timeout: 10000 });
 
 			await expect(authenticatedPage.getByTestId('traffic-light-red')).toBeVisible();
