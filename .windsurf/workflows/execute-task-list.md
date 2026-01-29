@@ -3,13 +3,16 @@ description: Execute tasks from a JSON task list with persisted progress (git-co
 ---
 
 ## Zweck
-Strukturierter Workflow zum Abarbeiten einer JSON-Taskliste (z. B. Output von `split-implementation-blueprint-into-tasks`).  
+Strukturierter Workflow zum Abarbeiten einer JSON-Taskliste (z. B. Output von `split-implementation-blueprint-into-tasks`).  
 Der User kann entweder den nächsten offenen Task oder eine konkrete Task-ID auswählen.  
 Der Fortschritt wird in einer separaten JSON-Datei persistiert, die ins Git eingecheckt werden kann.
 
+Erweiterung (Batch-Modus):
+- Der User kann per Eingabe anweisen: **alle offenen (pending) Tasks ohne weiteres Approval ausführen**.
+
 ## Inputs
 - **tasks_file**  
-  Pfad zur JSON-Taskliste, z. B.  
+  Pfad zur JSON-Taskliste, z. B.  
   `backlog/implementations/<user-story-name>/<user-story-name>-tasks.json`
 
 ## Konvention: Progress-Datei
@@ -37,6 +40,29 @@ Folgende Statuswerte sind erlaubt:
 - **skipped**  
   Task wurde bewusst übersprungen (mit Begründung).
 
+## User-Eingaben (Kommandos)
+
+Der Workflow akzeptiert folgende Eingaben:
+
+- **JA**  
+  Führt den nächsten `pending` Task aus.
+- **NEIN**  
+  Erlaubt Auswahl per Task-ID oder Kommandos (BLOCK/SKIP/STOP).
+- **ALL**  
+  Führt **alle** `pending` Tasks in Reihenfolge aus `tasks_file` aus, ohne weiteres User-Approval pro Task.
+- **Task-ID**  
+  Führt die angegebene Task aus, sofern Status nicht `completed` ist.
+- **BLOCK <ID>**  
+  Markiert Task als `blocked` (mit Begründung), ohne Ausführung.
+- **SKIP <ID>**  
+  Markiert Task als `skipped` (mit Begründung), ohne Ausführung.
+- **STOP**  
+  Beendet den Workflow.
+
+Hinweis:
+- Im Modus **ALL** werden `blocked`, `skipped`, `completed` Tasks übersprungen.
+- Tasks mit Status `failed` werden nicht automatisch erneut ausgeführt (außer der User wählt die Task explizit per ID).
+
 ## Schritte
 
 1. **Init/Resume**
@@ -59,31 +85,52 @@ Folgende Statuswerte sind erlaubt:
        - Jede `tasks[*].id` existiert genau einmal.
      - Aktualisiere `summary` und `meta.lastUpdated`.
      - Schreibe die Datei zurück.
+   - Schreibe zusätzlich ein `history`-Event:
+     - `action = "resume"` (wenn Progress-Datei existierte), sonst nur `init`.
 
-2. **Auswahl des Tasks**
+2. **Auswahl-Modus (User-Eingabe)**
    - Ermittle `next_pending`: die erste Task in der Reihenfolge aus `tasks_file`, deren Status `pending` ist.
    - Frage den User interaktiv:
-     - „Nächsten offenen Task ausführen? (JA / NEIN)“
-       - Bei JA → wähle `next_pending`.
-       - Bei NEIN → frage:
-         - „Gib eine Task-ID an, oder einen Befehl:  
-           - `BLOCK <ID>` zum Blockieren  
-           - `SKIP <ID>` zum Überspringen  
-           - `STOP` zum Beenden“
-   - Verhalten:
-     - Bei Eingabe einer Task-ID:
-       - Wähle diesen Task, sofern sein Status nicht `completed` ist.
-     - Bei `BLOCK <ID>`:
-       - Frage nach einer kurzen Begründung.
-       - Setze Status auf `blocked`, aktualisiere `notes` und `history`, schreibe Progress-Datei, gehe zurück zu Schritt 2.
-     - Bei `SKIP <ID>`:
-       - Frage nach einer kurzen Begründung.
-       - Setze Status auf `skipped`, aktualisiere `notes` und `history`, schreibe Progress-Datei, gehe zurück zu Schritt 2.
-     - Bei `STOP`:
-       - Schreibe einen finalen Stand in die Progress-Datei und beende den Workflow.
 
-3. **Start-Tracking für gewählten Task**
-   - Für den gewählten Task:
+     „Modus wählen:
+     - `JA` = nächsten offenen Task ausführen
+     - `ALL` = alle offenen Tasks ausführen (ohne weiteres Approval)
+     - `NEIN` = Task-ID oder Kommandos (`BLOCK <ID>`, `SKIP <ID>`, `STOP`)“
+
+   - Verhalten:
+     - Bei **JA** → setze `execution_mode = "single"` und wähle `next_pending`.
+     - Bei **ALL** → setze `execution_mode = "all_pending"` und gehe zu Schritt 3 mit einer Task-Schleife.
+     - Bei **NEIN** → frage:
+       - „Gib eine Task-ID an, oder einen Befehl:
+         - `BLOCK <ID>`
+         - `SKIP <ID>`
+         - `STOP`“
+       - Bei Eingabe einer Task-ID:
+         - Wähle diesen Task, sofern sein Status nicht `completed` ist.
+         - setze `execution_mode = "single"`.
+       - Bei `BLOCK <ID>`:
+         - Frage nach kurzer Begründung.
+         - Setze Status auf `blocked`, aktualisiere `notes` und `history` (action=`block`), schreibe Progress-Datei, gehe zurück zu Schritt 2.
+       - Bei `SKIP <ID>`:
+         - Frage nach kurzer Begründung.
+         - Setze Status auf `skipped`, aktualisiere `notes` und `history` (action=`skip`), schreibe Progress-Datei, gehe zurück zu Schritt 2.
+       - Bei `STOP`:
+         - Schreibe einen finalen Stand in die Progress-Datei und beende den Workflow.
+
+3. **Start-Tracking (Single oder All)**
+   - Wenn `execution_mode = "single"`:
+     - Starte nur den gewählten Task (siehe Schritt 3a–5).
+   - Wenn `execution_mode = "all_pending"`:
+     - Erzeuge eine Liste `pending_tasks_in_order`:
+       - alle Tasks aus `tasks_file` in Reihenfolge, deren Progress-Status `pending` ist.
+     - Wenn keine `pending` Tasks vorhanden sind:
+       - Gib Zusammenfassung aus und beende (Schritt 6).
+     - Sonst:
+       - Iteriere über `pending_tasks_in_order` und führe Schritte 3a–5 für jede Task aus,
+         ohne weitere User-Interaktion zwischen den Tasks.
+
+3a. **Start-Tracking für gewählten Task**
+   - Für den aktuellen Task:
      - Setze `status = "in_progress"`.
      - Erhöhe `attempts` um `1`.
      - Setze `startedAt = now` (ISO-Zeitstempel).
@@ -112,8 +159,9 @@ Folgende Statuswerte sind erlaubt:
      - Übergib dem Skill als Input (readonly):
        - `task`: das vollständige Task-Objekt des aktuell ausgewählten Tasks (inkl. `id`, `title`, `implementation_details`, `artifacts`, `acceptance_criteria`, `checks`, `constraints`, `notes`).
        - `tasklist`: die komplette Taskliste aus `tasks_file` (Array aller Task-Objekte, unverändert).
+
 5. **Verifikation**
-   - Führe nacheinander alle in `task.checks` genannten Checks aus (z. B. `npm test`, `npm run lint`, `npm run test:e2e`, etc.), sofern im Task spezifiziert.
+   - Führe nacheinander alle in `task.checks` genannten Checks aus (z. B. `npm test`, `npm run lint`, `npm run test:e2e`, etc.), sofern im Task spezifiziert.
    - Dokumentiere Ergebnis:
      - Wenn alle relevanten Checks erfolgreich:
        - Setze `status = "completed"`.
@@ -133,16 +181,23 @@ Folgende Statuswerte sind erlaubt:
    - Wenn **keine** `pending`-Tasks mehr vorhanden sind:
      - Gib eine Zusammenfassung aus:
        - Anzahl `completed`, `failed`, `blocked`, `skipped`.
-     - Schreibe einen finalen Zustand in die Progress-Datei.
+     - Schreibe einen finalen Zustand in die Progress-Datei:
+       - optional `history`-Event `action="update"` mit Details "final summary".
      - Beende den Workflow.
    - Wenn noch `pending`-Tasks existieren:
-     - Gehe zurück zu Schritt 2.
+     - Wenn `execution_mode = "all_pending"`:
+       - Der Batch-Lauf ist beendet (alle zu Beginn pending waren wurden versucht).
+       - Zurück zu Schritt 2 (User entscheidet, ob erneut ALL laufen soll oder gezielt).
+     - Sonst:
+       - Gehe zurück zu Schritt 2.
 
 7. **Wiederaufnahme**
    - Der Workflow ist jederzeit wiederaufnehmbar:
      - Er liest die vorhandene Progress-Datei ein.
      - Nutzt `summary`, `tasks` und `history`, um den nächsten sinnvollen Task zu bestimmen.
      - Bereits `completed`-Tasks werden nicht erneut gestartet.
+   - Empfehlung:
+     - Wenn ein Task `failed` ist, sollte der User ihn explizit per Task-ID erneut starten, um unbeabsichtigte Retry-Loops zu vermeiden.
 
 ## JSON-Schema der Progress-Datei
 
@@ -150,7 +205,7 @@ Die automatisch angelegte Progress-Datei `<tasks_file>.progress.json` hat folgen
 
 ```json
 {
-  "$schema": "[http://json-schema.org/draft-07/schema#](http://json-schema.org/draft-07/schema#)",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "TaskListProgress",
   "type": "object",
   "required": ["meta", "summary", "tasks", "history"],

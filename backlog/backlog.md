@@ -47,11 +47,14 @@
  - **Ergebnis**: Ablehnungen werden auswertbar und konsistenter.
  - **Aufwand**: **M** (mit DB-Erweiterung eher **M–L**)
  
- ### 7) Processor: CSV-Export der aktuellen Liste
+ ### 7) Processor: CSV-Export der aktuellen Liste [x]
  - **Ziel**: Export-Button in `/processor`, der die aktuelle Filter-/Sortieransicht als CSV herunterlädt.
  - **Umsetzungsidee**: neue API Route (Download) + Query-Validierung + CSV Rendering serverseitig.
  - **Ergebnis**: CSV Download funktioniert, Daten sind reproduzierbar.
  - **Aufwand**: **M–L**
+
+ Prompt:
+ Als Processsor möchte ich die aktuelle gefilterte und sortierte Ansicht in der tabelle unter "/processor" als csv datei herunterladen können. Für den Export sollen die Filter und Sortierungen berücksichtigt werden. 
  
  ### 8) Processor: Bulk Actions (mehrere Anträge genehmigen/ablehnen)
  - **Ziel**: In der Processor-Liste mehrere Anträge auswählen und gesammelt “Approve/Reject” durchführen.
