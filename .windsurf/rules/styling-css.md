@@ -24,3 +24,8 @@ Ensure consistent styling across the application using TailwindCSS 4.0 and Svelt
 - Only use the `<style>` tag in Svelte components for complex layout logic or third-party overrides that cannot be handled by Tailwind utilities.
 - Do NOT use the `<style>` tag for simple color or spacing changes.
 
+## Mobile First
+- Always write mobile-first styles using Tailwind utilities.
+- Use `@media` queries only when necessary for larger screens.
+- Use Tailwind's responsive modifiers (`md:`, `lg:`, etc.) for responsive design.
+
