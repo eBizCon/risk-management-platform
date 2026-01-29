@@ -1,0 +1,724 @@
+{
+  "source_skill": "plan-user-story-implementation-blueprint",
+  "user_story": {
+    "title": "Responsive UI für Mobile und Tablet",
+    "as_a": "Anwender der Risikomanagement-Plattform (Applicant oder Processor)",
+    "i_want": "die Anwendung auf mobilen Endgeräten vollständig und komfortabel nutzen können",
+    "so_that": "ich auch unterwegs oder auf Smartphone/Tablet effizient arbeiten kann, ohne dass Inhalte abgeschnitten werden oder unkontrolliertes horizontales Scrollen erforderlich ist"
+  },
+  "global_constraints": [
+    "TailwindCSS 4.0 nutzen mit @theme Block als Single Source of Truth",
+    "Utility-First Approach: Immer TailwindCSS utilities bevorzugen über custom CSS",
+    "Mobile-First: Alle Styles mobile-first schreiben",
+    "Touch-Targets müssen mindestens 44×44px sein",
+    "Breakpoints: Mobile < 768px, Tablet 768-1024px, Desktop ≥ 1024px",
+    "Automatische Anpassung ohne manuelle Toggles",
+    "Alle data-testid Attribute für E2E-Tests müssen stabil sein",
+    "Svelte 5 Runes verwenden ($state, $derived, $props)",
+    "Analytics-Seite ist explizit ausgeschlossen"
+  ],
+  "tasks": [
+    {
+      "id": "responsive-ui-01",
+      "title": "TailwindCSS Breakpoints konfigurieren",
+      "user_story": {
+        "title": "Responsive UI für Mobile und Tablet",
+        "as_a": "Anwender der Risikomanagement-Plattform (Applicant oder Processor)",
+        "i_want": "die Anwendung auf mobilen Endgeräten vollständig und komfortabel nutzen können",
+        "so_that": "ich auch unterwegs oder auf Smartphone/Tablet effizient arbeiten kann, ohne dass Inhalte abgeschnitten werden oder unkontrolliertes horizontales Scrollen erforderlich ist"
+      },
+      "constraints": [
+        "TailwindCSS 4.0 nutzen",
+        "Mobile-First Approach",
+        "Breakpoints: Mobile < 768px, Tablet 768-1024px, Desktop ≥ 1024px"
+      ],
+      "goal": "TailwindCSS Custom Breakpoints sind konfiguriert für Mobile (< 768px), Tablet (768-1024px) und Desktop (≥ 1024px)",
+      "blueprint_references": [
+        "Abschnitt 1: TailwindCSS Konfiguration anpassen",
+        "Business Rules: Breakpoint-Definition"
+      ],
+      "implementation_details": [
+        "tailwind.config.js öffnen",
+        "theme.extend.screens anpassen:",
+        "  - sm: '768px' (Tablet start)",
+        "  - md: '1024px' (Desktop start)",
+        "  - lg: '1280px' (Large desktop)",
+        "Bestehende sm: und md: Klassen im Projekt identifizieren (grep-search)",
+        "Prüfen ob Anpassungen in bestehenden Komponenten nötig sind"
+      ],
+      "scope": [
+        "tailwind.config.js anpassen",
+        "Breakpoint-Definitionen setzen"
+      ],
+      "out_of_scope": [
+        "Komponenten-Anpassungen (separate Tasks)",
+        "Test-Anpassungen"
+      ],
+      "artifacts": [
+        "tailwind.config.js"
+      ],
+      "acceptance_criteria": [
+        "tailwind.config.js enthält custom screens mit sm: 768px, md: 1024px, lg: 1280px",
+        "npm run build läuft ohne Fehler"
+      ],
+      "checks": [
+        "npm run check",
+        "npm run build"
+      ],
+      "notes": [
+        "RISIKO: Bestehende sm:-Klassen erwarten 640px - vollständiger Grep nach sm: und md: erforderlich"
+      ]
+    },
+    {
+      "id": "responsive-ui-02",
+      "title": "Responsive CSS Utility Classes erstellen",
+      "user_story": {
+        "title": "Responsive UI für Mobile und Tablet",
+        "as_a": "Anwender der Risikomanagement-Plattform (Applicant oder Processor)",
+        "i_want": "die Anwendung auf mobilen Endgeräten vollständig und komfortabel nutzen können",
+        "so_that": "ich auch unterwegs oder auf Smartphone/Tablet effizient arbeiten kann, ohne dass Inhalte abgeschnitten werden oder unkontrolliertes horizontales Scrollen erforderlich ist"
+      },
+      "constraints": [
+        "TailwindCSS 4.0 @theme Block nutzen",
+        "Global Styles Pattern in app.css mit @apply",
+        "Touch-Targets müssen mindestens 44×44px sein"
+      ],
+      "goal": "Mobile-spezifische CSS Utility Classes sind in app.css definiert für Touch-Targets und Card-Layout",
+      "blueprint_references": [
+        "Abschnitt 2: Responsive Utility Classes hinzufügen"
+      ],
+      "implementation_details": [
+        "src/app.css öffnen",
+        "Touch-optimized buttons hinzufügen:",
+        "  @media (max-width: 767px) { .btn-primary, .btn-secondary min-height/width: 44px }",
+        "Mobile card layout classes definieren:",
+        "  .mobile-card mit @apply",
+        "  .mobile-card-header mit @apply",
+        "  .mobile-card-body mit @apply",
+        "  .mobile-card-actions mit @apply"
+      ],
+      "scope": [
+        "Touch-optimierte Button-Styles für Mobile",
+        "Mobile Card Layout Utility Classes",
+        "Media Query für < 768px"
+      ],
+      "out_of_scope": [
+        "Komponenten-Implementierung",
+        "Breakpoint-Konfiguration (Task 01)"
+      ],
+      "artifacts": [
+        "src/app.css"
+      ],
+      "acceptance_criteria": [
+        "app.css enthält @media (max-width: 767px) Block für Buttons",
+        "Alle mobile-card-* Classes sind definiert mit @apply",
+        "npm run build läuft ohne CSS-Fehler"
+      ],
+      "checks": [
+        "npm run check",
+        "npm run build"
+      ],
+      "notes": []
+    },
+    {
+      "id": "responsive-ui-03",
+      "title": "MobileMenu Komponente erstellen",
+      "user_story": {
+        "title": "Responsive UI für Mobile und Tablet",
+        "as_a": "Anwender der Risikomanagement-Plattform (Applicant oder Processor)",
+        "i_want": "die Anwendung auf mobilen Endgeräten vollständig und komfortabel nutzen können",
+        "so_that": "ich auch unterwegs oder auf Smartphone/Tablet effizient arbeiten kann, ohne dass Inhalte abgeschnitten werden oder unkontrolliertes horizontales Scrollen erforderlich ist"
+      },
+      "constraints": [
+        "Svelte 5 Runes verwenden ($state, $props)",
+        "Touch-Targets ≥ 44×44px",
+        "data-testid Attribute für E2E-Tests",
+        "Body-Scroll sperren wenn Menu offen"
+      ],
+      "goal": "MobileMenu Komponente ist vollständig implementiert mit Overlay, Slide-in Animation, ESC-Key Support und Body-Scroll-Lock",
+      "blueprint_references": [
+        "Abschnitt 3: Mobile Navigation Komponente erstellen",
+        "Szenario 1: Navigation auf Smartphones"
+      ],
+      "implementation_details": [
+        "Neue Datei: src/lib/components/MobileMenu.svelte",
+        "Props Interface: isOpen, onClose, user, isApplicant, isProcessor",
+        "Overlay (z-40) mit click → onClose()",
+        "Slide-in Menu von links (z-50, transform transition)",
+        "Menüpunkte conditional rendering:",
+        "  - Home (immer)",
+        "  - Meine Anträge + Neuer Antrag (if isApplicant)",
+        "  - Anträge bearbeiten (if isProcessor)",
+        "User Info + Logout unten im Menu",
+        "ESC-Taste Handler → onClose()",
+        "Body overflow hidden wenn isOpen",
+        "data-testids: mobile-menu, mobile-menu-overlay, mobile-menu-close"
+      ],
+      "scope": [
+        "MobileMenu.svelte Komponente",
+        "Overlay mit Click-Handler",
+        "Navigation Links conditional",
+        "ESC-Key Support",
+        "Body-Scroll Lock"
+      ],
+      "out_of_scope": [
+        "Integration in Layout (Task 04)",
+        "E2E Tests (Task 10)"
+      ],
+      "artifacts": [
+        "src/lib/components/MobileMenu.svelte"
+      ],
+      "acceptance_criteria": [
+        "MobileMenu.svelte existiert mit Props Interface",
+        "Overlay schließt Menu bei Click",
+        "ESC-Taste schließt Menu",
+        "Body-Scroll ist gesperrt wenn Menu offen",
+        "Alle data-testids sind vorhanden",
+        "Komponente nutzt Svelte 5 Runes",
+        "npm run check läuft ohne Fehler"
+      ],
+      "checks": [
+        "npm run check",
+        "npm run dev und manuell testen im Browser"
+      ],
+      "notes": [
+        "Icons: Menu Icon von lucide-svelte nutzen",
+        "z-index: Overlay z-40, Menu z-50"
+      ]
+    },
+    {
+      "id": "responsive-ui-04",
+      "title": "Hauptnavigation responsive machen",
+      "user_story": {
+        "title": "Responsive UI für Mobile und Tablet",
+        "as_a": "Anwender der Risikomanagement-Plattform (Applicant oder Processor)",
+        "i_want": "die Anwendung auf mobilen Endgeräten vollständig und komfortabel nutzen können",
+        "so_that": "ich auch unterwegs oder auf Smartphone/Tablet effizient arbeiten kann, ohne dass Inhalte abgeschnitten werden oder unkontrolliertes horizontales Scrollen erforderlich ist"
+      },
+      "constraints": [
+        "Svelte 5 Runes verwenden",
+        "Mobile < 768px: Hamburger Menu",
+        "Tablet/Desktop ≥ 768px: Vollständige Navigation",
+        "data-testid: nav-mobile-toggle"
+      ],
+      "goal": "Navigation in +layout.svelte ist responsive mit Hamburger-Icon auf Mobile und MobileMenu Integration",
+      "blueprint_references": [
+        "Abschnitt 4: Hauptnavigation responsive machen",
+        "Szenario 1: Navigation auf Smartphones",
+        "Szenario 2: Navigation auf Tablets"
+      ],
+      "implementation_details": [
+        "src/routes/+layout.svelte öffnen",
+        "MobileMenu Component importieren",
+        "State hinzufügen: let mobileMenuOpen = $state(false)",
+        "Funktionen: toggleMobileMenu(), closeMobileMenu()",
+        "Hamburger-Icon (Menu von lucide-svelte):",
+        "  - Nur sichtbar < 768px (class='block sm:hidden')",
+        "  - onclick={toggleMobileMenu}",
+        "  - data-testid='nav-mobile-toggle'",
+        "Desktop Navigation anpassen:",
+        "  - Bereits hidden sm:flex vorhanden",
+        "  - Abstände für Tablet kompakter: sm:space-x-2 statt sm:space-x-4",
+        "MobileMenu einbinden:",
+        "  <MobileMenu isOpen={mobileMenuOpen} onClose={closeMobileMenu} {user} {isApplicant} {isProcessor} />"
+      ],
+      "scope": [
+        "Hamburger-Icon für Mobile",
+        "MobileMenu Integration",
+        "State Management für Menu",
+        "Desktop Navigation Tablet-Optimierung"
+      ],
+      "out_of_scope": [
+        "MobileMenu Komponente selbst (Task 03)",
+        "Page-Komponenten"
+      ],
+      "artifacts": [
+        "src/routes/+layout.svelte"
+      ],
+      "acceptance_criteria": [
+        "Hamburger-Icon ist nur auf < 768px sichtbar",
+        "Desktop Navigation ist nur auf ≥ 768px sichtbar",
+        "MobileMenu öffnet/schließt korrekt",
+        "data-testid 'nav-mobile-toggle' ist vorhanden",
+        "npm run check läuft ohne Fehler"
+      ],
+      "checks": [
+        "npm run check",
+        "npm run dev und Browser Responsive Mode testen (375px, 768px, 1024px)"
+      ],
+      "notes": [
+        "Bestehende Navigation bereits mit hidden sm:flex - gut für Responsive"
+      ]
+    },
+    {
+      "id": "responsive-ui-05",
+      "title": "ApplicationCard Komponente erstellen",
+      "user_story": {
+        "title": "Responsive UI für Mobile und Tablet",
+        "as_a": "Anwender der Risikomanagement-Plattform (Applicant oder Processor)",
+        "i_want": "die Anwendung auf mobilen Endgeräten vollständig und komfortabel nutzen können",
+        "so_that": "ich auch unterwegs oder auf Smartphone/Tablet effizient arbeiten kann, ohne dass Inhalte abgeschnitten werden oder unkontrolliertes horizontales Scrollen erforderlich ist"
+      },
+      "constraints": [
+        "Svelte 5 Runes verwenden",
+        "Touch-Targets ≥ 44×44px",
+        "data-testid Attribute für alle Actions",
+        "Alle Informationen aus Tabelle müssen sichtbar sein"
+      ],
+      "goal": "ApplicationCard Komponente zeigt einen Antrag als Card mit allen relevanten Infos und Touch-optimierten Action-Buttons",
+      "blueprint_references": [
+        "Abschnitt 5: ApplicationCard Komponente erstellen",
+        "Szenario 3: Tabellen auf Smartphones - Card-Layout"
+      ],
+      "implementation_details": [
+        "Neue Datei: src/lib/components/ApplicationCard.svelte",
+        "Props Interface: application, showActions, isApplicantView, onView, onEdit, onDelete",
+        "Imports: StatusBadge, TrafficLight, Icons (Eye, Edit, Trash2)",
+        "Card Structure:",
+        "  - mobile-card class",
+        "  - Header: Name (bold) + StatusBadge",
+        "  - Body: 2-spaltiges Grid",
+        "    - Beschäftigungsstatus",
+        "    - Score + TrafficLight",
+        "    - Rate (formatCurrency)",
+        "    - Erstellt-Datum (formatDate)",
+        "  - Actions (if showActions): Eye, Edit (if draft), Delete (if draft)",
+        "Format-Funktionen: formatDate(), formatCurrency() (kopieren von ApplicationTable)",
+        "data-testids: application-card-{id}, card-view-btn-{id}, card-edit-btn-{id}, card-delete-btn-{id}"
+      ],
+      "scope": [
+        "ApplicationCard.svelte Komponente",
+        "Card-Layout mit allen Antragsdaten",
+        "Action-Buttons mit Touch-Targets",
+        "Formatierungs-Funktionen"
+      ],
+      "out_of_scope": [
+        "Integration in ApplicationTable (Task 06)",
+        "E2E Tests (Task 10)"
+      ],
+      "artifacts": [
+        "src/lib/components/ApplicationCard.svelte"
+      ],
+      "acceptance_criteria": [
+        "ApplicationCard.svelte existiert mit vollständigem Props Interface",
+        "Alle Daten aus Application werden angezeigt",
+        "Actions sind conditional (draft only für Edit/Delete)",
+        "Action-Buttons haben min 44px Touch-Target",
+        "Alle data-testids sind vorhanden",
+        "Svelte 5 Runes werden verwendet",
+        "npm run check läuft ohne Fehler"
+      ],
+      "checks": [
+        "npm run check",
+        "npm run dev und manuell im Browser testen"
+      ],
+      "notes": [
+        "Text-overflow mit ellipsis für lange Namen",
+        "Null-Values mit '-' anzeigen"
+      ]
+    },
+    {
+      "id": "responsive-ui-06",
+      "title": "ApplicationTable responsive erweitern",
+      "user_story": {
+        "title": "Responsive UI für Mobile und Tablet",
+        "as_a": "Anwender der Risikomanagement-Plattform (Applicant oder Processor)",
+        "i_want": "die Anwendung auf mobilen Endgeräten vollständig und komfortabel nutzen können",
+        "so_that": "ich auch unterwegs oder auf Smartphone/Tablet effizient arbeiten kann, ohne dass Inhalte abgeschnitten werden oder unkontrolliertes horizontales Scrollen erforderlich ist"
+      },
+      "constraints": [
+        "Mobile < 768px: Card-Layout",
+        "Tablet/Desktop ≥ 768px: Table-Layout",
+        "Tablet-Optimierung: kompaktere Spalten"
+      ],
+      "goal": "ApplicationTable zeigt auf Mobile Cards und auf Tablet/Desktop die Tabelle mit optimierten Spaltenbreiten",
+      "blueprint_references": [
+        "Abschnitt 6: ApplicationTable responsive erweitern",
+        "Szenario 3: Tabellen auf Smartphones - Card-Layout",
+        "Szenario 4: Tabellen auf Tablets - Optimierte Ansicht"
+      ],
+      "implementation_details": [
+        "src/lib/components/ApplicationTable.svelte öffnen",
+        "ApplicationCard importieren",
+        "Bestehende Tabelle in <div class='hidden sm:block overflow-x-auto'> wrappen",
+        "Neue Mobile View hinzufügen vor Tabelle:",
+        "  <div class='block sm:hidden space-y-3'>",
+        "    {#each applications as app}",
+        "      <ApplicationCard {app} {showActions} {isApplicantView} {onView} {onEdit} {onDelete} />",
+        "    {/each}",
+        "    {:else}",
+        "      Keine Anträge vorhanden",
+        "  </div>",
+        "Tablet-Optimierung in Tabelle:",
+        "  - px-6 → px-4 in th/td",
+        "  - Keine weiteren strukturellen Änderungen"
+      ],
+      "scope": [
+        "Mobile Card-Liste View",
+        "Tablet/Desktop Table View",
+        "Conditional Rendering basierend auf Viewport",
+        "Tablet-optimierte Spaltenbreiten"
+      ],
+      "out_of_scope": [
+        "ApplicationCard Komponente (Task 05)",
+        "Page-spezifische Anpassungen"
+      ],
+      "artifacts": [
+        "src/lib/components/ApplicationTable.svelte"
+      ],
+      "acceptance_criteria": [
+        "Mobile View (<768px) zeigt ApplicationCard-Liste",
+        "Desktop View (≥768px) zeigt Tabelle",
+        "Beide Views zeigen 'Keine Anträge' wenn leer",
+        "Tabelle hat kompaktere Spalten (px-4)",
+        "npm run check läuft ohne Fehler"
+      ],
+      "checks": [
+        "npm run check",
+        "npm run dev und Browser Responsive Mode testen (375px, 768px, 1024px)"
+      ],
+      "notes": [
+        "Bestehende data-testids beibehalten für Tabelle",
+        "ApplicationCard hat eigene data-testids"
+      ]
+    },
+    {
+      "id": "responsive-ui-07",
+      "title": "ApplicationForm responsive anpassen",
+      "user_story": {
+        "title": "Responsive UI für Mobile und Tablet",
+        "as_a": "Anwender der Risikomanagement-Plattform (Applicant oder Processor)",
+        "i_want": "die Anwendung auf mobilen Endgeräten vollständig und komfortabel nutzen können",
+        "so_that": "ich auch unterwegs oder auf Smartphone/Tablet effizient arbeiten kann, ohne dass Inhalte abgeschnitten werden oder unkontrolliertes horizontales Scrollen erforderlich ist"
+      },
+      "constraints": [
+        "Mobile: Vertikal gestapelte Felder (full width)",
+        "Tablet: 2-spaltig",
+        "Desktop: 3-spaltig (Finanz-Felder)",
+        "Buttons: Full width auf Mobile"
+      ],
+      "goal": "ApplicationForm ist responsive mit optimierten Grid-Layouts für Mobile, Tablet und Desktop",
+      "blueprint_references": [
+        "Abschnitt 7: ApplicationForm responsive anpassen",
+        "Szenario 5: Formulare auf Smartphones",
+        "Szenario 6: Formulare auf Tablets"
+      ],
+      "implementation_details": [
+        "src/lib/components/ApplicationForm.svelte öffnen",
+        "Finanz-Felder Grid anpassen:",
+        "  Aktuell: grid-cols-1 sm:grid-cols-3",
+        "  Neu: grid-cols-1 sm:grid-cols-2 md:grid-cols-3",
+        "Payment Default Radio anpassen:",
+        "  Aktuell: space-x-6 flex",
+        "  Neu: flex flex-col sm:flex-row gap-4 sm:gap-6",
+        "Action Buttons anpassen:",
+        "  Container: flex flex-col sm:flex-row justify-end gap-3",
+        "  Buttons: w-full sm:w-auto hinzufügen zu beiden Buttons"
+      ],
+      "scope": [
+        "Grid-Layout Anpassungen für Finanz-Felder",
+        "Radio-Buttons Layout responsive",
+        "Action-Buttons Layout responsive"
+      ],
+      "out_of_scope": [
+        "Formular-Logik Änderungen",
+        "Neue Felder",
+        "Validation"
+      ],
+      "artifacts": [
+        "src/lib/components/ApplicationForm.svelte"
+      ],
+      "acceptance_criteria": [
+        "Finanz-Felder: 1 Spalte Mobile, 2 Spalten Tablet, 3 Spalten Desktop",
+        "Radio-Buttons: vertikal Mobile, horizontal Tablet+",
+        "Action-Buttons: full width Mobile, auto width Tablet+",
+        "Kein horizontales Scrollen auf 360px",
+        "npm run check läuft ohne Fehler"
+      ],
+      "checks": [
+        "npm run check",
+        "npm run dev und Browser Responsive Mode testen (360px, 768px, 1024px)"
+      ],
+      "notes": [
+        "Bestehende data-testids nicht ändern"
+      ]
+    },
+    {
+      "id": "responsive-ui-08",
+      "title": "Home Page responsive anpassen",
+      "user_story": {
+        "title": "Responsive UI für Mobile und Tablet",
+        "as_a": "Anwender der Risikomanagement-Plattform (Applicant oder Processor)",
+        "i_want": "die Anwendung auf mobilen Endgeräten vollständig und komfortabel nutzen können",
+        "so_that": "ich auch unterwegs oder auf Smartphone/Tablet effizient arbeiten kann, ohne dass Inhalte abgeschnitten werden oder unkontrolliertes horizontales Scrollen erforderlich ist"
+      },
+      "constraints": [
+        "Hero responsive Typography",
+        "Feature Cards: 1 Spalte Mobile, 2 Tablet, 3 Desktop",
+        "CTA Buttons: gestapelt Mobile, inline Tablet+"
+      ],
+      "goal": "Home Page ist vollständig responsive mit angepassten Grid-Layouts und Typography",
+      "blueprint_references": [
+        "Abschnitt 8: Home Page responsive anpassen"
+      ],
+      "implementation_details": [
+        "src/routes/+page.svelte öffnen",
+        "Hero-Titel anpassen:",
+        "  Aktuell: text-4xl",
+        "  Neu: text-2xl sm:text-3xl md:text-4xl",
+        "Feature Cards Grid anpassen:",
+        "  Aktuell: grid-cols-1 md:grid-cols-3",
+        "  Neu: grid-cols-1 sm:grid-cols-2 md:grid-cols-3",
+        "CTA Buttons (nur für Applicant/Processor Sections):",
+        "  Container: flex flex-wrap gap-4 → flex flex-col sm:flex-row gap-4",
+        "  Buttons: w-full sm:w-auto hinzufügen falls nötig"
+      ],
+      "scope": [
+        "Hero Typography responsive",
+        "Feature Cards Grid responsive",
+        "CTA Buttons Layout responsive"
+      ],
+      "out_of_scope": [
+        "Inhaltliche Änderungen",
+        "Neue Sections"
+      ],
+      "artifacts": [
+        "src/routes/+page.svelte"
+      ],
+      "acceptance_criteria": [
+        "Hero-Titel skaliert: 2xl/3xl/4xl",
+        "Feature Cards: 1/2/3 Spalten je nach Viewport",
+        "CTA Buttons gestapelt auf Mobile",
+        "Kein horizontales Scrollen auf 360px",
+        "npm run check läuft ohne Fehler"
+      ],
+      "checks": [
+        "npm run check",
+        "npm run dev und Browser testen (360px, 768px, 1024px)"
+      ],
+      "notes": []
+    },
+    {
+      "id": "responsive-ui-09",
+      "title": "Page-Komponenten responsive anpassen (Applications, Processor, Detail)",
+      "user_story": {
+        "title": "Responsive UI für Mobile und Tablet",
+        "as_a": "Anwender der Risikomanagement-Plattform (Applicant oder Processor)",
+        "i_want": "die Anwendung auf mobilen Endgeräten vollständig und komfortabel nutzen können",
+        "so_that": "ich auch unterwegs oder auf Smartphone/Tablet effizient arbeiten kann, ohne dass Inhalte abgeschnitten werden oder unkontrolliertes horizontales Scrollen erforderlich ist"
+      },
+      "constraints": [
+        "Alle betroffenen Pages: applications/+page, processor/+page, applications/[id]/+page",
+        "Mobile: Gestapelte Layouts",
+        "Tablet/Desktop: Grid-Layouts"
+      ],
+      "goal": "Alle Page-Komponenten (Applications List, Processor, Application Detail) sind responsive angepasst",
+      "blueprint_references": [
+        "Abschnitt 9: Applications List Page responsive anpassen",
+        "Abschnitt 10: Processor Page responsive anpassen",
+        "Abschnitt 11: Application Detail Page responsive anpassen",
+        "Abschnitt 12: Application Edit/New Pages"
+      ],
+      "implementation_details": [
+        "1. src/routes/applications/+page.svelte:",
+        "   - Header: flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4",
+        "   - 'Neuer Antrag' Button: w-full sm:w-auto",
+        "",
+        "2. src/routes/processor/+page.svelte:",
+        "   - Stats Cards Grid: grid-cols-1 sm:grid-cols-4 → grid-cols-1 sm:grid-cols-2 md:grid-cols-4",
+        "   - Filter-Bereich: wie Applications Page",
+        "",
+        "3. src/routes/applications/[id]/+page.svelte:",
+        "   - Header Actions: flex flex-col sm:flex-row gap-3",
+        "   - Buttons: w-full sm:w-auto",
+        "   - Main Grid: grid-cols-1 lg:grid-cols-3 → grid-cols-1 md:grid-cols-1 lg:grid-cols-3",
+        "   - Detail-Karten dl: sm:grid-cols-2 oder sm:grid-cols-3 → grid-cols-1 sm:grid-cols-2",
+        "",
+        "4. src/routes/applications/[id]/edit/+page.svelte:",
+        "   - Back-Button prüfen, ggf. Anpassung",
+        "",
+        "5. src/routes/applications/new/+page.svelte:",
+        "   - Back-Button prüfen, ggf. Anpassung"
+      ],
+      "scope": [
+        "Applications List Page Header",
+        "Processor Page Stats Grid",
+        "Application Detail Page Layout",
+        "Edit/New Pages Back-Button"
+      ],
+      "out_of_scope": [
+        "Formular-Komponenten (Task 07)",
+        "Tabellen-Komponenten (Task 06)"
+      ],
+      "artifacts": [
+        "src/routes/applications/+page.svelte",
+        "src/routes/processor/+page.svelte",
+        "src/routes/applications/[id]/+page.svelte",
+        "src/routes/applications/[id]/edit/+page.svelte",
+        "src/routes/applications/new/+page.svelte"
+      ],
+      "acceptance_criteria": [
+        "Alle 5 Page-Dateien sind responsive angepasst",
+        "Kein horizontales Scrollen auf 360px auf allen Pages",
+        "Buttons sind full width auf Mobile",
+        "Grids nutzen korrekte Breakpoints",
+        "npm run check läuft ohne Fehler"
+      ],
+      "checks": [
+        "npm run check",
+        "npm run dev und alle 5 Pages im Browser testen (360px, 768px, 1024px)"
+      ],
+      "notes": [
+        "ApplicationForm und ApplicationTable nutzen automatisch responsive Features aus Tasks 06 und 07"
+      ]
+    },
+    {
+      "id": "responsive-ui-10",
+      "title": "E2E Tests für Responsive UI schreiben",
+      "user_story": {
+        "title": "Responsive UI für Mobile und Tablet",
+        "as_a": "Anwender der Risikomanagement-Plattform (Applicant oder Processor)",
+        "i_want": "die Anwendung auf mobilen Endgeräten vollständig und komfortabel nutzen können",
+        "so_that": "ich auch unterwegs oder auf Smartphone/Tablet effizient arbeiten kann, ohne dass Inhalte abgeschnitten werden oder unkontrolliertes horizontales Scrollen erforderlich ist"
+      },
+      "constraints": [
+        "Playwright E2E Tests",
+        "Viewports: 360px, 375px, 768px, 1024px",
+        "data-testid Selektoren nutzen"
+      ],
+      "goal": "E2E Tests decken alle responsive Szenarien ab (Mobile Navigation, Card-Layout, Formulare, kein horizontales Scrollen)",
+      "blueprint_references": [
+        "Testplan: E2E Tests (Playwright)",
+        "Alle 7 Akzeptanzkriterien-Szenarien"
+      ],
+      "implementation_details": [
+        "Neue Datei: e2e/responsive.test.ts erstellen",
+        "",
+        "Suite 1: Mobile Navigation (375x667)",
+        "  - Test: Mobile menu öffnen und schließen",
+        "  - Test: Desktop Navigation ist versteckt auf Mobile",
+        "",
+        "Suite 2: Mobile Tables - Card Layout (375x667)",
+        "  - Test: Applications als Cards auf Mobile",
+        "  - Test: Tabelle ist versteckt auf Mobile",
+        "",
+        "Suite 3: Tablet Layout (768x1024)",
+        "  - Test: Tablet nutzt Tabellen-Ansicht",
+        "  - Test: Cards sind versteckt auf Tablet",
+        "",
+        "Suite 4: Formulare auf Mobile (375x667)",
+        "  - Test: Formular vollständig bedienbar",
+        "  - Test: Kein horizontales Scrollen",
+        "  - Test: Alle Felder sichtbar",
+        "",
+        "Suite 5: Keine abgeschnittenen Inhalte",
+        "  - Test für 360px, 768px, 1024px",
+        "  - Alle Pages durchgehen",
+        "  - horizontalOverflow prüfen",
+        "",
+        "Bestehende Tests anpassen:",
+        "  - e2e/applicant.test.ts: Mobile Viewport Tests hinzufügen",
+        "  - e2e/processor.test.ts: Mobile Viewport Tests hinzufügen"
+      ],
+      "scope": [
+        "e2e/responsive.test.ts mit allen 5 Suites",
+        "Viewport-Tests für Mobile Navigation",
+        "Card-Layout Tests",
+        "Formular-Tests auf Mobile",
+        "Horizontales Scrollen Tests",
+        "Anpassungen in bestehenden E2E Tests"
+      ],
+      "out_of_scope": [
+        "Unit Tests (nicht erforderlich)",
+        "Visual Regression Tests"
+      ],
+      "artifacts": [
+        "e2e/responsive.test.ts",
+        "e2e/applicant.test.ts (angepasst)",
+        "e2e/processor.test.ts (angepasst)"
+      ],
+      "acceptance_criteria": [
+        "e2e/responsive.test.ts existiert mit allen 5 Suites",
+        "Alle Tests nutzen korrekte Viewports (setViewportSize)",
+        "data-testid Selektoren werden verwendet",
+        "Horizontales Scrollen wird auf 360px/768px/1024px geprüft",
+        "npm run test:e2e läuft erfolgreich"
+      ],
+      "checks": [
+        "npm run test:e2e -- e2e/responsive.test.ts",
+        "npm run test:e2e"
+      ],
+      "notes": [
+        "Playwright fixtures aus e2e/fixtures.ts nutzen (authenticatedPage)",
+        "Explicit waits für stabile Tests"
+      ]
+    },
+    {
+      "id": "responsive-ui-11",
+      "title": "Manual Testing und Fixes",
+      "user_story": {
+        "title": "Responsive UI für Mobile und Tablet",
+        "as_a": "Anwender der Risikomanagement-Plattform (Applicant oder Processor)",
+        "i_want": "die Anwendung auf mobilen Endgeräten vollständig und komfortabel nutzen können",
+        "so_that": "ich auch unterwegs oder auf Smartphone/Tablet effizient arbeiten kann, ohne dass Inhalte abgeschnitten werden oder unkontrolliertes horizontales Scrollen erforderlich ist"
+      },
+      "constraints": [
+        "Manual Testing Checklist abarbeiten",
+        "Alle Viewports testen: 360px, 768px, 1024px",
+        "Touch-Targets ≥ 44×44px verifizieren"
+      ],
+      "goal": "Manual Testing Checklist ist vollständig abgearbeitet und alle gefundenen Issues sind gefixt",
+      "blueprint_references": [
+        "Manual Testing Checklist",
+        "Alle 7 Akzeptanzkriterien"
+      ],
+      "implementation_details": [
+        "Browser DevTools Responsive Mode nutzen",
+        "Checklist durchgehen:",
+        "  - Touch-Targets ≥ 44x44px prüfen (alle interaktiven Elemente)",
+        "  - Horizontales Scrollen nur wo beabsichtigt",
+        "  - Alle Texte lesbar ohne Zoom",
+        "  - Navigation auf allen Viewports bedienbar",
+        "  - Formulare ausfüllbar ohne Frustration",
+        "  - Tabellen/Cards zeigen alle Informationen",
+        "  - Mobile Menu öffnet/schließt korrekt",
+        "  - Viewport 360px, 768px, 1024px getestet",
+        "",
+        "Für jedes gefundene Issue:",
+        "  1. Issue dokumentieren",
+        "  2. Fix implementieren",
+        "  3. Re-testen",
+        "  4. E2E Tests anpassen falls nötig"
+      ],
+      "scope": [
+        "Manual Testing durchführen",
+        "Gefundene Issues fixen",
+        "Re-Testing nach Fixes"
+      ],
+      "out_of_scope": [
+        "Neue Features",
+        "Performance-Optimierungen (außer kritisch)"
+      ],
+      "artifacts": [
+        "Diverse Dateien je nach gefundenen Issues"
+      ],
+      "acceptance_criteria": [
+        "Alle Checklist-Punkte sind getestet",
+        "Keine kritischen Issues offen",
+        "Alle gefundenen Issues sind gefixt",
+        "E2E Tests laufen erfolgreich nach Fixes",
+        "npm run build läuft ohne Fehler"
+      ],
+      "checks": [
+        "npm run dev",
+        "npm run check",
+        "npm run build",
+        "npm run test:e2e"
+      ],
+      "notes": [
+        "Browser: Chrome, Firefox, Safari testen",
+        "Real Device Testing wenn möglich"
+      ]
+    }
+  ]
+}

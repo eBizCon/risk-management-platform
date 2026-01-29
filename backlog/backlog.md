@@ -158,11 +158,10 @@
  - **Aufwand**: **M**
 
  ### 24) Nutzer: Anwendung auf mobilen Geräten nutzbar machen (Responsive UI)
- - **Ziel**: Die Anwendung soll auf mobilen Geräten (z.B. 360px Breite) gut bedienbar sein.
+ - **Ziel**: Die Anwendung soll auf mobilen Geräten (min. 360px Breite) gut bedienbar sein.
  - **Umsetzungsidee**:
    - Navigation/Layout für Mobile optimieren (z.B. Menü einklappen, Abstände anpassen).
    - Tabellen (ApplicationTable) mobilfreundlich darstellen (z.B. Card-Layout oder horizontales Scrollen).
    - Formulare responsiv prüfen (Inputs/Buttons full width, sinnvolle Reihenfolge).
-   - Kritische Seiten: `/`, `/login`, `/applications`, `/applications/new`, `/processor`.
  - **Ergebnis**: Keine abgeschnittenen Inhalte, Buttons gut klickbar, keine horizontale Scroll-Hölle (außer wo bewusst).
  - **Aufwand**: **M–L** (MVP in 4h möglich)
