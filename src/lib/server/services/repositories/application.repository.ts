@@ -153,6 +153,14 @@ export async function getProcessorApplicationsPaginated(params: {
 	return { items, totalCount };
 }
 
+export async function getProcessorApplicationsForExport(params: {
+	status?: ApplicationStatus;
+}): Promise<Application[]> {
+	const whereClause = params.status ? eq(applications.status, params.status) : undefined;
+	const query = db.select().from(applications).orderBy(desc(applications.createdAt));
+	return whereClause ? query.where(whereClause).all() : query.all();
+}
+
 export async function getProcessorApplicationStats(): Promise<{
 	total: number;
 	submitted: number;

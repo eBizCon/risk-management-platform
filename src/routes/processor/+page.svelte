@@ -9,6 +9,12 @@
 
 	let { data }: { data: PageData } = $props();
 	const pagination = $derived(data.pagination ?? { page: 1, totalPages: 1, totalItems: data.applications.length ?? 0 });
+	const exportHref = $derived.by(() => {
+		const url = new URL($page.url);
+		url.pathname = '/api/processor/applications.csv';
+		url.searchParams.delete('page');
+		return url.toString();
+	});
 
 	const statusOptions = [
 		{ value: '', label: 'Alle Status' },
@@ -114,6 +120,14 @@
 				<span class="text-sm text-secondary">
 					{pagination.totalItems} Antrag/Anträge gefunden
 				</span>
+				<a
+					href={exportHref}
+					class="btn-secondary inline-flex items-center gap-2"
+					data-testid="processor-applications-export-csv-button"
+				>
+					<FileText class="w-4 h-4" />
+					CSV herunterladen
+				</a>
 			</div>
 		</div>
 
