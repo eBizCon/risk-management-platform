@@ -39,6 +39,7 @@
     {
       "username": "applicant",
       "enabled": true,
+      "email": "applicant@example.com",
       "emailVerified": true,
       "firstName": "Applicant",
       "lastName": "User",
@@ -56,6 +57,7 @@
     {
       "username": "processor",
       "enabled": true,
+      "email": "processor@example.com",
       "emailVerified": true,
       "firstName": "Processor",
       "lastName": "User",
