@@ -1,0 +1,69 @@
+{
+  "source_skill": "plan-user-story-implementation-blueprint",
+  "user_story": {
+    "title": "…",
+    "as_a": "…",
+    "i_want": "…",
+    "so_that": "…"
+  },
+  "global_constraints": [
+    "…"
+  ],
+  "tasks": [
+    {
+      "id": "T-001",
+      "title": "Kurzer Task-Titel",
+
+      "user_story": {
+        "title": "…",
+        "as_a": "…",
+        "i_want": "…",
+        "so_that": "…"
+      },
+
+      "constraints": [
+        "global_constraints (kopiert)",
+        "task-spezifische Constraints (nur wenn im Blueprint genannt)"
+      ],
+
+      "goal": "Überprüfbares Ergebnis in 1 Satz",
+
+      "blueprint_references": [
+        "Abschnitt 4: <Datei/Änderungspunkt>",
+        "Abschnitt 6: <Testfall>",
+        "Abschnitt 5: <Contract/Migration>"
+      ],
+
+      "implementation_details": [
+        "Konkrete Details/Steps aus dem Blueprint (nahe am Wortlaut, keine neuen Features)."
+      ],
+
+      "scope": [
+        "Was wird umgesetzt (max 5 bullets, klar abgegrenzt)"
+      ],
+      "out_of_scope": [
+        "Was explizit nicht Teil dieses Tasks ist"
+      ],
+
+      "artifacts": [
+        "Dateipfade/Ordner",
+        "Klassen/Methoden",
+        "Contracts/DTOs",
+        "Migrationen"
+      ],
+
+      "acceptance_criteria": [
+        "Messbare Done-Bedingung 1",
+        "Messbare Done-Bedingung 2"
+      ],
+
+      "checks": [
+        "Konkrete Commands oder Checks aus dem Blueprint (z. B. mvn test, gradle test, dotnet test, npm test, lint). Wenn nicht genannt: minimal plausible Checks als Text, ohne neue Tools zu erfinden."
+      ],
+
+      "notes": [
+        "Nur falls nötig: Annahmen/Risiken aus Blueprint Abschnitt 2/7, die für die Umsetzung relevant sind."
+      ]
+    }
+  ]
+}

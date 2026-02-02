@@ -1,7 +1,9 @@
 ---
 name: refine-user-story
-description: When the user ask to validate a user story, this skill will be used to validate and refine the user story.
+description: User Stories validieren und refinen. Verwende diesen Skill wenn der Nutzer eine bestehende User Story validieren, refinen, verbessern oder auf Qualität prüfen möchte gemäß INVEST-Prinzipien und Definition of Ready.
 ---
+
+# Refine User Story
 
 ## Zweck
 Dieser Skill validiert bestehende User Stories und refined sie zu entwicklungsreifen, klaren und testbaren Stories gemäß Best Practices (INVEST, DoR, Gherkin). Optional prüft er die technische Umsetzbarkeit anhand des bestehenden Codes, ohne Implementierungsvorschläge zu machen.
@@ -45,28 +47,7 @@ Du agierst als erfahrener Product Owner / Business Analyst mit starkem fachliche
 - Gibt es fachliche oder technische Mehrdeutigkeiten?  
 
 ## Ausgabeformat
-Validierungsfazit:  
-- Status: gültig / verbesserungsbedürftig / nicht geeignet  
-- Kurzbegründung  
-
-Refinierte User Story:  
-Als …  
-möchte ich …  
-damit …
-
-Akzeptanzkriterien:  
-Given …  
-When …  
-Then …
-
-Technische Hinweise (optional):  
-- …
-
-Empfohlene Verbesserungen:  
-- …
-
-Offene Fragen / Klärungsbedarf:  
-- …
+Verwende das Template aus [assets/output-template.md](assets/output-template.md)
 
 ## Rückfragen-Regel
 Wenn Informationen fehlen oder Annahmen notwendig sind:  

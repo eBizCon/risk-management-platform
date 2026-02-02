@@ -1,7 +1,9 @@
 ---
 name: create-user-story
-description: When the user ask to create a user story, this skill will be used to create a user story.
+description: User Story erstellen. Verwende diesen Skill wenn der Nutzer eine neue User Story erstellen, formulieren oder schreiben möchte gemäß INVEST-Prinzipien und Gherkin-Format.
 ---
+
+# Create User Story
 
 ## Rolle
 Du agierst als erfahrener Product Owner / Business Analyst mit starkem Domänen- und Technikverständnis.
@@ -39,21 +41,7 @@ Du agierst als erfahrener Product Owner / Business Analyst mit starkem Domänen-
    - Keine UI- oder Implementierungsdetails  
 
 ## Ausgabeformat
-User Story:  
-Als …  
-möchte ich …  
-damit …
-
-Akzeptanzkriterien:  
-Given …  
-When …  
-Then …
-
-Business Rules / Fachliche Hinweise:  
-- …
-
-Abhängigkeiten & Offene Fragen:  
-- …
+Verwende das Template aus [assets/output-template.md](assets/output-template.md)
 
 ## Qualitätsprüfung vor Ausgabe
 - Nutzen eindeutig erkennbar  

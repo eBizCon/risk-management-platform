@@ -1,9 +1,11 @@
 ---
 name: analyse-bug
-description: Analyse a bug and create a bug analysis document
+description: Bug analysieren und Bug-Analyse-Dokument erstellen. Verwende diesen Skill wenn der Nutzer einen Bug analysieren, verstehen oder dokumentieren möchte. Führt einen strukturierten Diskurs mit dem Entwickler und erstellt eine standardisierte Bug-Analyse als Markdown-Datei.
 ---
 
-## Purpose
+# Analyse Bug
+
+## Zweck
 Dieser Skill nimmt eine Bugbeschreibung entgegen und führt einen strukturierten Diskurs mit dem Entwickler, um den Bug sauber zu verstehen.
 
 Das Ergebnis ist eine standardisierte Bug-Analyse als Markdown-Datei unter:
@@ -32,6 +34,7 @@ Optional:
 - Maximal 5 Rückfragen pro Diskurs-Runde
 - Jede Hypothese braucht einen Prüfplan
 - Output ist immer eine Markdown-Datei im Backlog
+- Berücksichtige die Windsurf Rules in `.windsurf/rules/` (Code-Style, Testing, Backend-Architektur) bei der Analyse
 
 
 ## Diskurs-Driven Workflow
@@ -92,108 +95,5 @@ Der Skill liefert:
 3. Offene Blocker-Fragen oder Next Steps
 
 
-## Markdown Template (EXACT)
-
-```md
-# Bug Analyse: <Bug Title>
-
-Bugname: <bugname>
-Datum: <YYYY-MM-DD>
-Komponente(n): <unknown|...>
-Umgebung: <unknown|local|stage|prod>
-
----
-
-## 1) Kurzbeschreibung
-
-Expected:
-...
-
-Actual:
-...
-
-Impact:
-...
-
-Frequency:
-...
-
----
-
-## 2) Repro-Status
-
-- Lokal reproduzierbar: <yes/no/unknown>
-- Stage reproduzierbar: <yes/no/unknown>
-- Prod reproduzierbar: <yes/no/unknown>
-
-Aktueller Stand:
-...
-
----
-
-## 3) Steps to Reproduce (Plan)
-
-1. ...
-2. ...
-3. ...
-
-Preconditions:
-...
-
----
-
-## 4) Observability / Evidence
-
-Logs:
-...
-
-Stacktraces:
-...
-
-Traces:
-...
-
-Bisherige Evidenz:
-...
-
----
-
-## 5) Hypothesen (mit Prüfplan)
-
-Hypothese H1: <...>
-
-Warum plausibel:
-...
-
-Wie prüfen:
-...
-
-Betroffene Stelle (vermutet):
-...
-
----
-
-Hypothese H2: <...>
-
-...
-
----
-
-## 6) Risiken & Regression-Flächen
-
-- ...
-
----
-
-## 7) Offene Fragen (Blocker)
-
-1. ...
-2. ...
-(max 5)
-
----
-
-## 8) Nächste Schritte
-
-- [ ] ...
-- [ ] ...
+## Markdown Template
+Verwende das Template aus [assets/bug-analysis-template.md](assets/bug-analysis-template.md)

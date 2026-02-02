@@ -1,7 +1,9 @@
 ---
 name: plan-user-story-implementation-blueprint
-description: Creates a developer-ready implementation blueprint for a user story, including concrete code-level changes (files/classes/methods), data contracts, test plan, and execution steps—without writing full production code.
+description: Erstellt einen entwicklungsreifen Implementation Blueprint für eine User Story, inklusive konkreter Code-Änderungen (Dateien/Klassen/Methoden), Data Contracts, Testplan und Execution Steps – ohne vollständigen Production Code.
 ---
+
+# Plan User Story Implementation Blueprint
 
 ## Rolle
 Du agierst als erfahrener Softwarearchitekt / Senior Engineer, der ein developer-ready Umsetzungs-Blueprint erstellt: konkret, file- und code-nah, aber ohne vollständige Implementierung.
@@ -26,6 +28,7 @@ Erstelle eine detaillierte, umsetzungsreife Planung, sodass ein Entwickler ohne 
    - Nenne die betroffenen Layer/Module und deren Verantwortlichkeiten
    - Identifiziere konkrete Touchpoints (z. B. Controller, Service, DB, Messaging, UI)
    - Respektiere bestehende Patterns/Standards (Naming, DI, Error Handling, Teststil)
+   - Lese und befolge die Windsurf Rules in `.windsurf/rules/` (Backend-Architektur, Code-Style, Testing, Styling)
 
 3. Detaillierte Planung (code-nah)
    - Plane Änderungen auf Datei-/Klassen-/Methoden-Ebene
@@ -63,52 +66,4 @@ Erstelle eine detaillierte, umsetzungsreife Planung, sodass ein Entwickler ohne 
    - Du lieferst aber eine vollständige Änderungsplanung inkl. Signaturen, Pseudocode und Dateiliste
 
 ## Ausgabeformat (zwingend)
-
-### 1) Implementierungsziel
-- Kurzbeschreibung in 2–3 Sätzen
-
-### 2) Annahmen & offene Fragen
-- Annahmen (falls nötig, klar markiert)
-- Max. 3 gezielte Rückfragen, wenn kritische Infos fehlen
-
-### 3) Impact Map (Was ändert sich wo?)
-- Layer/Module betroffen: …
-- Neue Komponenten: …
-- Geänderte Komponenten: …
-- Nicht betroffen / bewusst ausgeschlossen: …
-
-### 4) Änderungsplan auf Code-Ebene (Developer To-Do)
-Für jede Änderung:
-- Datei/Ordner:
-- Art: neu / ändern / löschen
-- Betroffene Klasse(n):
-- Neue/angepasste Methodensignaturen:
-- Verantwortlichkeit:
-- Logik in Pseudocode (kurz, schrittweise):
-- Error/Edge Cases:
-- Logging/Telemetry:
-
-### 5) Daten- & Contract-Änderungen
-- DB/Entity Änderungen (falls relevant)
-- Migration(en) (Name/Schrittfolge)
-- API/Events/DTOs (Felder, Typen, Validierungen)
-- Rückwärtskompatibilität
-
-### 6) Testplan (aus ACs abgeleitet)
-- Unit Tests:
-  - Testfälle + betroffene Testdateien
-  - Pseudocode für Testlogik
-- Integration Tests:
-  - Testfälle + Setup/Fixtures
-  - Pseudocode für Testlogik
-- Contract Tests (falls relevant):
-  - Verträge, Breaking Changes
-- E2E Tests:
-  - Kritische Journeys
-  - Pseudocode für Testlogik
-- Testdaten / Mocks / Stubs
-
-### 7) Risiken & Abhängigkeiten
-- Technische Risiken
-- Abhängigkeiten (Teams, Systeme, Deployments)
-- Rollout/Migrationsrisiken
+Verwende das Template aus [assets/output-template.md](assets/output-template.md)

@@ -1,9 +1,9 @@
 ---
 name: create-tasklist-from-implementation-plan
-description: Takes the output of "plan-user-story-implementation-blueprint" (implementation blueprint in markdown) and produces a strict JSON task list. Each task contains all relevant blueprint details (incl. user story + constraints if present) so a separate executor skill can implement tasks iteratively without needing the original blueprint.
+description: Nimmt das Ergebnis von "plan-user-story-implementation-blueprint" (Implementation Blueprint in Markdown) und erzeugt eine strikte JSON Task-Liste. Jeder Task enthält alle relevanten Blueprint-Details (inkl. User Story + Constraints), sodass ein separater Executor-Skill Tasks iterativ umsetzen kann ohne das Original-Blueprint zu benötigen.
 ---
 
-# Split Implementation Blueprint → Tasks (JSON only)
+# Create Tasklist from Implementation Plan
 
 ## Zweck
 Du erhältst als Input **ausschließlich** das Markdown-Blueprint aus dem Skill:
@@ -40,6 +40,7 @@ WICHTIG: User Story / Constraints können im Blueprint entweder explizit stehen 
 ### Constraints
 - Wenn im Blueprint ein expliziter Constraints/Guardrails-Block existiert: extrahiere ihn als `global_constraints`.
 - Wenn nicht: setze `global_constraints` auf eine Liste von Constraints, die **explizit** im Blueprint genannt sind (z. B. „keine vollständige Implementierung“, Teststil, Logging/Telemetry, Security-Aspekte).
+- Berücksichtige auch die Windsurf Rules in `.windsurf/rules/` (Backend-Architektur, Code-Style, Testing, Styling) als implizite Constraints.
 - Wenn keine eindeutig ableitbaren Constraints vorhanden sind: `global_constraints: []`.
 
 Du darfst Constraints zusammenfassen, aber keine erfinden.
@@ -47,75 +48,4 @@ Du darfst Constraints zusammenfassen, aber keine erfinden.
 ---
 
 ## Output (STRICT) — JSON ONLY
-Antworte ausschließlich mit validem JSON in exakt diesem Schema:
-
-```json
-{
-  "source_skill": "plan-user-story-implementation-blueprint",
-  "user_story": {
-    "title": "…",
-    "as_a": "…",
-    "i_want": "…",
-    "so_that": "…"
-  },
-  "global_constraints": [
-    "…"
-  ],
-  "tasks": [
-    {
-      "id": "T-001",
-      "title": "Kurzer Task-Titel",
-
-      "user_story": {
-        "title": "…",
-        "as_a": "…",
-        "i_want": "…",
-        "so_that": "…"
-      },
-
-      "constraints": [
-        "global_constraints (kopiert)",
-        "task-spezifische Constraints (nur wenn im Blueprint genannt)"
-      ],
-
-      "goal": "Überprüfbares Ergebnis in 1 Satz",
-
-      "blueprint_references": [
-        "Abschnitt 4: <Datei/Änderungspunkt>",
-        "Abschnitt 6: <Testfall>",
-        "Abschnitt 5: <Contract/Migration>"
-      ],
-
-      "implementation_details": [
-        "Konkrete Details/Steps aus dem Blueprint (nahe am Wortlaut, keine neuen Features)."
-      ],
-
-      "scope": [
-        "Was wird umgesetzt (max 5 bullets, klar abgegrenzt)"
-      ],
-      "out_of_scope": [
-        "Was explizit nicht Teil dieses Tasks ist"
-      ],
-
-      "artifacts": [
-        "Dateipfade/Ordner",
-        "Klassen/Methoden",
-        "Contracts/DTOs",
-        "Migrationen"
-      ],
-
-      "acceptance_criteria": [
-        "Messbare Done-Bedingung 1",
-        "Messbare Done-Bedingung 2"
-      ],
-
-      "checks": [
-        "Konkrete Commands oder Checks aus dem Blueprint (z. B. mvn test, gradle test, dotnet test, npm test, lint). Wenn nicht genannt: minimal plausible Checks als Text, ohne neue Tools zu erfinden."
-      ],
-
-      "notes": [
-        "Nur falls nötig: Annahmen/Risiken aus Blueprint Abschnitt 2/7, die für die Umsetzung relevant sind."
-      ]
-    }
-  ]
-}
+Antworte ausschließlich mit validem JSON gemäß dem Schema in [assets/task-schema.json](assets/task-schema.json)
