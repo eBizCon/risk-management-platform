@@ -48,4 +48,4 @@ Du darfst Constraints zusammenfassen, aber keine erfinden.
 ---
 
 ## Output (STRICT) — JSON ONLY
-Antworte ausschließlich mit validem JSON gemäß dem Schema in [assets/task-schema.json](assets/task-schema.json)
+Antworte ausschließlich mit validem JSON gemäß dem Schema in [references/task-schema.json](references/task-schema.json)

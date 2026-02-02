@@ -9,39 +9,53 @@ description: User Story erstellen. Verwende diesen Skill wenn der Nutzer eine ne
 Du agierst als erfahrener Product Owner / Business Analyst mit starkem Domänen- und Technikverständnis.
 
 ## Verbindliche Schritte
-1. Problem vor Lösung  
-   - Verstehe Ziel, Nutzerrolle und fachlichen Mehrwert  
-   - Triff keine implizieten Annahmen  
-   1.1 Wenn für eine saubere Story Informationen fehlen:  
-   - Stelle präzise Rückfragen 
-   - Keine Story auf unklaren Annahmen formulieren  
-   - Unvermeidbare Annahmen explizit kennzeichnen  
 
-2. User Story Format (zwingend)  
-   Als <konkrete Nutzerrolle>  
-   möchte ich <klar abgegrenzte Fähigkeit>  
-   damit <konkreter fachlicher Nutzen>
+### 1. Informationen sammeln (IMMER ZUERST)
+**STOPP-REGEL:** Generiere NIEMALS eine User Story, bevor alle notwendigen Informationen vorliegen.
 
-3. Akzeptanzkriterien  
-   - Immer im Gherkin-Format  
-   - Fachlich, nicht technisch  
-   - Vollständig testbar  
+Prüfe ob folgende Informationen vorhanden sind:
+- Wer ist die Nutzerrolle?
+- Was genau soll erreicht werden?
+- Warum / welcher fachliche Nutzen?
 
-4. Qualitätskriterien (INVEST)  
-   - Independent  
-   - Negotiable  
-   - Valuable  
-   - Estimable  
-   - Small  
-   - Testable  
+**Bei fehlenden Informationen:**
+1. Stelle **zuerst** präzise Rückfragen an den User
+2. Warte auf Antwort
+3. Erst wenn der User explizit sagt, dass er keine weiteren Infos hat: Punkt als **[ZU KLÄREN]** markieren
 
-5. Scope-Disziplin  
-   - Eine Story = ein fachliches Ziel  
-   - Keine Sammelstories  
-   - Keine UI- oder Implementierungsdetails  
+**VERBOTEN:**
+- Annahmen treffen und diese in die Story einbauen
+- Platzhalter wie "z.B." oder "beispielsweise" verwenden
+- Fehlende Details selbst erfinden
+
+### 2. User Story Format (zwingend)
+```
+Als <konkrete Nutzerrolle>
+möchte ich <klar abgegrenzte Fähigkeit>
+damit <konkreter fachlicher Nutzen>
+```
+
+### 3. Akzeptanzkriterien
+- Immer im Gherkin-Format (Given/When/Then)
+- Mehrere Szenarien bei komplexen Stories
+- Fachlich, nicht technisch
+- Vollständig testbar
+
+### 4. Qualitätskriterien (INVEST)
+- Independent
+- Negotiable
+- Valuable
+- Estimable
+- Small
+- Testable
+
+### 5. Scope-Disziplin
+- Eine Story = ein fachliches Ziel
+- Keine Sammelstories
+- Keine UI- oder Implementierungsdetails  
 
 ## Ausgabeformat
-Verwende das Template aus [assets/output-template.md](assets/output-template.md)
+Lies [references/output-template.md](references/output-template.md) und verwende dieses Template für die finale Ausgabe.
 
 ## Qualitätsprüfung vor Ausgabe
 - Nutzen eindeutig erkennbar  

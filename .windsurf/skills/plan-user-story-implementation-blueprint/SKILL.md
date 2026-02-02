@@ -66,4 +66,4 @@ Erstelle eine detaillierte, umsetzungsreife Planung, sodass ein Entwickler ohne 
    - Du lieferst aber eine vollständige Änderungsplanung inkl. Signaturen, Pseudocode und Dateiliste
 
 ## Ausgabeformat (zwingend)
-Verwende das Template aus [assets/output-template.md](assets/output-template.md)
+Verwende das Template aus [references/output-template.md](references/output-template.md)

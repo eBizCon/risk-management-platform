@@ -96,4 +96,4 @@ Der Skill liefert:
 
 
 ## Markdown Template
-Verwende das Template aus [assets/bug-analysis-template.md](assets/bug-analysis-template.md)
+Verwende das Template aus [references/bug-analysis-template.md](references/bug-analysis-template.md)
