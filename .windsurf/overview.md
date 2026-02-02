@@ -28,6 +28,7 @@ Skills sind einzelne, spezialisierte Aufgaben.
 | `implement-task-from-tasklist` | Setzt einen einzelnen Task um | Task + Taskliste | Code-Änderungen + Bericht |
 | `analyse-bug` | Strukturierte Bug-Analyse (ohne Fix) | Bug-Beschreibung | backlog/bugfixes/name-bug-analyse.md |
 | `run-e2e` | E2E-Tests ausführen | - | Testergebnisse |
+| `skill-creator` | Erstellt/aktualisiert Skills für Windsurf | Skill-Anforderung | .skill Datei (Paket) |
 
 ---
 
