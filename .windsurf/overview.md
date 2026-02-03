@@ -21,7 +21,7 @@ Anforderung / Use Case
        -> optional: Taskliste als JSON erzeugen
 
 Vorhandene JSON Taskliste
-  -> (Workflow) /execute-task-list (siehe .windsurf/workflows/execute-task-list.md)
+  -> (Skill) execute-tasklist
        -> iterativ (Skill) implement-task-from-tasklist
        -> persistiert Fortschritt in <tasks_file>.progress.json
        -> führt Checks aus task.checks aus
@@ -34,7 +34,7 @@ Vorhandene JSON Taskliste
 - **Du hast schon eine gute User Story und willst „nur“ die technische Planung + Tasks**
   - Nutze: `/plan-user-story`
 - **Du hast bereits eine JSON Taskliste und willst sie umsetzen**
-  - Nutze: `/execute-task-list`
+  - Nutze: Skill `execute-tasklist`
 - **Du willst gezielt einen einzelnen Schritt machen (ohne Orchestrierung)**
   - Nutze: den passenden Skill direkt (siehe Tabellen unten)
 - **Du willst einen Bug verstehen/dokumentieren, aber noch nicht fixen**
@@ -42,66 +42,16 @@ Vorhandene JSON Taskliste
 - **Du willst Tests reproduzierbar ausführen**
   - Nutze: `run-e2e`
 
-## Workflows (repo-spezifische Details)
-
-### `/create-and-plan-user-story`
-
-Quelle: `.windsurf/workflows/create-and-plan-user-story.md`
-
-- **Input**
-  - Freitext-Anforderung / Use Case im Chat
-- **Ablauf (Steps im Workflow)**
-  - `create-user-story`
-  - `refine-user-story`
-  - Approval Gate: „User Story freigeben? (JA / Änderungen)“
-  - `plan-user-story-implementation-blueprint`
-  - Approval Gate: „Implementierungsplan freigeben? (JA / Änderungen)“
-  - optional: Dokumentation erzeugen (Default-Pfad wird im Workflow vorgeschlagen)
-  - optional: Taskliste erzeugen (Default-Pfad wird im Workflow vorgeschlagen)
-- **Artefakte (wenn User zustimmt)**
-  - Blueprint: `backlog/implementations/<user-story-name>/<user-story-name>.md`
-  - Taskliste: `backlog/implementations/<user-story-name>/<user-story-name>-tasks.json`
-
-### `/plan-user-story`
-
-Quelle: `.windsurf/workflows/plan-user-story.md`
-
-- **Input**
-  - Bereits ausgearbeitete User Story
-- **Ablauf (Steps im Workflow)**
-  - `plan-user-story-implementation-blueprint`
-  - Approval Gate: „Implementierungsplan freigeben? (JA / Änderungen)“
-  - optional: Dokumentation (Markdown)
-  - optional: Taskliste (JSON)
-
-### `/execute-task-list`
-
-Quelle: `.windsurf/workflows/execute-task-list.md`
-
-- **Input**
-  - `tasks_file`: Pfad zu einer JSON Taskliste, typischerweise
-    - `backlog/implementations/<user-story-name>/<user-story-name>-tasks.json`
-- **Wichtiges Verhalten**
-  - Legt/aktualisiert automatisch eine Progress-Datei:
-    - `<tasks_file>.progress.json`
-  - Unterstützt User-Kommandos:
-    - `JA` (nächsten pending Task)
-    - `ALL` (alle pending Tasks ohne weiteres Approval)
-    - `NEIN` (manuell wählen)
-    - `<Task-ID>`, `BLOCK <ID>`, `SKIP <ID>`, `STOP`
-  - Ruft pro Task den Skill `implement-task-from-tasklist` auf und führt danach die in `task.checks` definierten Commands aus
-
----
-
 ## Workflows
 
-| Workflow | Zweck | Ruft Skills auf |
-|----------|-------|-----------------|
-| `/create-and-plan-user-story` | Kompletter Prozess: Von Idee zu User Story zu Planung zu Taskliste (inkl. Approval Gates) | create-user-story, refine-user-story, plan-user-story-implementation-blueprint, create-tasklist-from-implementation-plan |
-| `/plan-user-story` | Nur Planung einer bereits vorhandenen User Story | plan-user-story-implementation-blueprint, create-tasklist-from-implementation-plan |
-| `/execute-task-list` | Abarbeiten einer JSON-Taskliste mit Fortschrittsverfolgung | implement-task-from-tasklist (pro Task) |
+| Workflow | Zweck | Input | Ruft Skills auf |
+|----------|-------|-------|-----------------|
+| `/create-and-plan-user-story` | Kompletter Prozess: Von Idee zu User Story zu Planung zu Taskliste (inkl. Approval Gates) | Freitext-Anforderung | create-user-story → refine-user-story → plan-user-story-implementation-blueprint → create-tasklist-from-implementation-plan |
+| `/plan-user-story` | Nur Planung einer bereits vorhandenen User Story | Ausgearbeitete User Story | plan-user-story-implementation-blueprint → create-tasklist-from-implementation-plan |
 
----
+**Artefakte** (optional, wenn User zustimmt):
+- Blueprint: `backlog/implementations/<user-story-name>/<user-story-name>.md`
+- Taskliste: `backlog/implementations/<user-story-name>/<user-story-name>-tasks.json`
 
 ## Skills
 
@@ -111,16 +61,24 @@ Quelle: `.windsurf/workflows/execute-task-list.md`
 | `refine-user-story` | Validiert und verbessert bestehende User Story | User Story | Refinierte User Story + Hinweise |
 | `plan-user-story-implementation-blueprint` | Erstellt technischen Umsetzungsplan | User Story | Blueprint (Dateien, Methoden, Tests) |
 | `create-tasklist-from-implementation-plan` | Zerlegt Blueprint in Tasks | Blueprint (Markdown) | JSON-Taskliste |
+| `execute-tasklist` | Führt Tasks aus einer JSON-Taskliste aus | JSON-Taskliste | Code-Änderungen + Progress-Tracking |
 | `implement-task-from-tasklist` | Setzt einen einzelnen Task um | Task + Taskliste | Code-Änderungen + Bericht |
 | `analyse-bug` | Strukturierte Bug-Analyse (ohne Fix) | Bug-Beschreibung | backlog/bugfixes/name-bug-analyse.md |
 | `run-e2e` | E2E-Tests ausführen | - | Testergebnisse |
+| `git-review` | Review staged git changes | Staged Changes | Review-Datei unter reviews/ |
 | `skill-creator` | Erstellt/aktualisiert Skills für Windsurf | Skill-Anforderung | .skill Datei (Paket) |
 
 ## Skill-Hinweise (repo-spezifisch)
 
 ### `execute-tasklist` (Skill)
 
-Dieser Skill existiert im Repo (`.windsurf/skills/execute-tasklist/SKILL.md`) und beschreibt dasselbe Vorgehen wie der Workflow `/execute-task-list` (Progress-Datei, Modi `JA/ALL/NEIN`, BLOCK/SKIP/STOP).
+Quelle: `.windsurf/skills/execute-tasklist/SKILL.md`
+
+- **Input**: Pfad zu einer JSON Taskliste (z.B. `backlog/implementations/<name>/<name>-tasks.json`)
+- **Wichtiges Verhalten**:
+  - Legt/aktualisiert automatisch eine Progress-Datei: `<tasks_file>.progress.json`
+  - Unterstützt User-Kommandos: `JA`, `ALL`, `NEIN`, `<Task-ID>`, `BLOCK <ID>`, `SKIP <ID>`, `STOP`
+  - Ruft pro Task den Skill `implement-task-from-tasklist` auf
 
 ### `run-e2e`
 
@@ -140,34 +98,20 @@ Quelle: `.windsurf/skills/git-review/SKILL.md`
 
 ## Ablauf: Vollständiger Feature-Lifecycle
 
-1. **Anforderung / Use Case** (Input)
-2. **create-user-story** (Skill) - Erstellt User Story
-3. **refine-user-story** (Skill) - Validiert und verbessert (Approval Gate)
-4. **plan-user-story-implementation-blueprint** (Skill) - Technischer Plan
-5. **create-tasklist-from-implementation-plan** (Skill) - JSON Taskliste
-6. **JSON Taskliste** gespeichert unter backlog/implementations/name/name-tasks.json
-7. **/execute-task-list** (Workflow) - Führt Tasks aus via implement-task-from-tasklist
-
-## Typische Artefakte (repo-spezifisch)
-
-- **Blueprint (Markdown)**
-  - Wird von den Workflows `/create-and-plan-user-story` oder `/plan-user-story` optional erzeugt
-  - Default-Konvention im Workflow: `backlog/implementations/<user-story-name>/<user-story-name>.md`
-- **Taskliste (JSON)**
-  - Wird optional im gleichen Schritt erzeugt
-  - Default-Konvention im Workflow: `backlog/implementations/<user-story-name>/<user-story-name>-tasks.json`
-- **Progress-Datei (JSON)**
-  - Wird von `/execute-task-list` automatisch angelegt/aktualisiert
-  - Pfad: `<tasks_file>.progress.json`
+```text
+1. Anforderung / Use Case (Input)
+2. create-user-story (Skill) → Erstellt User Story
+3. refine-user-story (Skill) → Validiert und verbessert
+   └── Approval Gate: „User Story freigeben?"
+4. plan-user-story-implementation-blueprint (Skill) → Technischer Plan
+   └── Approval Gate: „Implementierungsplan freigeben?"
+5. create-tasklist-from-implementation-plan (Skill) → JSON Taskliste
+6. JSON Taskliste gespeichert unter backlog/implementations/<name>/<name>-tasks.json
+7. execute-tasklist (Skill) → Führt Tasks aus via implement-task-from-tasklist
+   └── Progress-Tracking in <tasks_file>.progress.json
+```
 
 ---
-
-## Standalone Skills
-
-| Skill | Wann verwenden |
-|-------|----------------|
-| `analyse-bug` | Bug analysieren ohne sofort zu fixen - erzeugt Analyse-Dokument |
-| `run-e2e` | E2E-Tests manuell ausführen |
 
 ## Häufige Patterns
 
