@@ -25,13 +25,13 @@ Erstelle eine detaillierte, umsetzungsreife Planung, sodass ein Entwickler ohne 
    - Extrahiere funktionale Anforderungen, Edge Cases, Non-Functionals (Performance, Security, Logging)
 
 2. Codebasis-Realität
+   - Nutze `code_search` um relevante Bereiche zu identifizieren
    - Nenne die betroffenen Layer/Module und deren Verantwortlichkeiten
    - Identifiziere konkrete Touchpoints (z. B. Controller, Service, DB, Messaging, UI)
    - Respektiere bestehende Patterns/Standards (Naming, DI, Error Handling, Teststil)
    - Lese und befolge die Windsurf Rules in `.windsurf/rules/` (Backend-Architektur, Code-Style, Testing, Styling)
 
 3. Detaillierte Planung (code-nah)
-   - Nutze `code_search` um relevante Bereiche zu identifizieren
    - Plane Änderungen auf Datei-/Klassen-/Methoden-Ebene
    - Erlaube:
      - konkrete Klassen- und Methodennamen
