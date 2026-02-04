@@ -31,6 +31,7 @@ Erstelle eine detaillierte, umsetzungsreife Planung, sodass ein Entwickler ohne 
    - Lese und befolge die Windsurf Rules in `.windsurf/rules/` (Backend-Architektur, Code-Style, Testing, Styling)
 
 3. Detaillierte Planung (code-nah)
+   - Nutze `code_search` um relevante Bereiche zu identifizieren
    - Plane Änderungen auf Datei-/Klassen-/Methoden-Ebene
    - Erlaube:
      - konkrete Klassen- und Methodennamen
