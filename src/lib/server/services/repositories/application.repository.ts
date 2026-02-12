@@ -184,6 +184,22 @@ export async function getProcessorApplicationStats(): Promise<{
 	};
 }
 
+export async function getApplicationsByUserForExport(
+	userId: string,
+	params: { status?: ApplicationStatus }
+): Promise<Application[]> {
+	const conditions = [eq(applications.createdBy, userId)];
+	if (params.status) {
+		conditions.push(eq(applications.status, params.status));
+	}
+	return db
+		.select()
+		.from(applications)
+		.where(and(...conditions))
+		.orderBy(desc(applications.createdAt))
+		.all();
+}
+
 export async function deleteApplication(id: number): Promise<boolean> {
 	const existing = db.select().from(applications).where(eq(applications.id, id)).get();
 	if (!existing || existing.status !== 'draft') {

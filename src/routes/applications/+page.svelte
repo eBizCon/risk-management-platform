@@ -3,7 +3,7 @@
 	import { page } from '$app/stores';
 	import ApplicationTable from '$lib/components/ApplicationTable.svelte';
 	import RoleGuard from '$lib/components/RoleGuard.svelte';
-	import { Plus, Filter } from 'lucide-svelte';
+	import { Plus, Filter, Download } from 'lucide-svelte';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -33,6 +33,14 @@
 
 	function handleEdit(id: number) {
 		goto(`/applications/${id}/edit`);
+	}
+
+	function handleExport() {
+		const url = new URL('/applications/export', window.location.origin);
+		if (data.statusFilter) {
+			url.searchParams.set('status', data.statusFilter);
+		}
+		window.location.href = url.toString();
 	}
 
 	async function handleDelete(id: number) {
@@ -85,6 +93,14 @@
 				<span class="text-sm text-secondary">
 					{data.applications.length} Antrag/Anträge gefunden
 				</span>
+				<button
+					onclick={handleExport}
+					data-testid="applications-export-button"
+					class="btn-secondary inline-flex items-center px-3 py-1.5 text-sm sm:ml-auto"
+				>
+					<Download class="w-4 h-4 mr-2" />
+					Als CSV exportieren
+				</button>
 			</div>
 		</div>
 
