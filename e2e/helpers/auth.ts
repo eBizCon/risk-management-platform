@@ -1,6 +1,6 @@
 import type { BrowserContext, Page } from '@playwright/test';
 
-export type TestUserRole = 'applicant' | 'processor';
+export type TestUserRole = 'applicant' | 'processor' | 'admin';
 
 interface TestUser {
 	id: string;

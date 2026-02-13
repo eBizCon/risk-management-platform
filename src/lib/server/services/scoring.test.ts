@@ -1,5 +1,51 @@
-import { describe, it, expect } from 'vitest';
-import { calculateScore } from './scoring';
+import { describe, it, expect, vi } from 'vitest';
+
+vi.mock('./repositories/scoring-config.repository', () => ({
+	getActiveScoringConfig: vi.fn().mockResolvedValue({
+		id: 1,
+		trafficLightGreen: 75,
+		trafficLightYellow: 50,
+		incomeRatioThresholds: { excellent: 0.5, good: 0.3, moderate: 0.1 },
+		affordabilityThresholds: { comfortable: 0.3, moderate: 0.5, stretched: 0.7 },
+		employmentDeductions: { employed: 0, self_employed: 10, retired: 5, unemployed: 35 },
+		paymentDefaultDeduction: 25,
+		createdAt: new Date(),
+		updatedAt: new Date()
+	}),
+	getDefaultScoringConfig: vi.fn().mockReturnValue({
+		id: 1,
+		trafficLightGreen: 75,
+		trafficLightYellow: 50,
+		incomeRatioThresholds: { excellent: 0.5, good: 0.3, moderate: 0.1 },
+		affordabilityThresholds: { comfortable: 0.3, moderate: 0.5, stretched: 0.7 },
+		employmentDeductions: { employed: 0, self_employed: 10, retired: 5, unemployed: 35 },
+		paymentDefaultDeduction: 25,
+		createdAt: new Date(),
+		updatedAt: new Date()
+	})
+}));
+
+const { calculateScoreWithConfig } = await import('./scoring');
+
+const defaultConfig = {
+	id: 1,
+	trafficLightGreen: 75,
+	trafficLightYellow: 50,
+	incomeRatioThresholds: { excellent: 0.5, good: 0.3, moderate: 0.1 },
+	affordabilityThresholds: { comfortable: 0.3, moderate: 0.5, stretched: 0.7 },
+	employmentDeductions: { employed: 0, self_employed: 10, retired: 5, unemployed: 35 },
+	paymentDefaultDeduction: 25,
+	createdAt: new Date(),
+	updatedAt: new Date()
+};
+
+const calculateScore = (
+	income: number,
+	fixedCosts: number,
+	desiredRate: number,
+	employmentStatus: 'employed' | 'self_employed' | 'unemployed' | 'retired',
+	hasPaymentDefault: boolean
+) => calculateScoreWithConfig(income, fixedCosts, desiredRate, employmentStatus, hasPaymentDefault, defaultConfig);
 
 describe('Scoring Service', () => {
 	describe('calculateScore', () => {

@@ -1,4 +1,6 @@
 import type { EmploymentStatus, TrafficLight } from '../db/schema';
+import type { ParsedScoringConfig } from './repositories/scoring-config.repository';
+import { getActiveScoringConfig } from './repositories/scoring-config.repository';
 
 export interface ScoringResult {
 	score: number;
@@ -6,12 +8,13 @@ export interface ScoringResult {
 	reasons: string[];
 }
 
-export function calculateScore(
+export function calculateScoreWithConfig(
 	income: number,
 	fixedCosts: number,
 	desiredRate: number,
 	employmentStatus: EmploymentStatus,
-	hasPaymentDefault: boolean
+	hasPaymentDefault: boolean,
+	config: ParsedScoringConfig
 ): ScoringResult {
 	const reasons: string[] = [];
 	let score = 100;
@@ -19,12 +22,13 @@ export function calculateScore(
 	const availableIncome = income - fixedCosts;
 	const incomeRatio = availableIncome / income;
 
-	if (incomeRatio >= 0.5) {
+	const irt = config.incomeRatioThresholds;
+	if (incomeRatio >= irt.excellent) {
 		reasons.push('Gutes Verhältnis zwischen Einkommen und Fixkosten (mehr als 50% verfügbar)');
-	} else if (incomeRatio >= 0.3) {
+	} else if (incomeRatio >= irt.good) {
 		score -= 15;
 		reasons.push('Moderates Verhältnis zwischen Einkommen und Fixkosten (30-50% verfügbar)');
-	} else if (incomeRatio >= 0.1) {
+	} else if (incomeRatio >= irt.moderate) {
 		score -= 30;
 		reasons.push('Eingeschränktes Verhältnis zwischen Einkommen und Fixkosten (10-30% verfügbar)');
 	} else {
@@ -34,12 +38,13 @@ export function calculateScore(
 
 	const rateToAvailableRatio = desiredRate / availableIncome;
 
-	if (rateToAvailableRatio <= 0.3) {
+	const at = config.affordabilityThresholds;
+	if (rateToAvailableRatio <= at.comfortable) {
 		reasons.push('Gewünschte Rate ist gut tragbar (maximal 30% des verfügbaren Einkommens)');
-	} else if (rateToAvailableRatio <= 0.5) {
+	} else if (rateToAvailableRatio <= at.moderate) {
 		score -= 10;
 		reasons.push('Gewünschte Rate ist moderat tragbar (30-50% des verfügbaren Einkommens)');
-	} else if (rateToAvailableRatio <= 0.7) {
+	} else if (rateToAvailableRatio <= at.stretched) {
 		score -= 25;
 		reasons.push('Gewünschte Rate belastet das Budget erheblich (50-70% des verfügbaren Einkommens)');
 	} else {
@@ -47,26 +52,28 @@ export function calculateScore(
 		reasons.push('Gewünschte Rate übersteigt das tragbare Maß (mehr als 70% des verfügbaren Einkommens)');
 	}
 
+	const ed = config.employmentDeductions;
 	switch (employmentStatus) {
 		case 'employed':
+			score -= ed.employed;
 			reasons.push('Angestelltenverhältnis bietet stabile Einkommenssituation');
 			break;
 		case 'self_employed':
-			score -= 10;
+			score -= ed.self_employed;
 			reasons.push('Selbstständigkeit birgt gewisses Einkommensrisiko');
 			break;
 		case 'retired':
-			score -= 5;
+			score -= ed.retired;
 			reasons.push('Ruhestand bietet stabile, aber begrenzte Einkommenssituation');
 			break;
 		case 'unemployed':
-			score -= 35;
+			score -= ed.unemployed;
 			reasons.push('Arbeitslosigkeit stellt erhebliches Risiko für Kreditrückzahlung dar');
 			break;
 	}
 
 	if (hasPaymentDefault) {
-		score -= 25;
+		score -= config.paymentDefaultDeduction;
 		reasons.push('Frühere Zahlungsverzüge beeinträchtigen die Kreditwürdigkeit');
 	} else {
 		reasons.push('Keine früheren Zahlungsverzüge - positive Zahlungshistorie');
@@ -75,10 +82,10 @@ export function calculateScore(
 	score = Math.max(0, Math.min(100, score));
 
 	let trafficLight: TrafficLight;
-	if (score >= 75) {
+	if (score >= config.trafficLightGreen) {
 		trafficLight = 'green';
 		reasons.unshift('Gesamtbewertung: Positiv - Kreditantrag empfohlen');
-	} else if (score >= 50) {
+	} else if (score >= config.trafficLightYellow) {
 		trafficLight = 'yellow';
 		reasons.unshift('Gesamtbewertung: Prüfung erforderlich - manuelle Bewertung empfohlen');
 	} else {
@@ -87,4 +94,15 @@ export function calculateScore(
 	}
 
 	return { score, trafficLight, reasons };
+}
+
+export async function calculateScore(
+	income: number,
+	fixedCosts: number,
+	desiredRate: number,
+	employmentStatus: EmploymentStatus,
+	hasPaymentDefault: boolean
+): Promise<ScoringResult> {
+	const config = await getActiveScoringConfig();
+	return calculateScoreWithConfig(income, fixedCosts, desiredRate, employmentStatus, hasPaymentDefault, config);
 }

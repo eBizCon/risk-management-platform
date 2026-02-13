@@ -2,7 +2,7 @@
 // for information about these interfaces
 declare global {
 	namespace App {
-		type UserRole = 'applicant' | 'processor'
+		type UserRole = 'applicant' | 'processor' | 'admin'
 
 		interface User {
 			id: string

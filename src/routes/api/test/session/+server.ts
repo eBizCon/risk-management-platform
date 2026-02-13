@@ -6,7 +6,7 @@ import { createSession, deleteSession, SESSION_COOKIE_NAME } from '$lib/server/s
 import type { RequestHandler } from './$types';
 
 const requestSchema = z.object({
-	role: z.enum(['applicant', 'processor']),
+	role: z.enum(['applicant', 'processor', 'admin']),
 	id: z.string().min(1),
 	name: z.string().min(1)
 });
