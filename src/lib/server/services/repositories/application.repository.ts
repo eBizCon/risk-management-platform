@@ -1,4 +1,4 @@
-import { eq, and, desc, count } from 'drizzle-orm';
+import { eq, and, desc, asc, count } from 'drizzle-orm';
 import { db, applications } from '../../db';
 import type { Application, NewApplication, ApplicationStatus } from '../../db/schema';
 import { calculateScore } from '../scoring';
@@ -116,13 +116,15 @@ export async function getApplicationById(id: number): Promise<Application | null
 	return result ?? null;
 }
 
-export async function getApplicationsByUser(userId: string, status?: ApplicationStatus): Promise<Application[]> {
+export async function getApplicationsByUser(userId: string, status?: ApplicationStatus, sortOrder?: 'asc' | 'desc'): Promise<Application[]> {
+	const orderFn = sortOrder === 'asc' ? asc(applications.createdAt) : desc(applications.createdAt);
 	if (status) {
 		return db.select().from(applications)
 			.where(and(eq(applications.createdBy, userId), eq(applications.status, status)))
+			.orderBy(orderFn)
 			.all();
 	}
-	return db.select().from(applications).where(eq(applications.createdBy, userId)).all();
+	return db.select().from(applications).where(eq(applications.createdBy, userId)).orderBy(orderFn).all();
 }
 
 export async function getApplicationsByStatus(status: ApplicationStatus): Promise<Application[]> {

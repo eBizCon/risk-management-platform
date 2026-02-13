@@ -8,14 +8,18 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 	}
 
 	const statusFilter = url.searchParams.get('status');
+	const sortParam = url.searchParams.get('sort');
+	const sortOrder: 'asc' | 'desc' = sortParam === 'createdAt_asc' ? 'asc' : 'desc';
 
 	const applications = await getApplicationsByUser(
 		locals.user.id,
-		statusFilter as 'draft' | 'submitted' | 'approved' | 'rejected' | undefined
+		statusFilter as 'draft' | 'submitted' | 'approved' | 'rejected' | undefined,
+		sortOrder
 	);
 
 	return {
 		applications,
-		statusFilter
+		statusFilter,
+		sortOrder
 	};
 };

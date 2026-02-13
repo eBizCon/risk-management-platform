@@ -16,6 +16,11 @@
 		{ value: 'rejected', label: 'Abgelehnt' }
 	];
 
+	const sortOptions = [
+		{ value: 'createdAt_desc', label: 'Neueste zuerst' },
+		{ value: 'createdAt_asc', label: 'Älteste zuerst' }
+	];
+
 	function handleFilterChange(event: Event) {
 		const select = event.target as HTMLSelectElement;
 		const url = new URL($page.url);
@@ -24,6 +29,13 @@
 		} else {
 			url.searchParams.delete('status');
 		}
+		goto(url.toString());
+	}
+
+	function handleSortChange(event: Event) {
+		const select = event.target as HTMLSelectElement;
+		const url = new URL($page.url);
+		url.searchParams.set('sort', select.value);
 		goto(url.toString());
 	}
 
@@ -76,8 +88,21 @@
 						onchange={handleFilterChange}
 						value={data.statusFilter || ''}
 						class="rounded-md border-default shadow-sm sm:text-sm"
+						data-testid="status-filter"
 					>
 						{#each statusOptions as option}
+							<option value={option.value}>{option.label}</option>
+						{/each}
+					</select>
+				</div>
+				<div class="flex items-center gap-2">
+					<select
+						onchange={handleSortChange}
+						value={data.sortOrder === 'asc' ? 'createdAt_asc' : 'createdAt_desc'}
+						class="rounded-md border-default shadow-sm sm:text-sm"
+						data-testid="sort-select"
+					>
+						{#each sortOptions as option}
 							<option value={option.value}>{option.label}</option>
 						{/each}
 					</select>
