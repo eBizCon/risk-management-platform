@@ -301,6 +301,70 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 		});
 	});
 
+	test.describe('Anträge nach Datum sortieren (Sort Applications by Date)', () => {
+		async function createDraftApplication(page: Page, name: string) {
+			await page.goto('/applications/new');
+			await page.getByTestId('input-name').fill(name);
+			await page.getByTestId('input-income').fill('4000');
+			await page.getByTestId('input-fixed-costs').fill('1500');
+			await page.getByTestId('input-desired-rate').fill('500');
+			await page.getByTestId('select-employment-status').selectOption('employed');
+			await page.getByTestId('radio-payment-default-no').check();
+			await page.getByTestId('btn-save-draft').click();
+			await expect(page).toHaveURL(/\/applications\/\d+/);
+		}
+
+		test('should display sort dropdown on applications page', async ({ authenticatedPage }) => {
+			await authenticatedPage.goto('/applications');
+			await expect(authenticatedPage.getByTestId('sort-select')).toBeVisible();
+		});
+
+		test('should default to newest first sorting', async ({ authenticatedPage }) => {
+			await authenticatedPage.goto('/applications');
+			const sortSelect = authenticatedPage.getByTestId('sort-select');
+			await expect(sortSelect).toHaveValue('createdAt_desc');
+		});
+
+		test('should update URL when changing sort order', async ({ authenticatedPage }) => {
+			await authenticatedPage.goto('/applications');
+			await authenticatedPage.getByTestId('sort-select').selectOption('createdAt_asc');
+			await expect(authenticatedPage).toHaveURL(/sort=createdAt_asc/);
+		});
+
+		test('should preserve sort parameter on reload', async ({ authenticatedPage }) => {
+			await authenticatedPage.goto('/applications?sort=createdAt_asc');
+			const sortSelect = authenticatedPage.getByTestId('sort-select');
+			await expect(sortSelect).toHaveValue('createdAt_asc');
+		});
+
+		test('should sort applications newest first by default', async ({ authenticatedPage }) => {
+			await createDraftApplication(authenticatedPage, 'Sort Older App');
+			await createDraftApplication(authenticatedPage, 'Sort Newer App');
+
+			await authenticatedPage.goto('/applications');
+			const rows = authenticatedPage.locator('[data-testid="application-table"] tbody tr[data-testid^="application-row-"]');
+			const firstRowName = rows.first().locator('[data-testid^="application-name-"]');
+			await expect(firstRowName).toHaveText('Sort Newer App');
+		});
+
+		test('should sort applications oldest first when selected', async ({ authenticatedPage }) => {
+			await createDraftApplication(authenticatedPage, 'Sort Oldest App');
+			await createDraftApplication(authenticatedPage, 'Sort Latest App');
+
+			await authenticatedPage.goto('/applications?sort=createdAt_asc');
+			const rows = authenticatedPage.locator('[data-testid="application-table"] tbody tr[data-testid^="application-row-"]');
+			const firstRowName = rows.first().locator('[data-testid^="application-name-"]');
+			await expect(firstRowName).toHaveText('Sort Oldest App');
+		});
+
+		test('should preserve status filter when changing sort order', async ({ authenticatedPage }) => {
+			await authenticatedPage.goto('/applications?status=draft');
+			await authenticatedPage.getByTestId('sort-select').selectOption('createdAt_asc');
+			await expect(authenticatedPage).toHaveURL(/status=draft/);
+			await expect(authenticatedPage).toHaveURL(/sort=createdAt_asc/);
+		});
+	});
+
 	test.describe('Anträge verwalten und überwachen (Manage and Monitor Applications)', () => {
 		test('should display applications list with table', async ({ authenticatedPage }) => {
 			await authenticatedPage.goto('/applications');
