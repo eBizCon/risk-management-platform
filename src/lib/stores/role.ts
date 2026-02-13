@@ -1,7 +1,7 @@
 import { writable, derived } from 'svelte/store';
 import { browser } from '$app/environment';
 
-export type UserRole = 'applicant' | 'processor';
+export type UserRole = 'applicant' | 'processor' | 'admin';
 
 export interface User {
 	id: string;

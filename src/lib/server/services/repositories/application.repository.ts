@@ -6,7 +6,7 @@ import { calculateScore } from '../scoring';
 export const PAGE_SIZE = 10;
 
 export async function createApplication(data: Omit<NewApplication, 'id' | 'createdAt' | 'score' | 'trafficLight' | 'scoringReasons'>): Promise<Application> {
-	const scoring = calculateScore(
+	const scoring = await calculateScore(
 		data.income,
 		data.fixedCosts,
 		data.desiredRate,
@@ -38,7 +38,7 @@ export async function updateApplication(
 
 	if (data.income !== undefined || data.fixedCosts !== undefined || data.desiredRate !== undefined || 
 		data.employmentStatus !== undefined || data.hasPaymentDefault !== undefined) {
-		const scoring = calculateScore(
+		const scoring = await calculateScore(
 			data.income ?? existing.income,
 			data.fixedCosts ?? existing.fixedCosts,
 			data.desiredRate ?? existing.desiredRate,
@@ -65,7 +65,7 @@ export async function submitApplication(id: number): Promise<Application | null>
 		return null;
 	}
 
-	const scoring = calculateScore(
+	const scoring = await calculateScore(
 		existing.income,
 		existing.fixedCosts,
 		existing.desiredRate,

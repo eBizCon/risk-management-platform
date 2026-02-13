@@ -1,5 +1,20 @@
 import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
 
+export const scoringConfig = sqliteTable('scoring_config', {
+	id: integer('id').primaryKey(),
+	trafficLightGreen: integer('traffic_light_green').notNull(),
+	trafficLightYellow: integer('traffic_light_yellow').notNull(),
+	incomeRatioThresholds: text('income_ratio_thresholds').notNull(),
+	affordabilityThresholds: text('affordability_thresholds').notNull(),
+	employmentDeductions: text('employment_deductions').notNull(),
+	paymentDefaultDeduction: integer('payment_default_deduction').notNull(),
+	createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+	updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull()
+});
+
+export type ScoringConfig = typeof scoringConfig.$inferSelect;
+export type NewScoringConfig = typeof scoringConfig.$inferInsert;
+
 export const applications = sqliteTable('applications', {
 	id: integer('id').primaryKey({ autoIncrement: true }),
 	name: text('name').notNull(),
