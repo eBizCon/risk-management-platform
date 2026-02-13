@@ -321,4 +321,71 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await expect(authenticatedPage.getByText(/4.*000/)).toBeVisible();
 		});
 	});
+
+	test.describe('Anträge sortieren (Sort Applications)', () => {
+		async function createDraftApplication(page: Page, name: string) {
+			await page.goto('/applications/new');
+			await page.getByTestId('input-name').fill(name);
+			await page.getByTestId('input-income').fill('4000');
+			await page.getByTestId('input-fixed-costs').fill('1500');
+			await page.getByTestId('input-desired-rate').fill('400');
+			await page.getByTestId('select-employment-status').selectOption('employed');
+			await page.getByTestId('radio-payment-default-no').check();
+			await page.getByTestId('btn-save-draft').click();
+			await expect(page).toHaveURL(/\/applications\/\d+/);
+		}
+
+		test('should display sort dropdown with default "Neueste zuerst"', async ({ authenticatedPage }) => {
+			await authenticatedPage.goto('/applications');
+			const sortSelect = authenticatedPage.getByTestId('sort-select');
+			await expect(sortSelect).toBeVisible();
+			await expect(sortSelect).toHaveValue('createdAt_desc');
+		});
+
+		test('should sort applications newest first by default', async ({ authenticatedPage }) => {
+			await createDraftApplication(authenticatedPage, 'Sort Erster');
+			await createDraftApplication(authenticatedPage, 'Sort Zweiter');
+
+			await authenticatedPage.goto('/applications');
+			const rows = authenticatedPage.locator('[data-testid="application-table"] tbody tr');
+			const firstRowName = rows.first().locator('td').first();
+			await expect(firstRowName).toContainText('Sort Zweiter');
+		});
+
+		test('should sort applications oldest first when selecting "Älteste zuerst"', async ({ authenticatedPage }) => {
+			await createDraftApplication(authenticatedPage, 'Sort Alt Erster');
+			await createDraftApplication(authenticatedPage, 'Sort Alt Zweiter');
+
+			await authenticatedPage.goto('/applications');
+			await authenticatedPage.getByTestId('sort-select').selectOption('createdAt_asc');
+			await expect(authenticatedPage).toHaveURL(/sort=createdAt_asc/);
+
+			const rows = authenticatedPage.locator('[data-testid="application-table"] tbody tr');
+			const firstRowName = rows.first().locator('td').first();
+			await expect(firstRowName).toContainText('Sort Alt Erster');
+		});
+
+		test('should persist sort on page reload', async ({ authenticatedPage }) => {
+			await authenticatedPage.goto('/applications?sort=createdAt_asc');
+			const sortSelect = authenticatedPage.getByTestId('sort-select');
+			await expect(sortSelect).toHaveValue('createdAt_asc');
+
+			await authenticatedPage.reload();
+			await expect(authenticatedPage.getByTestId('sort-select')).toHaveValue('createdAt_asc');
+			await expect(authenticatedPage).toHaveURL(/sort=createdAt_asc/);
+		});
+
+		test('should combine sort and status filter', async ({ authenticatedPage }) => {
+			await createDraftApplication(authenticatedPage, 'Sort Filter Erster');
+			await createDraftApplication(authenticatedPage, 'Sort Filter Zweiter');
+
+			await authenticatedPage.goto('/applications?status=draft&sort=createdAt_asc');
+			await expect(authenticatedPage.getByTestId('sort-select')).toHaveValue('createdAt_asc');
+			await expect(authenticatedPage.getByTestId('status-filter')).toHaveValue('draft');
+
+			const rows = authenticatedPage.locator('[data-testid="application-table"] tbody tr');
+			const firstRowName = rows.first().locator('td').first();
+			await expect(firstRowName).toContainText('Sort Filter Erster');
+		});
+	});
 });
