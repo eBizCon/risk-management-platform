@@ -3,7 +3,7 @@
 	import { page } from '$app/stores';
 	import ApplicationTable from '$lib/components/ApplicationTable.svelte';
 	import RoleGuard from '$lib/components/RoleGuard.svelte';
-	import { Plus, Filter } from 'lucide-svelte';
+	import { Plus, Filter, ArrowUpDown } from 'lucide-svelte';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -16,6 +16,11 @@
 		{ value: 'rejected', label: 'Abgelehnt' }
 	];
 
+	const sortOptions = [
+		{ value: 'createdAt_desc', label: 'Neueste zuerst' },
+		{ value: 'createdAt_asc', label: 'Älteste zuerst' }
+	];
+
 	function handleFilterChange(event: Event) {
 		const select = event.target as HTMLSelectElement;
 		const url = new URL($page.url);
@@ -23,6 +28,17 @@
 			url.searchParams.set('status', select.value);
 		} else {
 			url.searchParams.delete('status');
+		}
+		goto(url.toString());
+	}
+
+	function handleSortChange(event: Event) {
+		const select = event.target as HTMLSelectElement;
+		const url = new URL($page.url);
+		if (select.value && select.value !== 'createdAt_desc') {
+			url.searchParams.set('sort', select.value);
+		} else {
+			url.searchParams.delete('sort');
 		}
 		goto(url.toString());
 	}
@@ -76,8 +92,22 @@
 						onchange={handleFilterChange}
 						value={data.statusFilter || ''}
 						class="rounded-md border-default shadow-sm sm:text-sm"
+						data-testid="status-filter"
 					>
 						{#each statusOptions as option}
+							<option value={option.value}>{option.label}</option>
+						{/each}
+					</select>
+				</div>
+				<div class="flex items-center gap-2">
+					<ArrowUpDown class="w-5 h-5 text-secondary" />
+					<select
+						onchange={handleSortChange}
+						value={data.sort}
+						class="rounded-md border-default shadow-sm sm:text-sm"
+						data-testid="sort-select"
+					>
+						{#each sortOptions as option}
 							<option value={option.value}>{option.label}</option>
 						{/each}
 					</select>

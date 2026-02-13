@@ -1,7 +1,9 @@
-import { eq, and, desc, count } from 'drizzle-orm';
+import { eq, and, asc, desc, count } from 'drizzle-orm';
 import { db, applications } from '../../db';
 import type { Application, NewApplication, ApplicationStatus } from '../../db/schema';
 import { calculateScore } from '../scoring';
+
+export type ApplicationSortOrder = 'createdAt_desc' | 'createdAt_asc';
 
 export const PAGE_SIZE = 10;
 
@@ -116,13 +118,15 @@ export async function getApplicationById(id: number): Promise<Application | null
 	return result ?? null;
 }
 
-export async function getApplicationsByUser(userId: string, status?: ApplicationStatus): Promise<Application[]> {
+export async function getApplicationsByUser(userId: string, status?: ApplicationStatus, sort: ApplicationSortOrder = 'createdAt_desc'): Promise<Application[]> {
+	const orderByClause = sort === 'createdAt_asc' ? asc(applications.createdAt) : desc(applications.createdAt);
 	if (status) {
 		return db.select().from(applications)
 			.where(and(eq(applications.createdBy, userId), eq(applications.status, status)))
+			.orderBy(orderByClause)
 			.all();
 	}
-	return db.select().from(applications).where(eq(applications.createdBy, userId)).all();
+	return db.select().from(applications).where(eq(applications.createdBy, userId)).orderBy(orderByClause).all();
 }
 
 export async function getApplicationsByStatus(status: ApplicationStatus): Promise<Application[]> {
