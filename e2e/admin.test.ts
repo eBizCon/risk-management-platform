@@ -145,7 +145,9 @@ test.describe('Admin - Bestehende Anträge unverändert', () => {
 
 		expect(newScoreText).toBe(originalScoreText);
 
-		await adminPage.goto('/admin/scoring-config');
+		await clearTestSessions(verifyPage);
+		await verifyContext.close();
+
 		const restoreAdminContext = await browser.newContext();
 		const restoreAdminPage = await restoreAdminContext.newPage();
 		await createTestSession(restoreAdminPage, 'admin');
@@ -154,8 +156,6 @@ test.describe('Admin - Bestehende Anträge unverändert', () => {
 		await restoreAdminPage.getByTestId('input-payment-default-deduction').fill('25');
 		await restoreAdminPage.getByTestId('btn-save-scoring-config').click();
 
-		await clearTestSessions(verifyPage);
-		await verifyContext.close();
 		await clearTestSessions(restoreAdminPage);
 		await restoreAdminContext.close();
 	});
