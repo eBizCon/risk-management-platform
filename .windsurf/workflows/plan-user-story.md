@@ -3,17 +3,20 @@ description: Create and plan a user story
 ---
 
 ## Zweck
+
 Strukturierter Workflow von ein User Story bis zu einer freigegebenen Umsetzungsplanung – mit klaren Feedback-Loops und Freigabe-Gates. Arbeite Schritt für Schritt. Lasse keinen Schritt aus. Starte bei Schritt 1
 
 ## Input
+
 - Ausgearbeitete User Story
 
 ## Schritte
+
 1. Rufe skill plan-user-story-implementation-blueprint auf
 2. Approval Gate (Implementierungsplan):
-   - Frage den User: „Implementierungsplan freigeben? (JA / Änderungen)"
-   - Bei Änderungen: Feedback einarbeiten → zurück zu Schritt 4
+   - Frage den User: „Implementierungsplan freigeben"
    - Bei JA: weiter zu Schritt 6
+   - Bei Änderungswünschen: Feedback einarbeiten und zurück zu Schritt 4
 3. Dokumentation:
    - Frage den User, ob der Plan dokumentiert werden soll
    - Bei JA: Frage nach Dateiname/Pfad (Default: `backlog/implementations/<user-story-name>/<user-story-name>.md`)
