@@ -1,6 +1,7 @@
 import Database from 'better-sqlite3';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import * as schema from './schema';
+import { seedDatabase } from './seed';
 
 const sqlite = new Database('data.db');
 export const db = drizzle(sqlite, { schema });
@@ -26,5 +27,13 @@ sqlite.exec(`
 	)
 `);
 
+seedDatabase(sqlite);
+
 export { applications } from './schema';
-export type { Application, NewApplication, ApplicationStatus, EmploymentStatus, TrafficLight } from './schema';
+export type {
+	Application,
+	NewApplication,
+	ApplicationStatus,
+	EmploymentStatus,
+	TrafficLight
+} from './schema';

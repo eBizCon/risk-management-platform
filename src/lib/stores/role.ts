@@ -5,6 +5,7 @@ export type UserRole = 'applicant' | 'processor';
 
 export interface User {
 	id: string;
+	email: string;
 	name: string;
 	role: UserRole;
 }
@@ -13,12 +14,14 @@ const ROLE_COOKIE_NAME = 'risk-management-user-role';
 
 const defaultApplicant: User = {
 	id: 'applicant-1',
+	email: 'applicant@example.com',
 	name: 'Max Mustermann',
 	role: 'applicant'
 };
 
 const defaultProcessor: User = {
 	id: 'processor-1',
+	email: 'processor@example.com',
 	name: 'Anna Bearbeiter',
 	role: 'processor'
 };

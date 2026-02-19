@@ -8,13 +8,13 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	}
 
 	const id = parseInt(params.id);
-	
+
 	if (isNaN(id)) {
 		throw error(400, 'Ungültige Antrags-ID');
 	}
 
 	const application = await getApplicationById(id);
-	
+
 	if (!application) {
 		throw error(404, 'Antrag nicht gefunden');
 	}
@@ -23,7 +23,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		throw error(403, 'Keine Berechtigung');
 	}
 
-	if (application.createdBy !== locals.user.id) {
+	if (application.createdBy !== locals.user.email) {
 		throw error(403, 'Keine Berechtigung');
 	}
 

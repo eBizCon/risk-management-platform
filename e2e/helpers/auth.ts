@@ -4,6 +4,7 @@ export type TestUserRole = 'applicant' | 'processor';
 
 interface TestUser {
 	id: string;
+	email: string;
 	name: string;
 	role: TestUserRole;
 }
@@ -61,8 +62,14 @@ const parseCookie = (setCookie: string, origin: URL): Cookie => {
 	return cookie;
 };
 
+const defaultEmails: Record<TestUserRole, string> = {
+	applicant: 'applicant@example.com',
+	processor: 'processor@example.com'
+};
+
 const buildUser = (role: TestUserRole, userData?: Partial<TestUser>): TestUser => ({
 	id: userData?.id ?? crypto.randomUUID(),
+	email: userData?.email ?? defaultEmails[role],
 	name: userData?.name ?? `Test User ${role}`,
 	role
 });

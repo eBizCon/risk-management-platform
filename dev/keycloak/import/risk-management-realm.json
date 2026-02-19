@@ -1,76 +1,65 @@
 {
-  "realm": "risk-management",
-  "enabled": true,
-  "roles": {
-    "realm": [
-      {
-        "name": "applicant"
-      },
-      {
-        "name": "processor"
-      }
-    ]
-  },
-  "clients": [
-    {
-      "clientId": "risk-management-platform",
-      "name": "risk-management-platform",
-      "protocol": "openid-connect",
-      "enabled": true,
-      "publicClient": true,
-      "standardFlowEnabled": true,
-      "directAccessGrantsEnabled": true,
-      "redirectUris": [
-        "http://localhost:5173/*"
-      ],
-      "webOrigins": [
-        "http://localhost:5173"
-      ],
-      "defaultClientScopes": [
-        "profile",
-        "roles"
-      ],
-      "attributes": {
-        "post.logout.redirect.uris": "http://localhost:5173/*"
-      }
-    }
-  ],
-  "users": [
-    {
-      "username": "applicant",
-      "enabled": true,
-      "email": "applicant@example.com",
-      "emailVerified": true,
-      "firstName": "Applicant",
-      "lastName": "User",
-      "credentials": [
-        {
-          "type": "password",
-          "value": "applicant",
-          "temporary": false
-        }
-      ],
-      "realmRoles": [
-        "applicant"
-      ]
-    },
-    {
-      "username": "processor",
-      "enabled": true,
-      "email": "processor@example.com",
-      "emailVerified": true,
-      "firstName": "Processor",
-      "lastName": "User",
-      "credentials": [
-        {
-          "type": "password",
-          "value": "processor",
-          "temporary": false
-        }
-      ],
-      "realmRoles": [
-        "processor"
-      ]
-    }
-  ]
+	"realm": "risk-management",
+	"enabled": true,
+	"roles": {
+		"realm": [
+			{
+				"name": "applicant"
+			},
+			{
+				"name": "processor"
+			}
+		]
+	},
+	"clients": [
+		{
+			"clientId": "risk-management-platform",
+			"name": "risk-management-platform",
+			"protocol": "openid-connect",
+			"enabled": true,
+			"publicClient": true,
+			"standardFlowEnabled": true,
+			"directAccessGrantsEnabled": true,
+			"redirectUris": ["http://localhost:5173/*"],
+			"webOrigins": ["http://localhost:5173"],
+			"defaultClientScopes": ["profile", "roles", "email"],
+			"attributes": {
+				"post.logout.redirect.uris": "http://localhost:5173/*"
+			}
+		}
+	],
+	"users": [
+		{
+			"username": "applicant",
+			"enabled": true,
+			"email": "applicant@example.com",
+			"emailVerified": true,
+			"firstName": "Applicant",
+			"lastName": "User",
+			"credentials": [
+				{
+					"type": "password",
+					"value": "applicant",
+					"temporary": false
+				}
+			],
+			"realmRoles": ["applicant"]
+		},
+		{
+			"username": "processor",
+			"enabled": true,
+			"email": "processor@example.com",
+			"emailVerified": true,
+			"firstName": "Processor",
+			"lastName": "User",
+			"credentials": [
+				{
+					"type": "password",
+					"value": "processor",
+					"temporary": false
+				}
+			],
+			"realmRoles": ["processor"]
+		}
+	]
 }

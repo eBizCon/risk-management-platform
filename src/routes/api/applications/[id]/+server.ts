@@ -1,6 +1,9 @@
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { deleteApplication, getApplicationById } from '$lib/server/services/repositories/application.repository';
+import {
+	deleteApplication,
+	getApplicationById
+} from '$lib/server/services/repositories/application.repository';
 
 const ensureApplicantOwnership = (user: App.User | undefined, createdBy: string) => {
 	if (!user) {
@@ -11,14 +14,14 @@ const ensureApplicantOwnership = (user: App.User | undefined, createdBy: string)
 		throw error(403, 'Keine Berechtigung');
 	}
 
-	if (createdBy !== user.id) {
+	if (createdBy !== user.email) {
 		throw error(403, 'Keine Berechtigung');
 	}
 };
 
 export const DELETE: RequestHandler = async ({ params, locals }) => {
 	const id = parseInt(params.id);
-		
+
 	if (isNaN(id)) {
 		throw error(400, 'Ungültige Antrags-ID');
 	}
@@ -32,7 +35,7 @@ export const DELETE: RequestHandler = async ({ params, locals }) => {
 	ensureApplicantOwnership(locals.user, existing.createdBy);
 
 	const success = await deleteApplication(id);
-		
+
 	if (!success) {
 		throw error(400, 'Antrag konnte nicht gelöscht werden (nur Entwürfe können gelöscht werden)');
 	}
@@ -42,13 +45,13 @@ export const DELETE: RequestHandler = async ({ params, locals }) => {
 
 export const GET: RequestHandler = async ({ params, locals }) => {
 	const id = parseInt(params.id);
-		
+
 	if (isNaN(id)) {
 		throw error(400, 'Ungültige Antrags-ID');
 	}
 
 	const application = await getApplicationById(id);
-		
+
 	if (!application) {
 		throw error(404, 'Antrag nicht gefunden');
 	}
@@ -57,7 +60,7 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 		throw error(401, 'Login erforderlich');
 	}
 
-	if (locals.user.role === 'applicant' && application.createdBy !== locals.user.id) {
+	if (locals.user.role === 'applicant' && application.createdBy !== locals.user.email) {
 		throw error(403, 'Keine Berechtigung');
 	}
 

@@ -10,7 +10,7 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 	const statusFilter = url.searchParams.get('status');
 
 	const applications = await getApplicationsByUser(
-		locals.user.id,
+		locals.user.email,
 		statusFilter as 'draft' | 'submitted' | 'approved' | 'rejected' | undefined
 	);
 

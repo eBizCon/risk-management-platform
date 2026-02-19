@@ -1,6 +1,9 @@
 import type { Actions } from './$types';
 import { fail, redirect, error } from '@sveltejs/kit';
-import { createApplication, submitApplication } from '$lib/server/services/repositories/application.repository';
+import {
+	createApplication,
+	submitApplication
+} from '$lib/server/services/repositories/application.repository';
 import { applicationWithBusinessRulesSchema } from '$lib/server/services/validation';
 import { ZodError } from 'zod';
 
@@ -11,8 +14,6 @@ export const actions: Actions = {
 		}
 
 		const formData = await request.formData();
-		const userId = locals.user.id;
-		
 		const rawData = {
 			name: formData.get('name') as string,
 			income: parseFloat(formData.get('income') as string),
@@ -29,7 +30,7 @@ export const actions: Actions = {
 			const application = await createApplication({
 				...validatedData,
 				status: 'draft',
-				createdBy: userId
+				createdBy: locals.user.email
 			});
 
 			if (action === 'submit' && application) {

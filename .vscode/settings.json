@@ -7,5 +7,13 @@
 	"eslint.validate": ["javascript", "typescript", "svelte"],
 	"[svelte]": {
 		"editor.defaultFormatter": "svelte.svelte-vscode"
-	}
+	},
+	"sqltools.connections": [
+		{
+			"previewLimit": 50,
+			"driver": "SQLite",
+			"name": "riskmanagement",
+			"database": "${workspaceFolder:risk-management-platform}/data.db"
+		}
+	]
 }

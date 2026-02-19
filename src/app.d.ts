@@ -2,17 +2,18 @@
 // for information about these interfaces
 declare global {
 	namespace App {
-		type UserRole = 'applicant' | 'processor'
+		type UserRole = 'applicant' | 'processor';
 
 		interface User {
-			id: string
-			name: string
-			role: UserRole
-			idToken?: string
+			id: string;
+			email: string;
+			name: string;
+			role: UserRole;
+			idToken?: string;
 		}
 
 		interface Locals {
-			user?: User
+			user?: User;
 		}
 	}
 }

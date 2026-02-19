@@ -1,0 +1,191 @@
+{
+  "source_skill": "plan-user-story-implementation-blueprint",
+  "user_story": {
+    "title": "Datenbank-Seed beim App-Start",
+    "as_a": "Projektverantwortlicher",
+    "i_want": "dass beim Start der Anwendung automatisch ein initialer Datenbank-Seed ausgeführt wird, wenn keine Anträge vorhanden sind",
+    "so_that": "ich nach dem Löschen der Datenbank immer einen definierten Ausgangszustand mit realistischen Demo-Daten habe"
+  },
+  "global_constraints": [
+    "Backend Architecture Rule: Repository Pattern, Service Layer, Zod Validation (`.windsurf/rules/backend-architecture.md`)",
+    "Code Style: data-testid Attribute, TypeScript, SOLID, keine inline comments (`.windsurf/rules/code-style-guide.md`)",
+    "Testing: Vitest für Unit Tests, Playwright für E2E (`.windsurf/rules/testing-rule.md`)",
+    "Seed nutzt bestehende `calculateScore`-Funktion für konsistente Scoring-Werte",
+    "Alle Seed-Daten müssen Validierungsregeln einhalten: fixedCosts < income, desiredRate <= income - fixedCosts",
+    "createdBy verwendet Keycloak-User-ID des applicant-Users",
+    "Keine DB-Schema-Änderungen, keine API-Änderungen, keine Migrationen"
+  ],
+  "tasks": [
+    {
+      "id": "db-seed-01",
+      "title": "Seed-Modul erstellen (src/lib/server/db/seed.ts)",
+      "user_story": {
+        "title": "Datenbank-Seed beim App-Start",
+        "as_a": "Projektverantwortlicher",
+        "i_want": "dass beim Start der Anwendung automatisch ein initialer Datenbank-Seed ausgeführt wird, wenn keine Anträge vorhanden sind",
+        "so_that": "ich nach dem Löschen der Datenbank immer einen definierten Ausgangszustand mit realistischen Demo-Daten habe"
+      },
+      "constraints": [
+        "Backend Architecture Rule: Repository Pattern, Service Layer, Zod Validation",
+        "Code Style: TypeScript, SOLID, keine inline comments",
+        "Seed nutzt bestehende `calculateScore`-Funktion für konsistente Scoring-Werte",
+        "Alle Seed-Daten müssen Validierungsregeln einhalten: fixedCosts < income, desiredRate <= income - fixedCosts",
+        "createdBy verwendet Keycloak-User-ID des applicant-Users",
+        "Keine DB-Schema-Änderungen"
+      ],
+      "goal": "Neue Datei `src/lib/server/db/seed.ts` mit Funktion `seedDatabase`, die 32 Demo-Anträge in eine leere DB einfügt.",
+      "blueprint_references": [
+        "Abschnitt 4.1: Neue Datei src/lib/server/db/seed.ts",
+        "Abschnitt 1: Implementierungsziel"
+      ],
+      "implementation_details": [
+        "Export: `export function seedDatabase(sqliteDb: BetterSqlite3.Database): void`",
+        "Prüfe `SELECT COUNT(*) FROM applications` → wenn > 0, return (kein Seed)",
+        "Definiere Array `SEED_APPLICATIONS` mit 32 Einträgen (8 pro Status: draft, submitted, approved, rejected)",
+        "Jeder Eintrag enthält: name, income, fixedCosts, desiredRate, employmentStatus, hasPaymentDefault",
+        "Werte so wählen, dass `calculateScore` alle drei Traffic-Light-Stufen erzeugt (green/yellow/red)",
+        "Alle Validierungsregeln einhalten: fixedCosts < income, desiredRate <= income - fixedCosts",
+        "Für jeden Eintrag `calculateScore(...)` aufrufen",
+        "createdBy = 'applicant' für alle Einträge",
+        "createdAt auf gestaffelte Zeitstempel (vergangene Tage) setzen",
+        "Status-spezifische Felder: draft → nur createdAt; submitted → + submittedAt; approved → + submittedAt + processedAt + processorComment; rejected → + submittedAt + processedAt + processorComment",
+        "submittedAt liegt nach createdAt, processedAt liegt nach submittedAt",
+        "Processor-Kommentare: Array mit realistischen deutschen Texten (Approved: 'Bonität geprüft, Antrag genehmigt.', etc.; Rejected: 'Zu hohes Risiko aufgrund bestehender Zahlungsverzüge.', etc.)",
+        "Batch-Insert via raw SQLite prepared statement oder Drizzle db.insert(applications).values([...])",
+        "Console-Log: '[Seed] Inserted X demo applications'"
+      ],
+      "scope": [
+        "Neue Datei `src/lib/server/db/seed.ts` erstellen",
+        "Funktion `seedDatabase` implementieren",
+        "32 Seed-Datensätze mit realistischen Werten definieren",
+        "Scoring via `calculateScore` berechnen",
+        "Gestaffelte Zeitstempel und Processor-Kommentare"
+      ],
+      "out_of_scope": [
+        "Änderung an `src/lib/server/db/index.ts` (eigener Task)",
+        "Unit Tests (eigener Task)",
+        "DB-Schema-Änderungen",
+        "API-Änderungen"
+      ],
+      "artifacts": [
+        "src/lib/server/db/seed.ts"
+      ],
+      "acceptance_criteria": [
+        "Datei `src/lib/server/db/seed.ts` existiert und exportiert `seedDatabase`",
+        "Funktion prüft ob DB leer ist und überspringt Seed wenn Daten vorhanden",
+        "32 Einträge werden eingefügt: 8x draft, 8x submitted, 8x approved, 8x rejected",
+        "Alle drei Traffic-Light-Stufen (green, yellow, red) sind vertreten",
+        "Alle createdBy-Werte sind 'applicant'",
+        "Approved/rejected Einträge haben processorComment",
+        "Zeitstempel sind konsistent (processedAt > submittedAt > createdAt)",
+        "Score und trafficLight stimmen mit calculateScore überein"
+      ],
+      "checks": [
+        "npx tsc --noEmit (TypeScript-Kompilierung ohne Fehler)",
+        "npm run lint"
+      ],
+      "notes": [
+        "Risiko: createdBy erwartet ggf. UUID statt Username → prüfen was die App aktuell speichert"
+      ]
+    },
+    {
+      "id": "db-seed-02",
+      "title": "Seed in DB-Initialisierung integrieren (src/lib/server/db/index.ts)",
+      "user_story": {
+        "title": "Datenbank-Seed beim App-Start",
+        "as_a": "Projektverantwortlicher",
+        "i_want": "dass beim Start der Anwendung automatisch ein initialer Datenbank-Seed ausgeführt wird, wenn keine Anträge vorhanden sind",
+        "so_that": "ich nach dem Löschen der Datenbank immer einen definierten Ausgangszustand mit realistischen Demo-Daten habe"
+      },
+      "constraints": [
+        "Backend Architecture Rule: Keine direkte DB-Interaktion außerhalb von Repositories/Services, aber DB-Init ist Infrastruktur-Code",
+        "Code Style: TypeScript, keine inline comments"
+      ],
+      "goal": "In `src/lib/server/db/index.ts` nach dem CREATE TABLE den Seed-Aufruf einfügen.",
+      "blueprint_references": [
+        "Abschnitt 4.2: Geänderte Datei src/lib/server/db/index.ts"
+      ],
+      "implementation_details": [
+        "Import hinzufügen: `import { seedDatabase } from './seed';`",
+        "Nach dem `sqlite.exec(CREATE TABLE ...)` Block: `seedDatabase(sqlite);` aufrufen",
+        "Die raw `better-sqlite3`-Instanz `sqlite` wird übergeben"
+      ],
+      "scope": [
+        "Import der `seedDatabase`-Funktion in `index.ts`",
+        "Aufruf von `seedDatabase(sqlite)` nach der Tabellen-Erstellung"
+      ],
+      "out_of_scope": [
+        "Änderungen am CREATE TABLE Statement",
+        "Änderungen am Schema",
+        "Seed-Logik selbst (Task db-seed-01)"
+      ],
+      "artifacts": [
+        "src/lib/server/db/index.ts"
+      ],
+      "acceptance_criteria": [
+        "`seedDatabase` wird nach CREATE TABLE aufgerufen",
+        "App startet fehlerfrei mit leerem data.db",
+        "App startet fehlerfrei mit bestehendem data.db"
+      ],
+      "checks": [
+        "npx tsc --noEmit",
+        "npm run lint",
+        "npm run dev (manueller Smoke-Test: App startet, Seed-Log erscheint)"
+      ],
+      "notes": []
+    },
+    {
+      "id": "db-seed-03",
+      "title": "Unit Tests für Seed-Modul (src/lib/server/db/seed.test.ts)",
+      "user_story": {
+        "title": "Datenbank-Seed beim App-Start",
+        "as_a": "Projektverantwortlicher",
+        "i_want": "dass beim Start der Anwendung automatisch ein initialer Datenbank-Seed ausgeführt wird, wenn keine Anträge vorhanden sind",
+        "so_that": "ich nach dem Löschen der Datenbank immer einen definierten Ausgangszustand mit realistischen Demo-Daten habe"
+      },
+      "constraints": [
+        "Testing Rule: Vitest für Unit Tests, Test both happy path and error cases",
+        "Code Style: TypeScript, keine inline comments",
+        "Test-Setup: In-Memory better-sqlite3 DB mit gleichem CREATE TABLE Statement wie in index.ts"
+      ],
+      "goal": "Vollständige Unit-Test-Suite für `seedDatabase` mit 8 Testfällen, die alle Akzeptanzkriterien abdecken.",
+      "blueprint_references": [
+        "Abschnitt 6.1: Unit Tests src/lib/server/db/seed.test.ts",
+        "Abschnitt 6: Testplan - alle 8 Testfälle"
+      ],
+      "implementation_details": [
+        "Test-Setup: In-Memory `better-sqlite3` DB mit dem gleichen CREATE TABLE Statement wie in `src/lib/server/db/index.ts`",
+        "Testfall 1 (Seed bei leerer DB): seedDatabase aufrufen → mindestens 30 Einträge",
+        "Testfall 2 (Gleichmäßige Status-Verteilung): Gruppiere nach status → jeder Status mindestens 7 Einträge",
+        "Testfall 3 (Alle Traffic-Light-Stufen): Gruppiere nach traffic_light → green, yellow, red jeweils mindestens 1x",
+        "Testfall 4 (createdBy korrekt): Alle created_by Werte sind 'applicant'",
+        "Testfall 5 (Processor-Kommentare): approved/rejected Einträge haben nicht-leeren processor_comment",
+        "Testfall 6 (Konsistente Zeitstempel): submitted/approved/rejected haben submitted_at; approved/rejected haben processed_at nach submitted_at",
+        "Testfall 7 (Scoring-Konsistenz): Für jeden Eintrag calculateScore aufrufen und score/traffic_light vergleichen",
+        "Testfall 8 (Seed überspringen): DB mit vorhandenem Eintrag → seedDatabase → Anzahl unverändert"
+      ],
+      "scope": [
+        "Neue Testdatei `src/lib/server/db/seed.test.ts` erstellen",
+        "8 Testfälle gemäß Testplan implementieren",
+        "In-Memory DB Setup/Teardown pro Test"
+      ],
+      "out_of_scope": [
+        "E2E Tests",
+        "Änderungen an der Seed-Implementierung",
+        "Tests für andere Module"
+      ],
+      "artifacts": [
+        "src/lib/server/db/seed.test.ts"
+      ],
+      "acceptance_criteria": [
+        "Alle 8 Testfälle sind implementiert und grün",
+        "Tests verwenden In-Memory DB (kein Dateisystem-Zugriff)",
+        "Tests sind isoliert (eigenes DB-Setup pro Test)"
+      ],
+      "checks": [
+        "npm run test -- --run src/lib/server/db/seed.test.ts"
+      ],
+      "notes": []
+    }
+  ]
+}
