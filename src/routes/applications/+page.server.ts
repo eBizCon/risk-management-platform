@@ -1,21 +1,52 @@
 import type { PageServerLoad } from './$types';
 import { error } from '@sveltejs/kit';
-import { getApplicationsByUser } from '$lib/server/services/repositories/application.repository';
+import {
+	getApplicationsByUserPaginated,
+	PAGE_SIZE
+} from '$lib/server/services/repositories/application.repository';
+import type { ApplicationStatus } from '$lib/server/db/schema';
 
 export const load: PageServerLoad = async ({ url, locals }) => {
 	if (!locals.user) {
 		throw error(401, 'Login erforderlich');
 	}
 
-	const statusFilter = url.searchParams.get('status');
+	const allowedStatuses: ApplicationStatus[] = ['draft', 'submitted', 'approved', 'rejected'];
+	const statusParam = url.searchParams.get('status');
+	const statusFilter = allowedStatuses.includes(statusParam as ApplicationStatus)
+		? (statusParam as ApplicationStatus)
+		: null;
 
-	const applications = await getApplicationsByUser(
-		locals.user.email,
-		statusFilter as 'draft' | 'submitted' | 'approved' | 'rejected' | undefined
-	);
+	const rawPage = Number.parseInt(url.searchParams.get('page') ?? '', 10);
+	const safePage = Number.isFinite(rawPage) && rawPage > 0 ? rawPage : 1;
+
+	const initialResult = await getApplicationsByUserPaginated({
+		userEmail: locals.user.email,
+		status: statusFilter ?? undefined,
+		page: safePage,
+		pageSize: PAGE_SIZE
+	});
+
+	const totalPages = Math.max(1, Math.ceil(initialResult.totalCount / PAGE_SIZE));
+	const currentPage = Math.min(Math.max(safePage, 1), totalPages);
+
+	const result = currentPage === safePage
+		? initialResult
+		: await getApplicationsByUserPaginated({
+			userEmail: locals.user.email,
+			status: statusFilter ?? undefined,
+			page: currentPage,
+			pageSize: PAGE_SIZE
+		});
 
 	return {
-		applications,
-		statusFilter
+		applications: result.items,
+		statusFilter,
+		pagination: {
+			page: currentPage,
+			pageSize: PAGE_SIZE,
+			totalItems: result.totalCount,
+			totalPages
+		}
 	};
 };
