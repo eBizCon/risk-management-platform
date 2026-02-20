@@ -185,7 +185,9 @@ test.describe('Antragsbearbeiter (Processor) Workflows', () => {
 
 				await page.getByRole('button', { name: /Entscheidung speichern|Absenden|Submit/i }).click();
 
-				await expect(page.getByText(/Begründung.*erforderlich|Kommentar.*Pflicht|comment.*required/i)).toBeVisible();
+				await expect(
+					page.getByText(/Begründung.*erforderlich|Kommentar.*Pflicht|comment.*required/i)
+				).toBeVisible();
 			}
 		});
 
@@ -281,6 +283,65 @@ test.describe('Antragsbearbeiter (Processor) Workflows', () => {
 
 				await expect(page.getByText(/Test Kommentar für Anzeige/i)).toBeVisible();
 			}
+		});
+	});
+
+	test.describe('Ampel-Filter (Traffic Light Filter)', () => {
+		test.use({ userRole: 'processor' });
+
+		test('should display traffic light filter checkboxes', async ({ authenticatedPage }) => {
+			await authenticatedPage.goto('/processor');
+
+			const filterContainer = authenticatedPage.getByTestId('processor-traffic-light-filter');
+			await expect(filterContainer).toBeVisible();
+			await expect(authenticatedPage.getByTestId('processor-traffic-light-green')).toBeVisible();
+			await expect(authenticatedPage.getByTestId('processor-traffic-light-yellow')).toBeVisible();
+			await expect(authenticatedPage.getByTestId('processor-traffic-light-red')).toBeVisible();
+		});
+
+		test('should filter by single traffic light color', async ({ authenticatedPage }) => {
+			await authenticatedPage.goto('/processor');
+
+			await authenticatedPage.getByTestId('processor-traffic-light-red').check();
+			await expect(authenticatedPage).toHaveURL(/trafficLight=red/);
+
+			const rows = authenticatedPage.getByTestId(/^application-row-/);
+			const count = await rows.count();
+			if (count > 0) {
+				for (let i = 0; i < count; i++) {
+					const row = rows.nth(i);
+					const redIndicator = row.getByTestId('traffic-light-red');
+					await expect(redIndicator).toHaveClass(/traffic-red/);
+				}
+			}
+		});
+
+		test('should combine status and traffic light filters', async ({ authenticatedPage }) => {
+			await authenticatedPage.goto('/processor');
+
+			await authenticatedPage.getByTestId('processor-status-filter').selectOption('submitted');
+			await expect(authenticatedPage).toHaveURL(/status=submitted/);
+
+			await authenticatedPage.getByTestId('processor-traffic-light-red').check();
+			await expect(authenticatedPage).toHaveURL(/trafficLight=red/);
+			await expect(authenticatedPage).toHaveURL(/status=submitted/);
+		});
+
+		test('should remove filter when unchecking all colors', async ({ authenticatedPage }) => {
+			await authenticatedPage.goto('/processor?trafficLight=red');
+
+			await expect(authenticatedPage.getByTestId('processor-traffic-light-red')).toBeChecked();
+
+			await authenticatedPage.getByTestId('processor-traffic-light-red').uncheck();
+			await expect(authenticatedPage).not.toHaveURL(/trafficLight/);
+		});
+
+		test('should persist filter state in URL on reload', async ({ authenticatedPage }) => {
+			await authenticatedPage.goto('/processor?trafficLight=green&trafficLight=yellow');
+
+			await expect(authenticatedPage.getByTestId('processor-traffic-light-green')).toBeChecked();
+			await expect(authenticatedPage.getByTestId('processor-traffic-light-yellow')).toBeChecked();
+			await expect(authenticatedPage.getByTestId('processor-traffic-light-red')).not.toBeChecked();
 		});
 	});
 });

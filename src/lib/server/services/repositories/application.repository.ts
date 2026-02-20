@@ -1,6 +1,6 @@
-import { eq, and, desc, count } from 'drizzle-orm';
+import { eq, and, desc, count, inArray, type SQL } from 'drizzle-orm';
 import { db, applications } from '../../db';
-import type { Application, NewApplication, ApplicationStatus } from '../../db/schema';
+import type { Application, NewApplication, ApplicationStatus, TrafficLight } from '../../db/schema';
 import { calculateScore } from '../scoring';
 
 export const PAGE_SIZE = 10;
@@ -154,10 +154,18 @@ export async function getAllApplications(): Promise<Application[]> {
 
 export async function getProcessorApplicationsPaginated(params: {
 	status?: ApplicationStatus;
+	trafficLight?: TrafficLight[];
 	page: number;
 	pageSize: number;
 }): Promise<{ items: Application[]; totalCount: number }> {
-	const whereClause = params.status ? eq(applications.status, params.status) : undefined;
+	const conditions: SQL[] = [];
+	if (params.status) {
+		conditions.push(eq(applications.status, params.status));
+	}
+	if (params.trafficLight && params.trafficLight.length > 0) {
+		conditions.push(inArray(applications.trafficLight, params.trafficLight));
+	}
+	const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 	const totalQuery = db.select({ value: count() }).from(applications);
 	const totalResult = whereClause ? totalQuery.where(whereClause).get() : totalQuery.get();
 	const totalCount = totalResult?.value ?? 0;
