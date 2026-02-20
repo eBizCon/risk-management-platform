@@ -1,0 +1,300 @@
+{
+  "source_skill": "plan-user-story-implementation-blueprint",
+  "user_story": {
+    "title": "Ampel-Filter in Processor-Übersicht",
+    "as_a": "Processor",
+    "i_want": "die Antragsliste nach Ampelfarben (grün, gelb, rot) filtern können – als Mehrfachauswahl und kombinierbar mit dem bestehenden Statusfilter",
+    "so_that": "ich Anträge gezielt nach Risikobewertung eingrenzen und priorisiert abarbeiten kann"
+  },
+  "global_constraints": [
+    "Repository Pattern: Alle DB-Zugriffe in src/lib/server/services/repositories/application.repository.ts",
+    "Input-Validierung mit Zod in +page.server.ts",
+    "data-testid Attribute für alle neuen interaktiven Elemente (Prefix: processor-traffic-light-)",
+    "TypeScript für allen neuen Code, kein 'any'",
+    "Svelte 5 Runes ($state, $props, $derived, $effect)",
+    "TailwindCSS für Styling, mobile-first",
+    "Keine DB-Migration nötig",
+    "Volle Rückwärtskompatibilität: ohne trafficLight-Parameter verhält sich die Seite wie bisher",
+    "Ampel-Filter und Statusfilter sind UND-verknüpft",
+    "Anträge ohne Ampelwert (null) werden bei aktivem Ampel-Filter nicht angezeigt"
+  ],
+  "tasks": [
+    {
+      "id": "tl-filter-01",
+      "title": "Repository: getProcessorApplicationsPaginated um trafficLight-Filter erweitern",
+      "user_story": {
+        "title": "Ampel-Filter in Processor-Übersicht",
+        "as_a": "Processor",
+        "i_want": "die Antragsliste nach Ampelfarben (grün, gelb, rot) filtern können – als Mehrfachauswahl und kombinierbar mit dem bestehenden Statusfilter",
+        "so_that": "ich Anträge gezielt nach Risikobewertung eingrenzen und priorisiert abarbeiten kann"
+      },
+      "constraints": [
+        "Repository Pattern: Alle DB-Zugriffe in src/lib/server/services/repositories/application.repository.ts",
+        "TypeScript für allen neuen Code, kein 'any'",
+        "Keine DB-Migration nötig",
+        "Volle Rückwärtskompatibilität: ohne trafficLight-Parameter verhält sich die Funktion wie bisher",
+        "Ampel-Filter und Statusfilter sind UND-verknüpft",
+        "Anträge ohne Ampelwert (null) werden bei aktivem Ampel-Filter nicht angezeigt"
+      ],
+      "goal": "Die Repository-Funktion getProcessorApplicationsPaginated akzeptiert einen optionalen trafficLight-Filter (Array von TrafficLight-Werten) und filtert die Ergebnisse entsprechend.",
+      "blueprint_references": [
+        "Abschnitt 4.1: Repository application.repository.ts – getProcessorApplicationsPaginated erweitern",
+        "Abschnitt 5: URL-API-Contract – trafficLight als wiederholbarer Query-Parameter"
+      ],
+      "implementation_details": [
+        "Import `inArray` aus `drizzle-orm` und `TrafficLight` aus Schema hinzufügen",
+        "Signatur erweitern: `trafficLight?: TrafficLight[]` als neuen Parameter",
+        "Conditions-Array aufbauen: `const conditions: SQL[] = []`",
+        "Wenn `params.status` → `conditions.push(eq(applications.status, params.status))`",
+        "Wenn `params.trafficLight?.length` → `conditions.push(inArray(applications.trafficLight, params.trafficLight))`",
+        "`whereClause = conditions.length > 0 ? and(...conditions) : undefined`",
+        "Rest der Funktion bleibt gleich (count + paginated select mit whereClause)",
+        "Leeres trafficLight-Array → kein Filter (wie undefined)"
+      ],
+      "scope": [
+        "Signatur von getProcessorApplicationsPaginated erweitern",
+        "Import von inArray und TrafficLight hinzufügen",
+        "WHERE-Klausel mit dynamischem Conditions-Array aufbauen",
+        "Bestehende Status-Filterlogik in Conditions-Array migrieren"
+      ],
+      "out_of_scope": [
+        "Server Load Änderungen",
+        "UI-Änderungen",
+        "E2E Tests"
+      ],
+      "artifacts": [
+        "src/lib/server/services/repositories/application.repository.ts"
+      ],
+      "acceptance_criteria": [
+        "Funktion akzeptiert optionalen Parameter trafficLight: TrafficLight[]",
+        "Ohne trafficLight-Parameter: Verhalten identisch zu vorher",
+        "Mit trafficLight: ['red'] → nur Anträge mit trafficLight='red'",
+        "Mit trafficLight: ['red', 'yellow'] → Anträge mit trafficLight='red' ODER 'yellow'",
+        "Kombination status + trafficLight → UND-Verknüpfung",
+        "Leeres Array [] → kein Filter (alle Anträge)",
+        "TypeScript kompiliert fehlerfrei"
+      ],
+      "checks": [
+        "npx vitest run --reporter=verbose src/lib/server/services/repositories/application.repository.test.ts",
+        "npx tsc --noEmit"
+      ],
+      "notes": [
+        "Drizzle ORM inArray() ist Standard-Operator und verfügbar"
+      ]
+    },
+    {
+      "id": "tl-filter-02",
+      "title": "Unit Tests: Repository trafficLight-Filter testen",
+      "user_story": {
+        "title": "Ampel-Filter in Processor-Übersicht",
+        "as_a": "Processor",
+        "i_want": "die Antragsliste nach Ampelfarben (grün, gelb, rot) filtern können – als Mehrfachauswahl und kombinierbar mit dem bestehenden Statusfilter",
+        "so_that": "ich Anträge gezielt nach Risikobewertung eingrenzen und priorisiert abarbeiten kann"
+      },
+      "constraints": [
+        "Vitest für Unit Tests",
+        "Test-Stil des bestehenden Repos folgen (application.repository.test.ts falls vorhanden, sonst seed.test.ts als Referenz)",
+        "Happy Path und Edge Cases testen"
+      ],
+      "goal": "Unit Tests für die erweiterte getProcessorApplicationsPaginated-Funktion mit trafficLight-Filter sind geschrieben und grün.",
+      "blueprint_references": [
+        "Abschnitt 6: Unit Tests – Testfälle 1-5 für getProcessorApplicationsPaginated"
+      ],
+      "implementation_details": [
+        "Testfall 1: getProcessorApplicationsPaginated ohne trafficLight-Filter → alle Anträge",
+        "Testfall 2: getProcessorApplicationsPaginated mit trafficLight: ['red'] → nur rote Anträge",
+        "Testfall 3: getProcessorApplicationsPaginated mit trafficLight: ['red', 'yellow'] → rote und gelbe",
+        "Testfall 4: getProcessorApplicationsPaginated mit status + trafficLight kombiniert → UND-Verknüpfung",
+        "Testfall 5: getProcessorApplicationsPaginated mit leerem Array [] → alle Anträge",
+        "Seed-Daten enthalten bereits Anträge mit verschiedenen trafficLight-Werten"
+      ],
+      "scope": [
+        "Unit Tests für trafficLight-Filter in getProcessorApplicationsPaginated",
+        "Testdaten-Setup mit verschiedenen trafficLight-Werten"
+      ],
+      "out_of_scope": [
+        "E2E Tests",
+        "UI-Änderungen",
+        "Änderungen an der Repository-Funktion selbst"
+      ],
+      "artifacts": [
+        "src/lib/server/services/repositories/application.repository.test.ts"
+      ],
+      "acceptance_criteria": [
+        "Alle 5 Testfälle sind implementiert",
+        "Alle Tests sind grün",
+        "Tests decken: kein Filter, einzelne Farbe, mehrere Farben, Kombination mit Status, leeres Array"
+      ],
+      "checks": [
+        "npx vitest run --reporter=verbose src/lib/server/services/repositories/application.repository.test.ts"
+      ],
+      "notes": []
+    },
+    {
+      "id": "tl-filter-03",
+      "title": "Server Load: trafficLight URL-Parameter parsen, validieren und weiterreichen",
+      "user_story": {
+        "title": "Ampel-Filter in Processor-Übersicht",
+        "as_a": "Processor",
+        "i_want": "die Antragsliste nach Ampelfarben (grün, gelb, rot) filtern können – als Mehrfachauswahl und kombinierbar mit dem bestehenden Statusfilter",
+        "so_that": "ich Anträge gezielt nach Risikobewertung eingrenzen und priorisiert abarbeiten kann"
+      },
+      "constraints": [
+        "Input-Validierung mit Zod in +page.server.ts",
+        "TypeScript für allen neuen Code, kein 'any'",
+        "Volle Rückwärtskompatibilität: ohne trafficLight-Parameter verhält sich die Seite wie bisher",
+        "Ungültige Werte werden ignoriert (gefiltert durch Zod)"
+      ],
+      "goal": "Der Server Load liest trafficLight aus der URL, validiert mit Zod und übergibt das Array an die Repository-Funktion; trafficLightFilter wird im Return-Objekt zurückgegeben.",
+      "blueprint_references": [
+        "Abschnitt 4.2: Server Load +page.server.ts",
+        "Abschnitt 5: URL-API-Contract – trafficLight als wiederholbarer Query-Parameter"
+      ],
+      "implementation_details": [
+        "trafficLight-Parameter aus URL lesen: url.searchParams.getAll('trafficLight')",
+        "Validierung mit Zod: z.array(z.enum(['green', 'yellow', 'red'])) – ungültige Werte filtern via .safeParse() oder manuell filtern",
+        "Validiertes Array an getProcessorApplicationsPaginated übergeben als trafficLight",
+        "trafficLightFilter im Return-Objekt zurückgeben für UI-State",
+        "Import von TrafficLight-Type und z (Zod) hinzufügen"
+      ],
+      "scope": [
+        "URL-Parameter trafficLight parsen (getAll für Mehrfachauswahl)",
+        "Zod-Validierung der Parameter",
+        "Weiterreichung an Repository-Funktion",
+        "Return-Objekt um trafficLightFilter erweitern"
+      ],
+      "out_of_scope": [
+        "Repository-Änderungen (bereits in tl-filter-01)",
+        "UI-Änderungen",
+        "E2E Tests"
+      ],
+      "artifacts": [
+        "src/routes/processor/+page.server.ts"
+      ],
+      "acceptance_criteria": [
+        "URL ?trafficLight=red&trafficLight=yellow wird korrekt geparst",
+        "Ungültige Werte (z.B. ?trafficLight=blue) werden ignoriert",
+        "Ohne trafficLight-Parameter: Verhalten identisch zu vorher",
+        "trafficLightFilter ist im PageData-Return enthalten",
+        "TypeScript kompiliert fehlerfrei"
+      ],
+      "checks": [
+        "npx tsc --noEmit"
+      ],
+      "notes": []
+    },
+    {
+      "id": "tl-filter-04",
+      "title": "UI: Ampel-Filter Checkbox-Gruppe in Processor-Übersicht",
+      "user_story": {
+        "title": "Ampel-Filter in Processor-Übersicht",
+        "as_a": "Processor",
+        "i_want": "die Antragsliste nach Ampelfarben (grün, gelb, rot) filtern können – als Mehrfachauswahl und kombinierbar mit dem bestehenden Statusfilter",
+        "so_that": "ich Anträge gezielt nach Risikobewertung eingrenzen und priorisiert abarbeiten kann"
+      },
+      "constraints": [
+        "data-testid Attribute für alle neuen interaktiven Elemente (Prefix: processor-traffic-light-)",
+        "Svelte 5 Runes ($state, $props, $derived, $effect)",
+        "TailwindCSS für Styling, mobile-first",
+        "Mehrfachauswahl als Checkbox-Gruppe (kein Dropdown)",
+        "Pagination wird bei Filterwechsel auf Seite 1 zurückgesetzt",
+        "Filter-Zustand wird in URL persistiert"
+      ],
+      "goal": "Auf der Processor-Übersicht ist eine Checkbox-Gruppe für Ampelfarben sichtbar, die bei Klick die URL aktualisiert und die Liste filtert.",
+      "blueprint_references": [
+        "Abschnitt 4.3: UI +page.svelte – Checkbox-Gruppe für Ampel-Filter",
+        "Szenario 1: Ampel-Filter wird angezeigt",
+        "Szenario 6: Pagination wird bei Filterwechsel zurückgesetzt",
+        "Szenario 7: Filter-Zustand in URL persistiert"
+      ],
+      "implementation_details": [
+        "trafficLightOptions definieren: [{ value: 'green', label: 'Positiv' }, { value: 'yellow', label: 'Prüfung erforderlich' }, { value: 'red', label: 'Kritisch' }]",
+        "handleTrafficLightChange(value: string) Funktion: aktuelle Auswahl aus URL lesen ($page.url.searchParams.getAll('trafficLight')), Toggle-Logik (vorhanden → entfernen, sonst → hinzufügen), URL aktualisieren, page-Param löschen (Pagination reset), goto(url.toString())",
+        "Checkboxen rendern mit checked-State aus data.trafficLightFilter",
+        "data-testid='processor-traffic-light-filter' auf Container",
+        "data-testid='processor-traffic-light-green' / 'processor-traffic-light-yellow' / 'processor-traffic-light-red' auf Checkboxen"
+      ],
+      "scope": [
+        "Checkbox-Gruppe neben dem Status-Dropdown rendern",
+        "handleTrafficLightChange Funktion mit URL-Update und Pagination-Reset",
+        "Checked-State aus data.trafficLightFilter ableiten",
+        "data-testid Attribute setzen",
+        "Responsive Layout (mobile-first)"
+      ],
+      "out_of_scope": [
+        "Repository-Änderungen",
+        "Server Load Änderungen",
+        "ApplicationTable.svelte Änderungen",
+        "TrafficLight.svelte Änderungen"
+      ],
+      "artifacts": [
+        "src/routes/processor/+page.svelte"
+      ],
+      "acceptance_criteria": [
+        "Drei Checkboxen (Positiv, Prüfung erforderlich, Kritisch) sind sichtbar",
+        "Klick auf Checkbox aktualisiert URL mit trafficLight-Parameter",
+        "Mehrfachauswahl möglich",
+        "Pagination wird bei Filterwechsel auf Seite 1 zurückgesetzt",
+        "Checkboxen spiegeln den URL-State nach Reload korrekt wider",
+        "data-testid Attribute sind gesetzt",
+        "Layout ist responsive (mobile-first)"
+      ],
+      "checks": [
+        "npx tsc --noEmit",
+        "npm run lint"
+      ],
+      "notes": []
+    },
+    {
+      "id": "tl-filter-05",
+      "title": "E2E Tests: Ampel-Filter Szenarien",
+      "user_story": {
+        "title": "Ampel-Filter in Processor-Übersicht",
+        "as_a": "Processor",
+        "i_want": "die Antragsliste nach Ampelfarben (grün, gelb, rot) filtern können – als Mehrfachauswahl und kombinierbar mit dem bestehenden Statusfilter",
+        "so_that": "ich Anträge gezielt nach Risikobewertung eingrenzen und priorisiert abarbeiten kann"
+      },
+      "constraints": [
+        "Playwright E2E Tests",
+        "data-testid Selektoren bevorzugen (page.getByTestId())",
+        "Keine Workarounds die den Test bestehen lassen ohne echte Funktionalität zu testen",
+        "Seed-Daten enthalten bereits Anträge mit verschiedenen trafficLight-Werten"
+      ],
+      "goal": "E2E Tests für alle Ampel-Filter-Szenarien sind geschrieben und grün.",
+      "blueprint_references": [
+        "Abschnitt 6: E2E Tests – Testfälle 1-5",
+        "Szenario 1-7 aus den Akzeptanzkriterien"
+      ],
+      "implementation_details": [
+        "Testfall 1 (Szenario 1): Ampel-Filter-Checkboxen sind sichtbar auf /processor → page.getByTestId('processor-traffic-light-filter') ist sichtbar, alle 3 Checkboxen vorhanden",
+        "Testfall 2 (Szenario 2): Klick auf Kritisch-Checkbox → URL enthält trafficLight=red, Tabelle zeigt nur rote Anträge",
+        "Testfall 3 (Szenario 4): Status Eingereicht + Ampel Kritisch → URL enthält beide Parameter, Ergebnisse korrekt gefiltert",
+        "Testfall 4 (Szenario 5): Alle Checkboxen abwählen → kein trafficLight-Parameter in URL",
+        "Testfall 5 (Szenario 7): Seite mit ?trafficLight=green&trafficLight=yellow laden → Checkboxen sind gecheckt"
+      ],
+      "scope": [
+        "E2E Tests für Ampel-Filter in e2e/processor.test.ts",
+        "Tests innerhalb bestehender Processor-Test-Describe-Blöcke oder neuer Describe-Block"
+      ],
+      "out_of_scope": [
+        "Änderungen an Produktionscode",
+        "Unit Tests"
+      ],
+      "artifacts": [
+        "e2e/processor.test.ts"
+      ],
+      "acceptance_criteria": [
+        "Alle 5 E2E-Testfälle sind implementiert",
+        "Alle Tests sind grün",
+        "Tests verwenden data-testid Selektoren",
+        "Tests prüfen echte Funktionalität (URL-Parameter, sichtbare Ergebnisse)"
+      ],
+      "checks": [
+        "npx playwright test e2e/processor.test.ts --reporter=list"
+      ],
+      "notes": [
+        "Seed-Daten müssen Anträge mit verschiedenen trafficLight-Werten enthalten – dies ist bereits der Fall"
+      ]
+    }
+  ]
+}
