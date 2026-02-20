@@ -3,7 +3,7 @@ import { db, applications } from '../../db';
 import type { Application, NewApplication, ApplicationStatus } from '../../db/schema';
 import { calculateScore } from '../scoring';
 
-export const PAGE_SIZE = 10;
+export const PAGE_SIZE = 20;
 
 export async function createApplication(
 	data: Omit<NewApplication, 'id' | 'createdAt' | 'score' | 'trafficLight' | 'scoringReasons'>
@@ -142,6 +142,33 @@ export async function getApplicationsByUser(
 			.all();
 	}
 	return db.select().from(applications).where(eq(applications.createdBy, userEmail)).all();
+}
+
+export async function getApplicationsByUserPaginated(params: {
+	userEmail: string;
+	status?: ApplicationStatus;
+	page: number;
+	pageSize: number;
+}): Promise<{ items: Application[]; totalCount: number }> {
+	const whereClause = params.status
+		? and(eq(applications.createdBy, params.userEmail), eq(applications.status, params.status))
+		: eq(applications.createdBy, params.userEmail);
+	const totalResult = db
+		.select({ value: count() })
+		.from(applications)
+		.where(whereClause)
+		.get();
+	const totalCount = totalResult?.value ?? 0;
+	const items = db
+		.select()
+		.from(applications)
+		.where(whereClause)
+		.orderBy(desc(applications.createdAt))
+		.limit(params.pageSize)
+		.offset((params.page - 1) * params.pageSize)
+		.all();
+
+	return { items, totalCount };
 }
 
 export async function getApplicationsByStatus(status: ApplicationStatus): Promise<Application[]> {

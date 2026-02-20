@@ -2,11 +2,13 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import ApplicationTable from '$lib/components/ApplicationTable.svelte';
+	import Pagination from '$lib/components/Pagination.svelte';
 	import RoleGuard from '$lib/components/RoleGuard.svelte';
 	import { Plus, Filter } from 'lucide-svelte';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
+	const pagination = $derived(data.pagination ?? { page: 1, totalPages: 1, totalItems: data.applications.length ?? 0 });
 
 	const statusOptions = [
 		{ value: '', label: 'Alle Status' },
@@ -24,6 +26,7 @@
 		} else {
 			url.searchParams.delete('status');
 		}
+		url.searchParams.delete('page');
 		goto(url.toString());
 	}
 
@@ -44,6 +47,12 @@
 				window.location.reload();
 			}
 		}
+	}
+
+	function handlePageChange(newPage: number) {
+		const url = new URL($page.url);
+		url.searchParams.set('page', newPage.toString());
+		goto(url.toString());
 	}
 </script>
 
@@ -83,7 +92,7 @@
 					</select>
 				</div>
 				<span class="text-sm text-secondary">
-					{data.applications.length} Antrag/Anträge gefunden
+					{pagination.totalItems} Antrag/Anträge gefunden
 				</span>
 			</div>
 		</div>
@@ -95,6 +104,13 @@
 			onEdit={handleEdit}
 			onDelete={handleDelete}
 		/>
+		<div class="p-4 border-t border-default flex justify-center">
+			<Pagination
+				page={pagination.page}
+				totalPages={pagination.totalPages}
+				onPageChange={handlePageChange}
+			/>
+		</div>
 	</div>
 </div>
 </RoleGuard>
