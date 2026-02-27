@@ -3,7 +3,18 @@ import { drizzle } from 'drizzle-orm/better-sqlite3';
 import * as schema from './schema';
 import { seedDatabase } from './seed';
 
-const sqlite = new Database('data.db');
+const DB_PATH = process.env.DATABASE_PATH || 'data.db';
+const sqlite = new Database(DB_PATH);
+
+// Configure SQLite for Azure Files (SMB) compatibility.
+// SMB does not support POSIX file locking, so we use:
+// - DELETE journal mode (WAL requires shared memory which fails on SMB)
+// - EXCLUSIVE locking mode (avoids repeated lock/unlock on SMB)
+// - busy_timeout to retry on transient lock contention
+sqlite.pragma('journal_mode = DELETE');
+sqlite.pragma('locking_mode = EXCLUSIVE');
+sqlite.pragma('busy_timeout = 5000');
+
 export const db = drizzle(sqlite, { schema });
 
 sqlite.exec(`

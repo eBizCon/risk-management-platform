@@ -1,12 +1,4 @@
 import { z } from 'zod';
-import {
-	OIDC_ISSUER,
-	OIDC_CLIENT_ID,
-	OIDC_REDIRECT_URI,
-	OIDC_POST_LOGOUT_REDIRECT_URI,
-	OIDC_SCOPE,
-	OIDC_ROLES_CLAIM_PATH
-} from '$env/static/private';
 import { env as privateEnv } from '$env/dynamic/private';
 
 const oidcEnvSchema = z.object({
@@ -33,13 +25,13 @@ export type OidcEnvConfig = {
 
 export const getOidcEnv = (): OidcEnvConfig => {
   const env = oidcEnvSchema.parse({
-    OIDC_ISSUER,
-    OIDC_CLIENT_ID,
+    OIDC_ISSUER: privateEnv.OIDC_ISSUER,
+    OIDC_CLIENT_ID: privateEnv.OIDC_CLIENT_ID,
     OIDC_CLIENT_SECRET: privateEnv.OIDC_CLIENT_SECRET,
-    OIDC_REDIRECT_URI,
-    OIDC_POST_LOGOUT_REDIRECT_URI,
-    OIDC_SCOPE,
-    OIDC_ROLES_CLAIM_PATH
+    OIDC_REDIRECT_URI: privateEnv.OIDC_REDIRECT_URI,
+    OIDC_POST_LOGOUT_REDIRECT_URI: privateEnv.OIDC_POST_LOGOUT_REDIRECT_URI,
+    OIDC_SCOPE: privateEnv.OIDC_SCOPE,
+    OIDC_ROLES_CLAIM_PATH: privateEnv.OIDC_ROLES_CLAIM_PATH
   });
 
   return {

@@ -475,26 +475,155 @@ e2e/
 
 ## Deployment
 
-### Build erstellen
+### Lokaler Build
 
 ```bash
 npm run build
 ```
 
-Der Build wird in `.svelte-kit/output` erstellt.
+Der Build wird im `build/`-Verzeichnis erstellt (SvelteKit `adapter-node`).
 
-### Adapter
+### Docker
 
-Die Anwendung verwendet `@sveltejs/adapter-auto`, das automatisch den passenden Adapter für die Zielplattform wählt. Für spezifische Plattformen kann der Adapter in [`svelte.config.js`](./svelte.config.js) angepasst werden.
+Die Anwendung wird als Docker-Container bereitgestellt:
 
-### Produktions-Umgebung
+```bash
+# Docker-Image bauen
+docker build -t risk-management-platform .
 
-Für Produktion müssen folgende Anpassungen vorgenommen werden:
+# Container starten
+docker run -p 3000:3000 \
+  -v risk-data:/data \
+  -e OIDC_ISSUER=https://<keycloak-host>/realms/risk-management \
+  -e OIDC_CLIENT_ID=risk-management-platform \
+  -e OIDC_REDIRECT_URI=https://<app-host>/auth/callback \
+  -e OIDC_POST_LOGOUT_REDIRECT_URI=https://<app-host>/ \
+  -e OIDC_SCOPE="openid profile email" \
+  -e OIDC_ROLES_CLAIM_PATH=realm_access.roles \
+  -e ORIGIN=https://<app-host> \
+  risk-management-platform
+```
+
+### Azure Deployment
+
+Die Anwendung ist für das Deployment auf **Azure Container Apps** vorbereitet.
+
+#### Voraussetzungen
+
+- [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli) (`az`)
+- [Azure Developer CLI](https://aka.ms/azd/install) (`azd`) (optional)
+- Docker
+- Ein Azure-Abonnement
+
+#### Architektur auf Azure
+
+```
+┌──────────────────────────────────────────────────────────┐
+│                Azure Container Apps Environment           │
+│                                                          │
+│  ┌─────────────────────┐    ┌─────────────────────────┐  │
+│  │   Risk Management   │    │      Keycloak           │  │
+│  │   Platform (App)    │───▶│   (Identity Provider)   │  │
+│  │   Port: 3000        │    │   Port: 8080            │  │
+│  └────────┬────────────┘    └────────┬────────────────┘  │
+│           │                          │                    │
+│  ┌────────▼────────────┐    ┌────────▼────────────────┐  │
+│  │  Azure Files        │    │  Azure Files            │  │
+│  │  (SQLite DB)        │    │  (Keycloak Data)        │  │
+│  └─────────────────────┘    └─────────────────────────┘  │
+└──────────────────────────────────────────────────────────┘
+         │
+┌────────▼────────────────┐
+│  Azure Container        │
+│  Registry (ACR)         │
+└─────────────────────────┘
+```
+
+#### Infrastruktur bereitstellen (Bicep)
+
+```bash
+# 1. Bei Azure anmelden
+az login
+
+# 2. Resource Group erstellen
+az group create --name rg-risk-management --location westeurope
+
+# 3. Infrastruktur mit Bicep bereitstellen
+az deployment group create \
+  --resource-group rg-risk-management \
+  --template-file infra/main.bicep \
+  --parameters keycloakAdminPassword='<sicheres-passwort>'
+
+# 4. Deployment-Ausgaben speichern
+az deployment group show \
+  --resource-group rg-risk-management \
+  --name main \
+  --query properties.outputs
+```
+
+#### Docker-Image bauen und pushen
+
+```bash
+# ACR Login-Server aus Outputs lesen
+ACR_NAME=$(az deployment group show \
+  --resource-group rg-risk-management \
+  --name main \
+  --query properties.outputs.containerRegistryName.value -o tsv)
+
+# Bei ACR anmelden
+az acr login --name $ACR_NAME
+
+# Image bauen und pushen
+docker build -t $ACR_NAME.azurecr.io/risk-management-platform:latest .
+docker push $ACR_NAME.azurecr.io/risk-management-platform:latest
+```
+
+#### Container App aktualisieren
+
+```bash
+APP_NAME=$(az deployment group show \
+  --resource-group rg-risk-management \
+  --name main \
+  --query properties.outputs.appName.value -o tsv)
+
+az containerapp update \
+  --name $APP_NAME \
+  --resource-group rg-risk-management \
+  --image $ACR_NAME.azurecr.io/risk-management-platform:latest
+```
+
+#### CI/CD mit GitHub Actions
+
+Eine GitHub Actions Pipeline ist unter `.github/workflows/azure-deploy.yml` konfiguriert.
+
+**Erforderliche GitHub Secrets & Variables:**
+
+| Typ | Name | Beschreibung |
+|-----|------|--------------|
+| Secret | `AZURE_CLIENT_ID` | Service Principal Client ID |
+| Secret | `AZURE_TENANT_ID` | Azure AD Tenant ID |
+| Secret | `AZURE_SUBSCRIPTION_ID` | Azure Subscription ID |
+| Variable | `AZURE_RESOURCE_GROUP` | Name der Resource Group |
+| Variable | `AZURE_CONTAINER_REGISTRY` | Name der Container Registry |
+| Variable | `AZURE_CONTAINER_APP_NAME` | Name der Container App |
+
+#### Keycloak auf Azure konfigurieren
+
+Nach dem Deployment muss Keycloak konfiguriert werden:
+
+1. Keycloak Admin-UI unter der bereitgestellten URL aufrufen
+2. Realm `risk-management` importieren (aus `dev/keycloak/import/risk-management-realm.json`)
+3. Client `risk-management-platform` anpassen:
+   - Valid Redirect URIs: `https://<app-fqdn>/auth/callback`
+   - Web Origins: `https://<app-fqdn>`
+   - Post Logout Redirect URIs: `https://<app-fqdn>/`
+
+### Produktions-Hinweise
 
 1. **Keycloak**: Produktions-Keycloak mit HTTPS konfigurieren
-2. **Umgebungsvariablen**: Produktions-URLs in `.env` setzen
-3. **Datenbank**: SQLite durch PostgreSQL/MySQL ersetzen (optional, für Skalierung)
-4. **Session Store**: In-Memory Store durch Redis/DB-backed Store ersetzen
+2. **Umgebungsvariablen**: Produktions-URLs in den Container App Einstellungen setzen
+3. **Datenbank**: SQLite wird auf Azure Files persistiert; fuer hoehere Skalierung PostgreSQL/MySQL in Betracht ziehen
+4. **Session Store**: In-Memory Store durch Redis/DB-backed Store ersetzen (bei mehreren Replikas)
 
 ---
 
