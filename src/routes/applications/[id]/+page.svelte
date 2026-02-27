@@ -12,6 +12,7 @@
 	let { data }: { data: PageData } = $props();
 
 	const app = $derived(data.application);
+	const customer = $derived(data.customer);
 	const reasons = $derived(app.scoringReasons ? JSON.parse(app.scoringReasons) : []);
 	const showSubmittedMessage = $derived($page.url.searchParams.get('submitted') === 'true');
 	let showConfirmDialog = $state(false);
@@ -104,6 +105,30 @@
 
 	<div class="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-3 gap-6">
 		<div class="lg:col-span-2 space-y-6">
+			{#if customer}
+				<div class="card p-6">
+					<h2 class="text-lg font-semibold text-primary mb-4">Kundendaten (JHipster)</h2>
+					<dl class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+						<div>
+							<dt class="dl-label">Kundenname</dt>
+							<dd class="mt-1 dl-value">{customer.userFirstName} {customer.userLastName}</dd>
+						</div>
+						<div>
+							<dt class="dl-label">E-Mail</dt>
+							<dd class="mt-1 dl-value">{customer.userEmail}</dd>
+						</div>
+						<div>
+							<dt class="dl-label">Bankkonto</dt>
+							<dd class="mt-1 dl-value">{customer.bankAccountName}</dd>
+						</div>
+						<div>
+							<dt class="dl-label">Kontostand</dt>
+							<dd class="mt-1 dl-value">{formatCurrency(customer.balance)}</dd>
+						</div>
+					</dl>
+				</div>
+			{/if}
+
 			<div class="card p-6">
 				<h2 class="text-lg font-semibold text-primary mb-4">Persönliche Daten</h2>
 				<dl class="grid grid-cols-1 sm:grid-cols-2 gap-4">

@@ -23,9 +23,17 @@ sqlite.exec(`
 		created_at TEXT NOT NULL,
 		submitted_at TEXT,
 		processed_at TEXT,
-		created_by TEXT NOT NULL
+		created_by TEXT NOT NULL,
+		customer_id INTEGER
 	)
 `);
+
+// Migration: add customer_id column if it doesn't exist (for existing databases)
+try {
+	sqlite.exec(`ALTER TABLE applications ADD COLUMN customer_id INTEGER`);
+} catch {
+	// Column already exists, ignore
+}
 
 seedDatabase(sqlite);
 
