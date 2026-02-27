@@ -3,7 +3,7 @@ import { db, applications } from '../../db';
 import type { Application, NewApplication, ApplicationStatus } from '../../db/schema';
 import { calculateScore } from '../scoring';
 
-export const PAGE_SIZE = 10;
+export const PAGE_SIZE = 20;
 
 export async function createApplication(
 	data: Omit<NewApplication, 'id' | 'createdAt' | 'score' | 'trafficLight' | 'scoringReasons'>
