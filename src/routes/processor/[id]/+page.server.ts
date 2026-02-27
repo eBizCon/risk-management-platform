@@ -2,6 +2,7 @@ import type { PageServerLoad, Actions } from './$types';
 import { error, fail, redirect } from '@sveltejs/kit';
 import { getApplicationById, processApplication } from '$lib/server/services/repositories/application.repository';
 import { processorDecisionSchema } from '$lib/server/services/validation';
+import { fetchCustomerById } from '$lib/server/services/jhipster-client';
 import { ZodError } from 'zod';
 
 export const load: PageServerLoad = async ({ params, locals }) => {
@@ -25,8 +26,18 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		throw error(404, 'Antrag nicht gefunden');
 	}
 
+	let customer = null;
+	if (application.customerId) {
+		try {
+			customer = await fetchCustomerById(application.customerId);
+		} catch (err) {
+			console.error('Failed to fetch customer from JHipster:', err);
+		}
+	}
+
 	return {
-		application
+		application,
+		customer
 	};
 };
 

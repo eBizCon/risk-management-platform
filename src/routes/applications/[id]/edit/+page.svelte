@@ -26,7 +26,7 @@
 	<div class="card p-6">
 		<h1 class="text-2xl font-bold text-primary mb-6">Antrag #{data.application.id} bearbeiten</h1>
 		
-		<ApplicationForm application={data.application} errors={form?.errors} />
+		<ApplicationForm application={data.application} errors={form?.errors} customers={data.customers} />
 	</div>
 </div>
 </RoleGuard>

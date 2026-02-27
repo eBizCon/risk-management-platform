@@ -6,6 +6,7 @@ import {
 	submitApplication
 } from '$lib/server/services/repositories/application.repository';
 import { applicationWithBusinessRulesSchema } from '$lib/server/services/validation';
+import { fetchCustomers } from '$lib/server/services/jhipster-client';
 import { ZodError } from 'zod';
 
 export const load: PageServerLoad = async ({ params, locals }) => {
@@ -37,8 +38,16 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		throw error(403, 'Nur Entwürfe können bearbeitet werden');
 	}
 
+	let customers: Awaited<ReturnType<typeof fetchCustomers>> = [];
+	try {
+		customers = await fetchCustomers();
+	} catch (err) {
+		console.error('Failed to fetch customers from JHipster:', err);
+	}
+
 	return {
-		application
+		application,
+		customers
 	};
 };
 
@@ -55,13 +64,15 @@ export const actions: Actions = {
 		const id = parseInt(params.id);
 		const formData = await request.formData();
 
+		const customerIdRaw = formData.get('customerId') as string;
 		const rawData = {
 			name: formData.get('name') as string,
 			income: parseFloat(formData.get('income') as string),
 			fixedCosts: parseFloat(formData.get('fixedCosts') as string),
 			desiredRate: parseFloat(formData.get('desiredRate') as string),
 			employmentStatus: formData.get('employmentStatus') as string,
-			hasPaymentDefault: formData.get('hasPaymentDefault') === 'true'
+			hasPaymentDefault: formData.get('hasPaymentDefault') === 'true',
+			customerId: customerIdRaw ? parseInt(customerIdRaw, 10) : null
 		};
 
 		try {

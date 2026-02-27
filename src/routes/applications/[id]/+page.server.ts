@@ -1,6 +1,7 @@
 import type { PageServerLoad } from './$types';
 import { error } from '@sveltejs/kit';
 import { getApplicationById } from '$lib/server/services/repositories/application.repository';
+import { fetchCustomerById } from '$lib/server/services/jhipster-client';
 
 export const load: PageServerLoad = async ({ params, locals }) => {
 	if (!locals.user) {
@@ -27,7 +28,17 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		throw error(403, 'Keine Berechtigung');
 	}
 
+	let customer = null;
+	if (application.customerId) {
+		try {
+			customer = await fetchCustomerById(application.customerId);
+		} catch (err) {
+			console.error('Failed to fetch customer from JHipster:', err);
+		}
+	}
+
 	return {
-		application
+		application,
+		customer
 	};
 };

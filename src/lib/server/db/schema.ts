@@ -24,7 +24,8 @@ export const applications = sqliteTable('applications', {
 		.$defaultFn(() => new Date().toISOString()),
 	submittedAt: text('submitted_at'),
 	processedAt: text('processed_at'),
-	createdBy: text('created_by').notNull()
+	createdBy: text('created_by').notNull(),
+	customerId: integer('customer_id')
 });
 
 export type Application = typeof applications.$inferSelect;

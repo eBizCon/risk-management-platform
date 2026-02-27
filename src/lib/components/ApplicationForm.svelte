@@ -3,14 +3,16 @@
 	import type { Application, EmploymentStatus } from '$lib/types';
 	import { employmentStatusLabels } from '$lib/types';
 	import { enhance } from '$app/forms';
+	import type { JHipsterCustomer } from '$lib/server/services/jhipster-client';
 
 	interface Props {
 		application?: Application | null;
 		errors?: Record<string, string[]>;
 		isSubmitting?: boolean;
+		customers?: JHipsterCustomer[];
 	}
 
-	let { application = null, errors = {}, isSubmitting = false }: Props = $props();
+	let { application = null, errors = {}, isSubmitting = false, customers = [] }: Props = $props();
 
 	const employmentOptions: { value: EmploymentStatus; label: string }[] = [
 		{ value: 'employed', label: employmentStatusLabels.employed },
@@ -18,6 +20,8 @@
 		{ value: 'unemployed', label: employmentStatusLabels.unemployed },
 		{ value: 'retired', label: employmentStatusLabels.retired }
 	];
+
+	let selectedCustomerId = $state<string>(application?.customerId?.toString() ?? '');
 
 	let showConfirmDialog = $state(false);
 	let pendingAction = $state<'submit' | null>(null);
@@ -49,6 +53,29 @@
 <form method="POST" use:enhance class="space-y-6" data-testid="application-form" bind:this={formRef}>
 	{#if application?.id}
 		<input type="hidden" name="id" value={application.id} />
+	{/if}
+
+	{#if customers.length > 0}
+		<div>
+			<label for="customerId" class="form-label block">Kunde (aus JHipster)</label>
+			<select
+				id="customerId"
+				name="customerId"
+				bind:value={selectedCustomerId}
+				class="mt-1 block w-full rounded-md border-default shadow-sm sm:text-sm"
+				data-testid="select-customer"
+			>
+				<option value="">Kein Kunde zugeordnet</option>
+				{#each customers as customer}
+					<option value={customer.id.toString()}>
+						{customer.userFirstName} {customer.userLastName} - {customer.bankAccountName} (Saldo: {new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(customer.balance)})
+					</option>
+				{/each}
+			</select>
+			{#if errors.customerId}
+				<p class="mt-1 error-text">{errors.customerId[0]}</p>
+			{/if}
+		</div>
 	{/if}
 
 	<div>

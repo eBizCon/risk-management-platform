@@ -22,7 +22,8 @@ export const applicationSchema = z.object({
 	}),
 	hasPaymentDefault: z.boolean({
 		message: 'Bitte geben Sie an, ob frühere Zahlungsverzüge vorliegen'
-	})
+	}),
+	customerId: z.number().int().positive().nullable().optional()
 });
 
 export const applicationWithBusinessRulesSchema = applicationSchema.refine(
