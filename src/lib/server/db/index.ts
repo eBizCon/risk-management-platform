@@ -27,13 +27,29 @@ sqlite.exec(`
 	)
 `);
 
+sqlite.exec(`
+	CREATE TABLE IF NOT EXISTS scoring_config (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		green_threshold INTEGER NOT NULL DEFAULT 75,
+		yellow_threshold INTEGER NOT NULL DEFAULT 50,
+		employed_bonus INTEGER NOT NULL DEFAULT 0,
+		self_employed_bonus INTEGER NOT NULL DEFAULT 10,
+		unemployed_penalty INTEGER NOT NULL DEFAULT 35,
+		payment_default_penalty INTEGER NOT NULL DEFAULT 25,
+		updated_at TEXT NOT NULL,
+		updated_by TEXT NOT NULL
+	)
+`);
+
 seedDatabase(sqlite);
 
-export { applications } from './schema';
+export { applications, scoringConfig } from './schema';
 export type {
 	Application,
 	NewApplication,
 	ApplicationStatus,
 	EmploymentStatus,
-	TrafficLight
+	TrafficLight,
+	ScoringConfig,
+	NewScoringConfig
 } from './schema';

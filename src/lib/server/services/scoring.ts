@@ -1,4 +1,4 @@
-import type { EmploymentStatus, TrafficLight } from '../db/schema';
+import type { EmploymentStatus, TrafficLight, ScoringConfig } from '../db/schema';
 
 export interface ScoringResult {
 	score: number;
@@ -6,13 +6,44 @@ export interface ScoringResult {
 	reasons: string[];
 }
 
+export interface ScoringConfigValues {
+	greenThreshold: number;
+	yellowThreshold: number;
+	employedBonus: number;
+	selfEmployedBonus: number;
+	unemployedPenalty: number;
+	paymentDefaultPenalty: number;
+}
+
+const DEFAULT_CONFIG: ScoringConfigValues = {
+	greenThreshold: 75,
+	yellowThreshold: 50,
+	employedBonus: 0,
+	selfEmployedBonus: 10,
+	unemployedPenalty: 35,
+	paymentDefaultPenalty: 25
+};
+
+function toConfigValues(config: ScoringConfig): ScoringConfigValues {
+	return {
+		greenThreshold: config.greenThreshold,
+		yellowThreshold: config.yellowThreshold,
+		employedBonus: config.employedBonus,
+		selfEmployedBonus: config.selfEmployedBonus,
+		unemployedPenalty: config.unemployedPenalty,
+		paymentDefaultPenalty: config.paymentDefaultPenalty
+	};
+}
+
 export function calculateScore(
 	income: number,
 	fixedCosts: number,
 	desiredRate: number,
 	employmentStatus: EmploymentStatus,
-	hasPaymentDefault: boolean
+	hasPaymentDefault: boolean,
+	config: ScoringConfigValues | ScoringConfig = DEFAULT_CONFIG
 ): ScoringResult {
+	const cfg: ScoringConfigValues = 'id' in config ? toConfigValues(config) : config;
 	const reasons: string[] = [];
 	let score = 100;
 
@@ -52,7 +83,7 @@ export function calculateScore(
 			reasons.push('Angestelltenverhältnis bietet stabile Einkommenssituation');
 			break;
 		case 'self_employed':
-			score -= 10;
+			score -= cfg.selfEmployedBonus;
 			reasons.push('Selbstständigkeit birgt gewisses Einkommensrisiko');
 			break;
 		case 'retired':
@@ -60,13 +91,13 @@ export function calculateScore(
 			reasons.push('Ruhestand bietet stabile, aber begrenzte Einkommenssituation');
 			break;
 		case 'unemployed':
-			score -= 35;
+			score -= cfg.unemployedPenalty;
 			reasons.push('Arbeitslosigkeit stellt erhebliches Risiko für Kreditrückzahlung dar');
 			break;
 	}
 
 	if (hasPaymentDefault) {
-		score -= 25;
+		score -= cfg.paymentDefaultPenalty;
 		reasons.push('Frühere Zahlungsverzüge beeinträchtigen die Kreditwürdigkeit');
 	} else {
 		reasons.push('Keine früheren Zahlungsverzüge - positive Zahlungshistorie');
@@ -75,10 +106,10 @@ export function calculateScore(
 	score = Math.max(0, Math.min(100, score));
 
 	let trafficLight: TrafficLight;
-	if (score >= 75) {
+	if (score >= cfg.greenThreshold) {
 		trafficLight = 'green';
 		reasons.unshift('Gesamtbewertung: Positiv - Kreditantrag empfohlen');
-	} else if (score >= 50) {
+	} else if (score >= cfg.yellowThreshold) {
 		trafficLight = 'yellow';
 		reasons.unshift('Gesamtbewertung: Prüfung erforderlich - manuelle Bewertung empfohlen');
 	} else {

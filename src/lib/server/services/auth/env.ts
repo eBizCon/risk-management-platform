@@ -19,7 +19,7 @@ const oidcEnvSchema = z.object({
   OIDC_ROLES_CLAIM_PATH: z.string().min(1)
 });
 
-export const OIDC_ALLOWED_ROLES = ['applicant', 'processor'] as const;
+export const OIDC_ALLOWED_ROLES = ['applicant', 'processor', 'admin'] as const;
 
 export type OidcEnvConfig = {
   issuer: string;

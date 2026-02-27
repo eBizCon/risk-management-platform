@@ -52,5 +52,45 @@ export const processorDecisionSchema = z.object({
 	}
 );
 
+export const scoringConfigSchema = z.object({
+	greenThreshold: z
+		.number()
+		.int('Schwellenwert muss eine ganze Zahl sein')
+		.min(1, 'Schwellenwert muss mindestens 1 sein')
+		.max(100, 'Schwellenwert darf maximal 100 sein'),
+	yellowThreshold: z
+		.number()
+		.int('Schwellenwert muss eine ganze Zahl sein')
+		.min(1, 'Schwellenwert muss mindestens 1 sein')
+		.max(100, 'Schwellenwert darf maximal 100 sein'),
+	employedBonus: z
+		.number()
+		.int('Bonus muss eine ganze Zahl sein')
+		.min(0, 'Bonus darf nicht negativ sein')
+		.max(100, 'Bonus darf maximal 100 sein'),
+	selfEmployedBonus: z
+		.number()
+		.int('Bonus muss eine ganze Zahl sein')
+		.min(0, 'Bonus darf nicht negativ sein')
+		.max(100, 'Bonus darf maximal 100 sein'),
+	unemployedPenalty: z
+		.number()
+		.int('Abzug muss eine ganze Zahl sein')
+		.min(0, 'Abzug darf nicht negativ sein')
+		.max(100, 'Abzug darf maximal 100 sein'),
+	paymentDefaultPenalty: z
+		.number()
+		.int('Abzug muss eine ganze Zahl sein')
+		.min(0, 'Abzug darf nicht negativ sein')
+		.max(100, 'Abzug darf maximal 100 sein')
+}).refine(
+	(data) => data.greenThreshold > data.yellowThreshold,
+	{
+		message: 'Grün-Schwellenwert muss größer als Gelb-Schwellenwert sein',
+		path: ['greenThreshold']
+	}
+);
+
 export type ApplicationInput = z.infer<typeof applicationSchema>;
 export type ProcessorDecision = z.infer<typeof processorDecisionSchema>;
+export type ScoringConfigInput = z.infer<typeof scoringConfigSchema>;

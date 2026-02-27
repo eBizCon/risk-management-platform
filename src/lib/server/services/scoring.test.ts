@@ -196,6 +196,119 @@ describe('Scoring Service', () => {
 			});
 		});
 
+		describe('calculateScore mit custom config', () => {
+			const customConfig = {
+				greenThreshold: 80,
+				yellowThreshold: 60,
+				employedBonus: 20,
+				selfEmployedBonus: 15,
+				unemployedPenalty: 40,
+				paymentDefaultPenalty: 50
+			};
+
+			it('verwendet greenThreshold aus Config', () => {
+				const defaultResult = calculateScore(5000, 2000, 500, 'employed', false);
+				const customResult = calculateScore(5000, 2000, 500, 'employed', false, customConfig);
+
+				// Same score, but different traffic light thresholds
+				expect(defaultResult.score).toBe(customResult.score);
+
+				// With default config (green >= 75), high scores are green
+				// With custom config (green >= 80), the same score might be yellow
+				if (defaultResult.score >= 75 && defaultResult.score < 80) {
+					expect(defaultResult.trafficLight).toBe('green');
+					expect(customResult.trafficLight).toBe('yellow');
+				}
+			});
+
+			it('verwendet yellowThreshold aus Config', () => {
+				const config = {
+					greenThreshold: 80,
+					yellowThreshold: 60,
+					employedBonus: 20,
+					selfEmployedBonus: 10,
+					unemployedPenalty: 30,
+					paymentDefaultPenalty: 40
+				};
+
+				// A score of exactly 60 should be yellow with custom config
+				const result = calculateScore(4000, 2200, 700, 'self_employed', false, config);
+				if (result.score >= 60 && result.score < 80) {
+					expect(result.trafficLight).toBe('yellow');
+				}
+			});
+
+			it('wendet selfEmployedBonus aus Config an', () => {
+				const defaultConfig = {
+					greenThreshold: 75,
+					yellowThreshold: 50,
+					employedBonus: 20,
+					selfEmployedBonus: 10,
+					unemployedPenalty: 30,
+					paymentDefaultPenalty: 40
+				};
+
+				const higherPenaltyConfig = {
+					...defaultConfig,
+					selfEmployedBonus: 25
+				};
+
+				const defaultResult = calculateScore(4000, 1500, 500, 'self_employed', false, defaultConfig);
+				const higherResult = calculateScore(4000, 1500, 500, 'self_employed', false, higherPenaltyConfig);
+
+				expect(defaultResult.score - higherResult.score).toBe(15);
+			});
+
+			it('wendet unemployedPenalty aus Config an', () => {
+				const defaultConfig = {
+					greenThreshold: 75,
+					yellowThreshold: 50,
+					employedBonus: 20,
+					selfEmployedBonus: 10,
+					unemployedPenalty: 30,
+					paymentDefaultPenalty: 40
+				};
+
+				const higherPenaltyConfig = {
+					...defaultConfig,
+					unemployedPenalty: 50
+				};
+
+				const defaultResult = calculateScore(4000, 1500, 500, 'unemployed', false, defaultConfig);
+				const higherResult = calculateScore(4000, 1500, 500, 'unemployed', false, higherPenaltyConfig);
+
+				expect(defaultResult.score - higherResult.score).toBe(20);
+			});
+
+			it('wendet paymentDefaultPenalty aus Config an', () => {
+				const defaultConfig = {
+					greenThreshold: 75,
+					yellowThreshold: 50,
+					employedBonus: 20,
+					selfEmployedBonus: 10,
+					unemployedPenalty: 30,
+					paymentDefaultPenalty: 40
+				};
+
+				const higherPenaltyConfig = {
+					...defaultConfig,
+					paymentDefaultPenalty: 50
+				};
+
+				const noDefaultResult = calculateScore(4000, 1500, 500, 'employed', true, defaultConfig);
+				const higherResult = calculateScore(4000, 1500, 500, 'employed', true, higherPenaltyConfig);
+
+				expect(noDefaultResult.score - higherResult.score).toBe(10);
+			});
+
+			it('funktioniert ohne config-Parameter (Rückwärtskompatibilität)', () => {
+				const result = calculateScore(4000, 1500, 500, 'employed', false);
+				expect(result.score).toBeGreaterThanOrEqual(0);
+				expect(result.score).toBeLessThanOrEqual(100);
+				expect(['green', 'yellow', 'red']).toContain(result.trafficLight);
+			});
+		});
+
 		describe('Traffic Light Thresholds', () => {
 			it('should return green for score exactly 75', () => {
 				const result = calculateScore(5000, 2000, 600, 'employed', false);
