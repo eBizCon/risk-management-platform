@@ -1,0 +1,19 @@
+# Azure Developer CLI (azd) configuration
+# See: https://learn.microsoft.com/azure/developer/azure-developer-cli/
+name: risk-management-platform
+
+metadata:
+  template: risk-management-platform
+
+infra:
+  provider: bicep
+  path: ./infra
+
+services:
+  risk-management-app:
+    project: .
+    host: containerapp
+    language: js
+    docker:
+      path: ./Dockerfile
+      context: .

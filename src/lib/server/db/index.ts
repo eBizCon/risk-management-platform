@@ -3,7 +3,8 @@ import { drizzle } from 'drizzle-orm/better-sqlite3';
 import * as schema from './schema';
 import { seedDatabase } from './seed';
 
-const sqlite = new Database('data.db');
+const DB_PATH = process.env.DATABASE_PATH || 'data.db';
+const sqlite = new Database(DB_PATH);
 export const db = drizzle(sqlite, { schema });
 
 sqlite.exec(`
