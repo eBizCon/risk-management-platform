@@ -33,13 +33,13 @@
 	const isLast = $derived(page === totalPages);
 </script>
 
-<nav class="flex items-center justify-center gap-3" aria-label="Pagination" data-testid="{testIdPrefix}-pagination">
+<nav class="flex items-center justify-center gap-3" aria-label="Pagination" data-testid={`${testIdPrefix}-pagination`}>
 	<button
 		type="button"
 		class="btn ghost btn-sm px-3 rounded-md"
 		onclick={() => handleSelect(1)}
 		disabled={isFirst}
-		data-testid="{testIdPrefix}-pagination-first"
+		data-testid={`${testIdPrefix}-pagination-first`}
 	>
 		«
 	</button>
@@ -48,7 +48,7 @@
 		class="btn ghost btn-sm px-3 rounded-md"
 		onclick={() => handleSelect(page - 1)}
 		disabled={isFirst}
-		data-testid="{testIdPrefix}-pagination-prev"
+		data-testid={`${testIdPrefix}-pagination-prev`}
 	>
 		‹
 	</button>
@@ -58,11 +58,11 @@
 			type="button"
 			class="btn ghost btn-sm px-3 rounded-md"
 			onclick={() => handleSelect(1)}
-			data-testid="{testIdPrefix}-pagination-page-1"
+			data-testid={`${testIdPrefix}-pagination-page-1`}
 		>
 			1
 		</button>
-		<span class="text-secondary px-1" data-testid="{testIdPrefix}-pagination-ellipsis-start">…</span>
+		<span class="text-secondary px-1" data-testid={`${testIdPrefix}-pagination-ellipsis-start`}>…</span>
 	{/if}
 
 	{#each visiblePages as visiblePage}
@@ -78,7 +78,7 @@
 	{/each}
 
 	{#if showTrailingEllipsis}
-		<span class="text-secondary px-1" data-testid="{testIdPrefix}-pagination-ellipsis-end">…</span>
+		<span class="text-secondary px-1" data-testid={`${testIdPrefix}-pagination-ellipsis-end`}>…</span>
 		<button
 			type="button"
 			class="btn ghost btn-sm px-3 rounded-md"
@@ -94,7 +94,7 @@
 		class="btn ghost btn-sm px-3 rounded-md"
 		onclick={() => handleSelect(page + 1)}
 		disabled={isLast}
-		data-testid="{testIdPrefix}-pagination-next"
+		data-testid={`${testIdPrefix}-pagination-next`}
 	>
 		›
 	</button>
@@ -103,7 +103,7 @@
 		class="btn ghost btn-sm px-3 rounded-md"
 		onclick={() => handleSelect(totalPages)}
 		disabled={isLast}
-		data-testid="{testIdPrefix}-pagination-last"
+		data-testid={`${testIdPrefix}-pagination-last`}
 	>
 		»
 	</button>
