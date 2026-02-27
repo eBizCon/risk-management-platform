@@ -4,7 +4,7 @@ targetScope = 'resourceGroup'
 param location string = resourceGroup().location
 
 @description('Name of the project (used as prefix for resource names)')
-param projectName string = 'riskmanagement'
+param projectName string = 'riskmgmt'
 
 @description('Unique suffix for resource names')
 param resourceSuffix string = uniqueString(resourceGroup().id)
@@ -49,8 +49,8 @@ var environmentName = '${abbrs.containerAppsEnvironment}-${projectName}-${resour
 var logAnalyticsName = '${abbrs.logAnalyticsWorkspace}-${projectName}-${resourceSuffix}'
 var managedIdentityName = '${abbrs.managedIdentity}-${projectName}-${resourceSuffix}'
 var storageAccountName = take('${abbrs.storageAccount}${replace(resourceName, '-', '')}', 24)
-var appName = '${abbrs.containerApp}-${projectName}-app-${resourceSuffix}'
-var keycloakAppName = '${abbrs.containerApp}-${projectName}-kc-${resourceSuffix}'
+var appName = '${abbrs.containerApp}-${projectName}-app'
+var keycloakAppName = '${abbrs.containerApp}-${projectName}-kc'
 
 // ============================================================================
 // Log Analytics Workspace
@@ -125,7 +125,7 @@ resource fileService 'Microsoft.Storage/storageAccounts/fileServices@2023-05-01'
   name: 'default'
 }
 
-resource appFileShare 'Microsoft.Storage/storageAccounts/fileServices/fileShares@2023-05-01' = {
+resource appFileShare 'Microsoft.Storage/storageAccounts/fileServices/shares@2023-05-01' = {
   parent: fileService
   name: 'appdata'
   properties: {
@@ -133,7 +133,7 @@ resource appFileShare 'Microsoft.Storage/storageAccounts/fileServices/fileShares
   }
 }
 
-resource keycloakFileShare 'Microsoft.Storage/storageAccounts/fileServices/fileShares@2023-05-01' = {
+resource keycloakFileShare 'Microsoft.Storage/storageAccounts/fileServices/shares@2023-05-01' = {
   parent: fileService
   name: 'keycloakdata'
   properties: {
@@ -230,6 +230,10 @@ resource keycloakApp 'Microsoft.App/containerApps@2024-03-01' = {
           name: 'keycloak'
           // Use the official Keycloak image
           image: 'quay.io/keycloak/keycloak:26.0'
+          command: [
+            '/opt/keycloak/bin/kc.sh'
+            'start-dev'
+          ]
           resources: {
             cpu: json('0.5')
             memory: '1Gi'
@@ -322,7 +326,7 @@ resource riskApp 'Microsoft.App/containerApps@2024-03-01' = {
       secrets: [
         {
           name: 'oidc-client-secret'
-          value: ''
+          value: 'placeholder-will-be-updated'
         }
       ]
     }
