@@ -9,6 +9,17 @@ RUN npm ci
 
 # Copy source and build
 COPY . .
+
+# SvelteKit requires OIDC env vars at build time for $env/static/private.
+# These are placeholder values only used during the build step.
+# Actual values are provided at runtime via container environment variables.
+ENV OIDC_ISSUER=http://placeholder:8080/realms/risk-management
+ENV OIDC_CLIENT_ID=risk-management-platform
+ENV OIDC_REDIRECT_URI=http://placeholder:3000/auth/callback
+ENV OIDC_POST_LOGOUT_REDIRECT_URI=http://placeholder:3000/
+ENV OIDC_SCOPE="openid profile email"
+ENV OIDC_ROLES_CLAIM_PATH=realm_access.roles
+
 RUN npm run build
 
 # Stage 2: Production

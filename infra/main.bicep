@@ -229,7 +229,7 @@ resource keycloakApp 'Microsoft.App/containerApps@2024-03-01' = {
         {
           name: 'keycloak'
           // Use the official Keycloak image
-          image: 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest'
+          image: 'quay.io/keycloak/keycloak:26.0'
           resources: {
             cpu: json('0.5')
             memory: '1Gi'
@@ -394,9 +394,11 @@ resource riskApp 'Microsoft.App/containerApps@2024-03-01' = {
           ]
         }
       ]
+      // SQLite on Azure Files does not support concurrent access from multiple replicas.
+      // Keep maxReplicas at 1 until migrating to a managed database (e.g. PostgreSQL).
       scale: {
         minReplicas: 1
-        maxReplicas: 3
+        maxReplicas: 1
       }
       volumes: [
         {
