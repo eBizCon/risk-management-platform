@@ -354,8 +354,11 @@ resource riskApp 'Microsoft.App/containerApps@2024-03-01' = {
               value: '0.0.0.0'
             }
             {
+              // SQLite requires POSIX file locking which Azure Files (SMB) does not support.
+              // Store the database on the container's local filesystem instead.
+              // Data is ephemeral (lost on restart) until migrating to a managed database.
               name: 'DATABASE_PATH'
-              value: '/data/data.db'
+              value: '/app/data/data.db'
             }
             {
               name: 'ORIGIN'
@@ -390,12 +393,10 @@ resource riskApp 'Microsoft.App/containerApps@2024-03-01' = {
               value: oidcRolesClaimPath
             }
           ]
-          volumeMounts: [
-            {
-              volumeName: 'appdata'
-              mountPath: '/data'
-            }
-          ]
+          // Note: Azure Files volume mount removed for SQLite.
+          // SMB does not support POSIX file locking required by better-sqlite3.
+          // The app uses local container storage for the database.
+          // For persistent storage, migrate to a managed database (e.g. PostgreSQL).
         }
       ]
       // SQLite on Azure Files does not support concurrent access from multiple replicas.
@@ -404,13 +405,14 @@ resource riskApp 'Microsoft.App/containerApps@2024-03-01' = {
         minReplicas: 1
         maxReplicas: 1
       }
-      volumes: [
-        {
-          name: 'appdata'
-          storageName: 'appdata'
-          storageType: 'AzureFile'
-        }
-      ]
+      // Azure Files volume removed – SQLite does not work on SMB mounts.
+      // volumes: [
+      //   {
+      //     name: 'appdata'
+      //     storageName: 'appdata'
+      //     storageType: 'AzureFile'
+      //   }
+      // ]
     }
   }
   dependsOn: [

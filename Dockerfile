@@ -34,14 +34,16 @@ RUN npm ci --omit=dev
 # Copy the built application from builder stage
 COPY --from=builder /app/build ./build
 
-# Create directory for SQLite database persistence
-RUN mkdir -p /data
+# Create directory for SQLite database (local container storage)
+# Azure Files (SMB) does not support POSIX file locking required by SQLite.
+# Data is ephemeral until migrating to a managed database.
+RUN mkdir -p /app/data
 
 # Environment variables
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOST=0.0.0.0
-ENV DATABASE_PATH=/data/data.db
+ENV DATABASE_PATH=/app/data/data.db
 ENV ORIGIN=http://localhost:3000
 
 EXPOSE 3000
