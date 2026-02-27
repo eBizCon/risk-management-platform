@@ -321,4 +321,92 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await expect(authenticatedPage.getByText(/4.*000/)).toBeVisible();
 		});
 	});
+
+	test.describe('Paginierung der Antragsübersicht (Application List Pagination)', () => {
+		test('should display pagination controls on applications page', async ({ authenticatedPage }) => {
+			await authenticatedPage.goto('/applications');
+			const pagination = authenticatedPage.getByTestId('applications-pagination');
+			await expect(pagination).toBeVisible();
+			await expect(authenticatedPage.getByTestId('applications-pagination-first')).toBeVisible();
+			await expect(authenticatedPage.getByTestId('applications-pagination-prev')).toBeVisible();
+			await expect(authenticatedPage.getByTestId('applications-pagination-next')).toBeVisible();
+			await expect(authenticatedPage.getByTestId('applications-pagination-last')).toBeVisible();
+		});
+
+		test('should show at most 20 rows on the first page', async ({ authenticatedPage }) => {
+			await authenticatedPage.goto('/applications');
+			const rows = authenticatedPage.locator('[data-testid="application-table"] tbody tr');
+			const count = await rows.count();
+			expect(count).toBeLessThanOrEqual(20);
+			expect(count).toBeGreaterThan(0);
+		});
+
+		test('should disable first and prev buttons on page 1', async ({ authenticatedPage }) => {
+			await authenticatedPage.goto('/applications');
+			await expect(authenticatedPage.getByTestId('applications-pagination-first')).toBeDisabled();
+			await expect(authenticatedPage.getByTestId('applications-pagination-prev')).toBeDisabled();
+		});
+
+		test('should navigate to page 2 and show remaining entries', async ({ authenticatedPage }) => {
+			await authenticatedPage.goto('/applications');
+			const page1FirstRow = await authenticatedPage
+				.locator('[data-testid="application-table"] tbody tr')
+				.first()
+				.textContent();
+
+			await authenticatedPage.getByTestId('applications-pagination-page-2').click();
+			await expect(authenticatedPage).toHaveURL(/[?&]page=2/);
+
+			const page2FirstRow = await authenticatedPage
+				.locator('[data-testid="application-table"] tbody tr')
+				.first()
+				.textContent();
+			expect(page2FirstRow).not.toBe(page1FirstRow);
+		});
+
+		test('should disable next and last buttons on the last page', async ({ authenticatedPage }) => {
+			await authenticatedPage.goto('/applications');
+			await authenticatedPage.getByTestId('applications-pagination-last').click();
+			await expect(authenticatedPage.getByTestId('applications-pagination-next')).toBeDisabled();
+			await expect(authenticatedPage.getByTestId('applications-pagination-last')).toBeDisabled();
+		});
+
+		test('should navigate back to first page via first button', async ({ authenticatedPage }) => {
+			await authenticatedPage.goto('/applications?page=2');
+			await expect(authenticatedPage.getByTestId('applications-pagination-first')).toBeEnabled();
+			await authenticatedPage.getByTestId('applications-pagination-first').click();
+			await expect(authenticatedPage.getByTestId('applications-pagination-page-1')).toHaveAttribute('aria-current', 'page');
+			await expect(authenticatedPage.getByTestId('applications-pagination-first')).toBeDisabled();
+		});
+
+		test('should navigate via prev button', async ({ authenticatedPage }) => {
+			await authenticatedPage.goto('/applications?page=2');
+			await authenticatedPage.getByTestId('applications-pagination-prev').click();
+			await expect(authenticatedPage.getByTestId('applications-pagination-page-1')).toHaveAttribute('aria-current', 'page');
+		});
+
+		test('should reset page when status filter changes', async ({ authenticatedPage }) => {
+			await authenticatedPage.goto('/applications?page=2');
+			await expect(authenticatedPage).toHaveURL(/page=2/);
+
+			const statusSelect = authenticatedPage.locator('select');
+			await statusSelect.selectOption('draft');
+
+			await expect(authenticatedPage).toHaveURL(/status=draft/);
+			await expect(authenticatedPage).not.toHaveURL(/page=/);
+		});
+
+		test('should highlight current page button', async ({ authenticatedPage }) => {
+			await authenticatedPage.goto('/applications');
+			await expect(authenticatedPage.getByTestId('applications-pagination-page-1')).toHaveAttribute('aria-current', 'page');
+
+			await authenticatedPage.getByTestId('applications-pagination-page-2').click();
+			await expect(authenticatedPage.getByTestId('applications-pagination-page-2')).toHaveAttribute('aria-current', 'page');
+		});
+
+		test('should display total count of applications', async ({ authenticatedPage }) => {
+			await authenticatedPage.goto('/applications');
+			await expect(authenticatedPage.getByText(/\d+ Antrag\/Anträge gefunden/)).toBeVisible();
+		});
+	});
 });
