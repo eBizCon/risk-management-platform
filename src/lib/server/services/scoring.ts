@@ -1,4 +1,4 @@
-import type { EmploymentStatus, TrafficLight } from '../db/schema';
+import type { EmploymentStatus, TrafficLight, ScoringConfig } from '../db/schema';
 
 export interface ScoringResult {
 	score: number;
@@ -11,7 +11,8 @@ export function calculateScore(
 	fixedCosts: number,
 	desiredRate: number,
 	employmentStatus: EmploymentStatus,
-	hasPaymentDefault: boolean
+	hasPaymentDefault: boolean,
+	config?: ScoringConfig
 ): ScoringResult {
 	const reasons: string[] = [];
 	let score = 100;
@@ -74,11 +75,14 @@ export function calculateScore(
 
 	score = Math.max(0, Math.min(100, score));
 
+	const thresholdGreen = config?.thresholdGreen ?? 75;
+	const thresholdYellow = config?.thresholdYellow ?? 50;
+
 	let trafficLight: TrafficLight;
-	if (score >= 75) {
+	if (score >= thresholdGreen) {
 		trafficLight = 'green';
 		reasons.unshift('Gesamtbewertung: Positiv - Kreditantrag empfohlen');
-	} else if (score >= 50) {
+	} else if (score >= thresholdYellow) {
 		trafficLight = 'yellow';
 		reasons.unshift('Gesamtbewertung: Prüfung erforderlich - manuelle Bewertung empfohlen');
 	} else {

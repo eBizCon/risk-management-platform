@@ -27,8 +27,21 @@ export const applications = sqliteTable('applications', {
 	createdBy: text('created_by').notNull()
 });
 
+export const scoringConfig = sqliteTable('scoring_config', {
+	id: integer('id').primaryKey({ autoIncrement: true }),
+	thresholdGreen: integer('threshold_green').notNull().default(75),
+	thresholdYellow: integer('threshold_yellow').notNull().default(50),
+	weightIncome: real('weight_income').notNull().default(0.4),
+	weightEmployment: real('weight_employment').notNull().default(0.3),
+	weightPaymentDefault: real('weight_payment_default').notNull().default(0.3),
+	updatedAt: text('updated_at').notNull(),
+	updatedBy: text('updated_by').notNull(),
+});
+
 export type Application = typeof applications.$inferSelect;
 export type NewApplication = typeof applications.$inferInsert;
+export type ScoringConfig = typeof scoringConfig.$inferSelect;
+export type NewScoringConfig = typeof scoringConfig.$inferInsert;
 export type ApplicationStatus = 'draft' | 'submitted' | 'approved' | 'rejected';
 export type EmploymentStatus = 'employed' | 'self_employed' | 'unemployed' | 'retired';
 export type TrafficLight = 'red' | 'yellow' | 'green';

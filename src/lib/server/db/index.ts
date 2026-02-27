@@ -27,12 +27,27 @@ sqlite.exec(`
 	)
 `);
 
+sqlite.exec(`
+	CREATE TABLE IF NOT EXISTS scoring_config (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		threshold_green INTEGER NOT NULL DEFAULT 75,
+		threshold_yellow INTEGER NOT NULL DEFAULT 50,
+		weight_income REAL NOT NULL DEFAULT 0.4,
+		weight_employment REAL NOT NULL DEFAULT 0.3,
+		weight_payment_default REAL NOT NULL DEFAULT 0.3,
+		updated_at TEXT NOT NULL,
+		updated_by TEXT NOT NULL
+	)
+`);
+
 seedDatabase(sqlite);
 
-export { applications } from './schema';
+export { applications, scoringConfig } from './schema';
 export type {
 	Application,
 	NewApplication,
+	ScoringConfig,
+	NewScoringConfig,
 	ApplicationStatus,
 	EmploymentStatus,
 	TrafficLight

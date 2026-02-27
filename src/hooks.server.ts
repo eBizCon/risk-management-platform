@@ -13,6 +13,7 @@ const isPublicPath = (pathname: string): boolean => {
 
 const requiresApplicant = (pathname: string): boolean => pathname.startsWith('/applications');
 const requiresProcessor = (pathname: string): boolean => pathname.startsWith('/processor');
+const requiresAdmin = (pathname: string): boolean => pathname.startsWith('/admin') || pathname.startsWith('/api/admin');
 
 const respondAuthError = (status: 401 | 403, message: string, isApi: boolean): Response => {
   if (isApi) {
@@ -51,6 +52,10 @@ export const handle: Handle = async ({ event, resolve }) => {
   }
 
   if (requiresProcessor(pathname) && role !== 'processor') {
+    return respondAuthError(403, 'Keine Berechtigung', isApiRoute);
+  }
+
+  if (requiresAdmin(pathname) && role !== 'admin') {
     return respondAuthError(403, 'Keine Berechtigung', isApiRoute);
   }
 

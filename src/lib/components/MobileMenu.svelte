@@ -2,12 +2,13 @@
 	import { Home, FileText, ClipboardList, LogOut, X } from 'lucide-svelte';
 	import type { User } from '$lib/types';
 
-	const { isOpen, onClose, user, isApplicant, isProcessor } = $props<{
+	const { isOpen, onClose, user, isApplicant, isProcessor, isAdmin } = $props<{
 		isOpen: boolean;
 		onClose: () => void;
 		user: User | null;
 		isApplicant: boolean;
 		isProcessor: boolean;
+		isAdmin: boolean;
 	}>();
 
 	$effect(() => {
@@ -91,13 +92,22 @@
 					<span>Anträge bearbeiten</span>
 				</a>
 			{/if}
+			{#if isAdmin}
+				<a
+					href="/admin"
+					class="nav-link flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium"
+				>
+					<ClipboardList class="w-4 h-4" />
+					<span>Scoring konfigurieren</span>
+				</a>
+			{/if}
 		</nav>
 
 		<div class="border-t border-border px-4 py-4 space-y-2">
 			{#if user}
 				<div class="text-sm">
 					<div class="font-medium text-primary">{user.name}</div>
-					<div class="text-secondary">{isApplicant ? 'Antragsteller' : 'Antragsbearbeiter'}</div>
+					<div class="text-secondary">{isApplicant ? 'Antragsteller' : isProcessor ? 'Antragsbearbeiter' : 'Administrator'}</div>
 				</div>
 				<a
 					href="/logout"

@@ -2,18 +2,21 @@ import { eq, and, desc, count } from 'drizzle-orm';
 import { db, applications } from '../../db';
 import type { Application, NewApplication, ApplicationStatus } from '../../db/schema';
 import { calculateScore } from '../scoring';
+import { getScoringConfig } from './scoring_config.repository';
 
 export const PAGE_SIZE = 10;
 
 export async function createApplication(
 	data: Omit<NewApplication, 'id' | 'createdAt' | 'score' | 'trafficLight' | 'scoringReasons'>
 ): Promise<Application> {
+	const config = await getScoringConfig();
 	const scoring = calculateScore(
 		data.income,
 		data.fixedCosts,
 		data.desiredRate,
 		data.employmentStatus,
-		data.hasPaymentDefault
+		data.hasPaymentDefault,
+		config
 	);
 
 	const result = db
@@ -49,12 +52,14 @@ export async function updateApplication(
 		data.employmentStatus !== undefined ||
 		data.hasPaymentDefault !== undefined
 	) {
+		const config = await getScoringConfig();
 		const scoring = calculateScore(
 			data.income ?? existing.income,
 			data.fixedCosts ?? existing.fixedCosts,
 			data.desiredRate ?? existing.desiredRate,
 			data.employmentStatus ?? existing.employmentStatus,
-			data.hasPaymentDefault ?? existing.hasPaymentDefault
+			data.hasPaymentDefault ?? existing.hasPaymentDefault,
+			config
 		);
 		updatedData.score = scoring.score;
 		updatedData.trafficLight = scoring.trafficLight;
@@ -77,12 +82,14 @@ export async function submitApplication(id: number): Promise<Application | null>
 		return null;
 	}
 
+	const config = await getScoringConfig();
 	const scoring = calculateScore(
 		existing.income,
 		existing.fixedCosts,
 		existing.desiredRate,
 		existing.employmentStatus,
-		existing.hasPaymentDefault
+		existing.hasPaymentDefault,
+		config
 	);
 
 	const result = db
