@@ -301,6 +301,108 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 		});
 	});
 
+	test.describe('Paginierung Übersicht meiner Kreditanträge (Pagination)', () => {
+		test('should display pagination controls on applications page', async ({ authenticatedPage }) => {
+			await authenticatedPage.goto('/applications');
+			await expect(authenticatedPage.getByTestId('applicant-pagination')).toBeVisible();
+		});
+
+		test('should show page 1 as active by default', async ({ authenticatedPage }) => {
+			await authenticatedPage.goto('/applications');
+			const page1Button = authenticatedPage.getByTestId('applicant-pagination-page-1');
+			await expect(page1Button).toBeVisible();
+			await expect(page1Button).toHaveAttribute('aria-current', 'page');
+		});
+
+		test('should display max 20 entries per page', async ({ authenticatedPage }) => {
+			await authenticatedPage.goto('/applications');
+			const rows = authenticatedPage.locator('table tbody tr');
+			await expect(rows).toHaveCount(20);
+		});
+
+		test('should disable first and prev buttons on page 1', async ({ authenticatedPage }) => {
+			await authenticatedPage.goto('/applications');
+			await expect(authenticatedPage.getByTestId('applicant-pagination-first')).toBeDisabled();
+			await expect(authenticatedPage.getByTestId('applicant-pagination-prev')).toBeDisabled();
+		});
+
+		test('should enable next and last buttons on page 1', async ({ authenticatedPage }) => {
+			await authenticatedPage.goto('/applications');
+			await expect(authenticatedPage.getByTestId('applicant-pagination-next')).toBeEnabled();
+			await expect(authenticatedPage.getByTestId('applicant-pagination-last')).toBeEnabled();
+		});
+
+		test('should navigate to page 2 via page number button', async ({ authenticatedPage }) => {
+			await authenticatedPage.goto('/applications');
+			await authenticatedPage.getByTestId('applicant-pagination-page-2').click();
+			await expect(authenticatedPage).toHaveURL(/page=2/);
+			const page2Button = authenticatedPage.getByTestId('applicant-pagination-page-2');
+			await expect(page2Button).toHaveAttribute('aria-current', 'page');
+		});
+
+		test('should show entries on page 2', async ({ authenticatedPage }) => {
+			await authenticatedPage.goto('/applications?page=2');
+			const rows = authenticatedPage.locator('table tbody tr');
+			const count = await rows.count();
+			expect(count).toBeGreaterThan(0);
+			expect(count).toBeLessThanOrEqual(20);
+		});
+
+		test('should disable next and last buttons on last page', async ({ authenticatedPage }) => {
+			await authenticatedPage.goto('/applications');
+			await authenticatedPage.getByTestId('applicant-pagination-last').click();
+			await expect(authenticatedPage.getByTestId('applicant-pagination-next')).toBeDisabled();
+			await expect(authenticatedPage.getByTestId('applicant-pagination-last')).toBeDisabled();
+		});
+
+		test('should enable first and prev buttons on page 2', async ({ authenticatedPage }) => {
+			await authenticatedPage.goto('/applications?page=2');
+			await expect(authenticatedPage.getByTestId('applicant-pagination-first')).toBeEnabled();
+			await expect(authenticatedPage.getByTestId('applicant-pagination-prev')).toBeEnabled();
+		});
+
+		test('should navigate back to page 1 via prev button', async ({ authenticatedPage }) => {
+			await authenticatedPage.goto('/applications?page=2');
+			await authenticatedPage.getByTestId('applicant-pagination-prev').click();
+			await expect(authenticatedPage).toHaveURL(/page=1/);
+			const rows = authenticatedPage.locator('table tbody tr');
+			await expect(rows).toHaveCount(20);
+		});
+
+		test('should navigate to page 1 via first button', async ({ authenticatedPage }) => {
+			await authenticatedPage.goto('/applications?page=2');
+			await authenticatedPage.getByTestId('applicant-pagination-first').click();
+			await expect(authenticatedPage).toHaveURL(/page=1/);
+		});
+
+		test('should navigate to last page via last button', async ({ authenticatedPage }) => {
+			await authenticatedPage.goto('/applications');
+			await authenticatedPage.getByTestId('applicant-pagination-last').click();
+			await expect(authenticatedPage).toHaveURL(/page=\d+/);
+			await expect(authenticatedPage.getByTestId('applicant-pagination-next')).toBeDisabled();
+		});
+
+		test('should navigate to next page via next button', async ({ authenticatedPage }) => {
+			await authenticatedPage.goto('/applications');
+			await authenticatedPage.getByTestId('applicant-pagination-next').click();
+			await expect(authenticatedPage).toHaveURL(/page=2/);
+		});
+
+		test('should reset page when changing status filter', async ({ authenticatedPage }) => {
+			await authenticatedPage.goto('/applications?page=2');
+			const statusFilter = authenticatedPage.locator('select');
+			await statusFilter.selectOption('draft');
+			await expect(authenticatedPage).toHaveURL(/status=draft/);
+			const currentUrl = authenticatedPage.url();
+			expect(currentUrl).not.toContain('page=');
+		});
+
+		test('should show total count', async ({ authenticatedPage }) => {
+			await authenticatedPage.goto('/applications');
+			await expect(authenticatedPage.getByText(/\d+ Antrag\/Anträge gefunden/)).toBeVisible();
+		});
+	});
+
 	test.describe('Anträge verwalten und überwachen (Manage and Monitor Applications)', () => {
 		test('should display applications list with table', async ({ authenticatedPage }) => {
 			await authenticatedPage.goto('/applications');
