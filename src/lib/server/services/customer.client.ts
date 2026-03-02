@@ -13,27 +13,37 @@ function getJhipsterUrl(): string {
 
 export async function fetchCustomers(): Promise<Customer[]> {
 	const baseUrl = getJhipsterUrl();
-	const response = await fetch(`${baseUrl}/api/public/customers`);
+	try {
+		const response = await fetch(`${baseUrl}/api/public/customers`);
 
-	if (!response.ok) {
-		console.error(`Failed to fetch customers from JHipster: ${response.status} ${response.statusText}`);
+		if (!response.ok) {
+			console.error(`Failed to fetch customers from JHipster: ${response.status} ${response.statusText}`);
+			return [];
+		}
+
+		return response.json();
+	} catch (err) {
+		console.error('Failed to connect to JHipster:', err);
 		return [];
 	}
-
-	return response.json();
 }
 
 export async function fetchCustomerById(id: number): Promise<Customer | null> {
 	const baseUrl = getJhipsterUrl();
-	const response = await fetch(`${baseUrl}/api/public/customers/${id}`);
+	try {
+		const response = await fetch(`${baseUrl}/api/public/customers/${id}`);
 
-	if (!response.ok) {
-		if (response.status === 404) {
+		if (!response.ok) {
+			if (response.status === 404) {
+				return null;
+			}
+			console.error(`Failed to fetch customer ${id} from JHipster: ${response.status} ${response.statusText}`);
 			return null;
 		}
-		console.error(`Failed to fetch customer ${id} from JHipster: ${response.status} ${response.statusText}`);
+
+		return response.json();
+	} catch (err) {
+		console.error(`Failed to connect to JHipster for customer ${id}:`, err);
 		return null;
 	}
-
-	return response.json();
 }
