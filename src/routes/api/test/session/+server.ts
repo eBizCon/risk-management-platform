@@ -10,7 +10,7 @@ import {
 import type { RequestHandler } from './$types';
 
 const requestSchema = z.object({
-	role: z.enum(['applicant', 'processor']),
+	role: z.enum(['applicant', 'processor', 'admin']),
 	id: z.string().min(1),
 	name: z.string().min(1),
 	email: z.string().email().optional()
@@ -41,7 +41,8 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 	const defaultEmails: Record<string, string> = {
 		applicant: 'applicant@example.com',
-		processor: 'processor@example.com'
+		processor: 'processor@example.com',
+		admin: 'admin@example.com'
 	};
 
 	const user: App.User = {
