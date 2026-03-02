@@ -2,6 +2,7 @@ import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
 
 export const applications = sqliteTable('applications', {
 	id: integer('id').primaryKey({ autoIncrement: true }),
+	customerId: integer('customer_id'),
 	name: text('name').notNull(),
 	income: real('income').notNull(),
 	fixedCosts: real('fixed_costs').notNull(),

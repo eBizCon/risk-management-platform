@@ -12,6 +12,7 @@ interface SeedApplicationTemplate {
 }
 
 interface InsertApplicationRow {
+	customer_id: number | null;
 	name: string;
 	income: number;
 	fixed_costs: number;
@@ -142,6 +143,7 @@ const buildSeedRows = (): InsertApplicationRow[] => {
 					: null;
 
 		rows.push({
+			customer_id: null,
 			name: `${template.name} ${Math.floor(index / SEED_TEMPLATES.length) + 1}`,
 			income: template.income,
 			fixed_costs: template.fixedCosts,
@@ -176,6 +178,7 @@ export function seedDatabase(sqliteDb: Database): void {
 	const rows = buildSeedRows();
 	const insertStatement = sqliteDb.prepare(`
 		INSERT INTO applications (
+			customer_id,
 			name,
 			income,
 			fixed_costs,
@@ -192,6 +195,7 @@ export function seedDatabase(sqliteDb: Database): void {
 			processed_at,
 			created_by
 		) VALUES (
+			@customer_id,
 			@name,
 			@income,
 			@fixed_costs,

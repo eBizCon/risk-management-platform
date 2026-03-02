@@ -1,5 +1,6 @@
 <script lang="ts">
 	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
+	import CustomerSelect from '$lib/components/CustomerSelect.svelte';
 	import type { Application, EmploymentStatus } from '$lib/types';
 	import { employmentStatusLabels } from '$lib/types';
 	import { enhance } from '$app/forms';
@@ -50,6 +51,8 @@
 	{#if application?.id}
 		<input type="hidden" name="id" value={application.id} />
 	{/if}
+
+	<CustomerSelect selectedCustomerId={application?.customerId} {errors} />
 
 	<div>
 		<label for="name" class="form-label block">Name</label>

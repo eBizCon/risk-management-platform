@@ -14,7 +14,9 @@ export const actions: Actions = {
 		}
 
 		const formData = await request.formData();
+		const customerIdRaw = formData.get('customerId') as string;
 		const rawData = {
+			customerId: customerIdRaw ? parseInt(customerIdRaw) || null : null,
 			name: formData.get('name') as string,
 			income: parseFloat(formData.get('income') as string),
 			fixedCosts: parseFloat(formData.get('fixedCosts') as string),
