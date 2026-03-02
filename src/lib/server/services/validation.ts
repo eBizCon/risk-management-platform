@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 export const applicationSchema = z.object({
+	customerId: z.number().int().positive().optional().nullable(),
 	name: z
 		.string()
 		.min(2, 'Name muss mindestens 2 Zeichen lang sein')

@@ -2,6 +2,7 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
+	import CustomerInfo from '$lib/components/CustomerInfo.svelte';
 	import StatusBadge from '$lib/components/StatusBadge.svelte';
 	import ScoreDisplay from '$lib/components/ScoreDisplay.svelte';
 	import RoleGuard from '$lib/components/RoleGuard.svelte';
@@ -104,6 +105,10 @@
 
 	<div class="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-3 gap-6">
 		<div class="lg:col-span-2 space-y-6">
+			{#if app.customerId}
+				<CustomerInfo customerId={app.customerId} />
+			{/if}
+
 			<div class="card p-6">
 				<h2 class="text-lg font-semibold text-primary mb-4">Persönliche Daten</h2>
 				<dl class="grid grid-cols-1 sm:grid-cols-2 gap-4">

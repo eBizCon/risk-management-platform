@@ -6,6 +6,7 @@ import { calculateScore } from '../services/scoring';
 const CREATE_APPLICATIONS_TABLE_SQL = `
 	CREATE TABLE IF NOT EXISTS applications (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		customer_id INTEGER,
 		name TEXT NOT NULL,
 		income REAL NOT NULL,
 		fixed_costs REAL NOT NULL,
