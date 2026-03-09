@@ -5,7 +5,7 @@ config({ path: '.env.test', quiet: true });
 
 export default defineConfig({
 	webServer: {
-		command: 'npm run build && TEST=true npm run preview',
+		command: 'npx drizzle-kit push && npm run build && TEST=true npm run preview',
 		port: 4173,
 		reuseExistingServer: !process.env.CI
 	},
