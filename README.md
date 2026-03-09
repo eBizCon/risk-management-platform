@@ -39,8 +39,9 @@ cp .env.example .env
 # 5. Warten bis Keycloak bereit ist (ca. 30 Sekunden)
 # Keycloak Admin-UI: http://localhost:8081 (admin/admin)
 
-# 6. Datenbankschema erstellen
+# 6. Datenbankschema erstellen und Demodaten laden
 npm run db:push
+npm run db:seed
 
 # 7. Entwicklungsserver starten
 npm run dev

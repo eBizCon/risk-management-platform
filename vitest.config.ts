@@ -9,7 +9,7 @@ export default defineConfig({
 		environment: 'jsdom',
 		setupFiles: ['./vitest.setup.ts'],
 		env: {
-			DATABASE_URL: process.env.DATABASE_URL || 'postgresql://risk:risk@localhost:5432/risk_management'
+			DATABASE_URL: process.env.DATABASE_URL || 'postgresql://risk:risk@localhost:5432/risk_management_test'
 		}
 	},
 	resolve: {
