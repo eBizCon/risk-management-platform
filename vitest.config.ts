@@ -7,7 +7,10 @@ export default defineConfig({
 		include: ['src/**/*.{test,spec}.{js,ts}'],
 		globals: true,
 		environment: 'jsdom',
-		setupFiles: ['./vitest.setup.ts']
+		setupFiles: ['./vitest.setup.ts'],
+		env: {
+			DATABASE_URL: process.env.DATABASE_URL || 'postgresql://risk:risk@localhost:5432/risk_management'
+		}
 	},
 	resolve: {
 		alias: {

@@ -16,7 +16,7 @@ export async function createApplication(
 		data.hasPaymentDefault
 	);
 
-	const result = db
+	const [result] = await db
 		.insert(applications)
 		.values({
 			...data,
@@ -25,8 +25,7 @@ export async function createApplication(
 			scoringReasons: JSON.stringify(scoring.reasons),
 			createdAt: new Date().toISOString()
 		})
-		.returning()
-		.get();
+		.returning();
 
 	return result;
 }
@@ -35,7 +34,7 @@ export async function updateApplication(
 	id: number,
 	data: Partial<Omit<NewApplication, 'id' | 'createdAt' | 'createdBy'>>
 ): Promise<Application | null> {
-	const existing = db.select().from(applications).where(eq(applications.id, id)).get();
+	const [existing] = await db.select().from(applications).where(eq(applications.id, id));
 	if (!existing || existing.status !== 'draft') {
 		return null;
 	}
@@ -61,18 +60,17 @@ export async function updateApplication(
 		updatedData.scoringReasons = JSON.stringify(scoring.reasons);
 	}
 
-	const result = db
+	const [result] = await db
 		.update(applications)
 		.set(updatedData)
 		.where(eq(applications.id, id))
-		.returning()
-		.get();
+		.returning();
 
 	return result ?? null;
 }
 
 export async function submitApplication(id: number): Promise<Application | null> {
-	const existing = db.select().from(applications).where(eq(applications.id, id)).get();
+	const [existing] = await db.select().from(applications).where(eq(applications.id, id));
 	if (!existing || existing.status !== 'draft') {
 		return null;
 	}
@@ -85,7 +83,7 @@ export async function submitApplication(id: number): Promise<Application | null>
 		existing.hasPaymentDefault
 	);
 
-	const result = db
+	const [result] = await db
 		.update(applications)
 		.set({
 			status: 'submitted',
@@ -95,8 +93,7 @@ export async function submitApplication(id: number): Promise<Application | null>
 			scoringReasons: JSON.stringify(scoring.reasons)
 		})
 		.where(eq(applications.id, id))
-		.returning()
-		.get();
+		.returning();
 
 	return result ?? null;
 }
@@ -106,12 +103,12 @@ export async function processApplication(
 	decision: 'approved' | 'rejected',
 	comment?: string
 ): Promise<Application | null> {
-	const existing = db.select().from(applications).where(eq(applications.id, id)).get();
+	const [existing] = await db.select().from(applications).where(eq(applications.id, id));
 	if (!existing || existing.status !== 'submitted') {
 		return null;
 	}
 
-	const result = db
+	const [result] = await db
 		.update(applications)
 		.set({
 			status: decision,
@@ -119,14 +116,13 @@ export async function processApplication(
 			processedAt: new Date().toISOString()
 		})
 		.where(eq(applications.id, id))
-		.returning()
-		.get();
+		.returning();
 
 	return result ?? null;
 }
 
 export async function getApplicationById(id: number): Promise<Application | null> {
-	const result = db.select().from(applications).where(eq(applications.id, id)).get();
+	const [result] = await db.select().from(applications).where(eq(applications.id, id));
 	return result ?? null;
 }
 
@@ -135,21 +131,20 @@ export async function getApplicationsByUser(
 	status?: ApplicationStatus
 ): Promise<Application[]> {
 	if (status) {
-		return db
+		return await db
 			.select()
 			.from(applications)
-			.where(and(eq(applications.createdBy, userEmail), eq(applications.status, status)))
-			.all();
+			.where(and(eq(applications.createdBy, userEmail), eq(applications.status, status)));
 	}
-	return db.select().from(applications).where(eq(applications.createdBy, userEmail)).all();
+	return await db.select().from(applications).where(eq(applications.createdBy, userEmail));
 }
 
 export async function getApplicationsByStatus(status: ApplicationStatus): Promise<Application[]> {
-	return db.select().from(applications).where(eq(applications.status, status)).all();
+	return await db.select().from(applications).where(eq(applications.status, status));
 }
 
 export async function getAllApplications(): Promise<Application[]> {
-	return db.select().from(applications).all();
+	return await db.select().from(applications);
 }
 
 export async function getProcessorApplicationsPaginated(params: {
@@ -159,7 +154,9 @@ export async function getProcessorApplicationsPaginated(params: {
 }): Promise<{ items: Application[]; totalCount: number }> {
 	const whereClause = params.status ? eq(applications.status, params.status) : undefined;
 	const totalQuery = db.select({ value: count() }).from(applications);
-	const totalResult = whereClause ? totalQuery.where(whereClause).get() : totalQuery.get();
+	const [totalResult] = whereClause
+		? await totalQuery.where(whereClause)
+		: await totalQuery;
 	const totalCount = totalResult?.value ?? 0;
 	const itemsQuery = db
 		.select()
@@ -167,7 +164,9 @@ export async function getProcessorApplicationsPaginated(params: {
 		.orderBy(desc(applications.createdAt))
 		.limit(params.pageSize)
 		.offset((params.page - 1) * params.pageSize);
-	const items = whereClause ? itemsQuery.where(whereClause).all() : itemsQuery.all();
+	const items = whereClause
+		? await itemsQuery.where(whereClause)
+		: await itemsQuery;
 
 	return { items, totalCount };
 }
@@ -178,25 +177,23 @@ export async function getProcessorApplicationStats(): Promise<{
 	approved: number;
 	rejected: number;
 }> {
-	const total = db.select({ value: count() }).from(applications).get()?.value ?? 0;
-	const submitted =
-		db
-			.select({ value: count() })
-			.from(applications)
-			.where(eq(applications.status, 'submitted'))
-			.get()?.value ?? 0;
-	const approved =
-		db
-			.select({ value: count() })
-			.from(applications)
-			.where(eq(applications.status, 'approved'))
-			.get()?.value ?? 0;
-	const rejected =
-		db
-			.select({ value: count() })
-			.from(applications)
-			.where(eq(applications.status, 'rejected'))
-			.get()?.value ?? 0;
+	const [totalResult] = await db.select({ value: count() }).from(applications);
+	const total = totalResult?.value ?? 0;
+	const [submittedResult] = await db
+		.select({ value: count() })
+		.from(applications)
+		.where(eq(applications.status, 'submitted'));
+	const submitted = submittedResult?.value ?? 0;
+	const [approvedResult] = await db
+		.select({ value: count() })
+		.from(applications)
+		.where(eq(applications.status, 'approved'));
+	const approved = approvedResult?.value ?? 0;
+	const [rejectedResult] = await db
+		.select({ value: count() })
+		.from(applications)
+		.where(eq(applications.status, 'rejected'));
+	const rejected = rejectedResult?.value ?? 0;
 
 	return {
 		total,
@@ -207,11 +204,11 @@ export async function getProcessorApplicationStats(): Promise<{
 }
 
 export async function deleteApplication(id: number): Promise<boolean> {
-	const existing = db.select().from(applications).where(eq(applications.id, id)).get();
+	const [existing] = await db.select().from(applications).where(eq(applications.id, id));
 	if (!existing || existing.status !== 'draft') {
 		return false;
 	}
 
-	db.delete(applications).where(eq(applications.id, id)).run();
+	await db.delete(applications).where(eq(applications.id, id));
 	return true;
 }

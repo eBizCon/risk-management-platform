@@ -20,7 +20,10 @@
 		"lint": "eslint .",
 		"lint:fix": "eslint . --fix",
 		"format": "prettier --write .",
-		"format:check": "prettier --check ."
+		"format:check": "prettier --check .",
+		"db:generate": "drizzle-kit generate",
+		"db:migrate": "drizzle-kit migrate",
+		"db:push": "drizzle-kit push"
 	},
 	"devDependencies": {
 		"@eslint/js": "^9.39.2",
@@ -33,7 +36,7 @@
 		"@tailwindcss/typography": "^0.5.19",
 		"@testing-library/jest-dom": "^6.9.1",
 		"@testing-library/svelte": "^5.3.1",
-		"@types/better-sqlite3": "^7.6.13",
+		"@types/pg": "^8.18.0",
 		"autoprefixer": "^10.4.23",
 		"dotenv": "^17.3.1",
 		"drizzle-kit": "^0.31.8",
@@ -55,10 +58,10 @@
 		"vitest": "^4.0.17"
 	},
 	"dependencies": {
-		"better-sqlite3": "^12.6.0",
 		"drizzle-orm": "^0.45.1",
 		"lucide-svelte": "^0.562.0",
 		"openid-client": "^6.1.5",
+		"pg": "^8.20.0",
 		"zod": "^4.3.5"
 	}
 }
