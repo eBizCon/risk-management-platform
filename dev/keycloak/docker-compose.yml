@@ -13,5 +13,17 @@ services:
       - ./import:/opt/keycloak/data/import:ro
       - keycloak_data:/opt/keycloak/data
 
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: risk
+      POSTGRES_PASSWORD: risk
+      POSTGRES_DB: risk_management
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
 volumes:
   keycloak_data:
+  postgres_data:
