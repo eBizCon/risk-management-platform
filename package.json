@@ -5,7 +5,7 @@
 	"type": "module",
 	"packageManager": "npm@11.6.1",
 	"scripts": {
-		"dev": "vite dev",
+		"dev": "drizzle-kit push && vite dev",
 		"build": "vite build",
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
