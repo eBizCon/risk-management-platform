@@ -1,15 +1,15 @@
-import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
+import { pgTable, text, serial, doublePrecision, integer, boolean } from 'drizzle-orm/pg-core';
 
-export const applications = sqliteTable('applications', {
-	id: integer('id').primaryKey({ autoIncrement: true }),
+export const applications = pgTable('applications', {
+	id: serial('id').primaryKey(),
 	name: text('name').notNull(),
-	income: real('income').notNull(),
-	fixedCosts: real('fixed_costs').notNull(),
-	desiredRate: real('desired_rate').notNull(),
+	income: doublePrecision('income').notNull(),
+	fixedCosts: doublePrecision('fixed_costs').notNull(),
+	desiredRate: doublePrecision('desired_rate').notNull(),
 	employmentStatus: text('employment_status', {
 		enum: ['employed', 'self_employed', 'unemployed', 'retired']
 	}).notNull(),
-	hasPaymentDefault: integer('has_payment_default', { mode: 'boolean' }).notNull(),
+	hasPaymentDefault: boolean('has_payment_default').notNull(),
 	status: text('status', {
 		enum: ['draft', 'submitted', 'approved', 'rejected']
 	})

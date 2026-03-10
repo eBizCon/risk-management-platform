@@ -8,7 +8,7 @@ Ensure type safety and consistency across the database layer.
 
 ## Schema Definition
 - All table definitions must be located in `src/lib/server/db/schema.ts`.
-- Use Drizzle's `sqliteTable` and appropriate column types.
+- Use Drizzle's `pgTable` and appropriate column types (e.g., `text`, `serial`, `integer`, `boolean`, `doublePrecision`).
 
 ## Type Safety
 - Export types using Drizzle's inference helpers:

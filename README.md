@@ -33,17 +33,22 @@ npm install
 # 3. Umgebungsvariablen konfigurieren
 cp .env.example .env
 
-# 4. Keycloak (Identity Provider) starten
+# 4. Keycloak und PostgreSQL starten
 ./dev/keycloak/keycloak-up.sh
 
 # 5. Warten bis Keycloak bereit ist (ca. 30 Sekunden)
 # Keycloak Admin-UI: http://localhost:8081 (admin/admin)
 
-# 6. Entwicklungsserver starten
+# 6. Datenbankschema erstellen und Demodaten laden
+npm run db:push
+npm run db:seed
+
+# 7. Entwicklungsserver starten
 npm run dev
 
-# 7. Anwendung öffnen: http://localhost:5173
+# 8. Anwendung öffnen: http://localhost:5173
 # Test-Benutzer: applicant/applicant oder processor/processor
+
 ```
 
 ---
@@ -129,7 +134,7 @@ Die Anwendung verwendet OIDC (OpenID Connect) mit Keycloak zur Authentifizierung
 |-------------|---------|------------|
 | [SvelteKit](https://kit.svelte.dev/) | 2.x | Server-Side Rendering, API Routes |
 | [Drizzle ORM](https://orm.drizzle.team/) | 0.45.x | Datenbank-Abstraction |
-| [better-sqlite3](https://github.com/WiseLibs/better-sqlite3) | 12.x | SQLite-Datenbank |
+| [pg](https://node-postgres.com/) | 8.x | PostgreSQL-Datenbank |
 | [Zod](https://zod.dev/) | 4.x | Schema-Validierung |
 | [openid-client](https://github.com/panva/openid-client) | 6.x | OIDC-Authentifizierung |
 
@@ -190,8 +195,8 @@ Die Anwendung folgt einer **Layered Architecture** mit klarer Trennung zwischen 
 ┌─────────────────────────────────────────────────────────────┐
 │                      Data Layer                              │
 │  ┌─────────────────────────────────────────────────────┐    │
-│  │              Drizzle ORM + SQLite                    │    │
-│  │                   (data.db)                          │    │
+│  │           Drizzle ORM + PostgreSQL                   │    │
+│  │               (PostgreSQL DB)                        │    │
 │  └─────────────────────────────────────────────────────┘    │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -314,10 +319,13 @@ npm install
 # 2. Umgebungsvariablen konfigurieren
 cp .env.example .env
 
-# 3. Keycloak starten
+# 3. Keycloak und PostgreSQL starten
 ./dev/keycloak/keycloak-up.sh
 
-# 4. Entwicklungsserver starten
+# 4. Datenbankschema erstellen
+npm run db:push
+
+# 5. Entwicklungsserver starten
 npm run dev
 ```
 
@@ -328,6 +336,7 @@ npm run dev
 | App (Dev) | http://localhost:5173 | SvelteKit Dev Server |
 | App (Preview) | http://localhost:4173 | SvelteKit Preview Server |
 | Keycloak | http://localhost:8081 | Identity Provider Admin UI |
+| PostgreSQL | localhost:5432 | Datenbank |
 
 ### Keycloak verwalten
 
@@ -377,10 +386,11 @@ KEYCLOAK_ADMIN_PASSWORD=admin
 | `OIDC_SCOPE` | OIDC Scopes | `openid profile` |
 | `OIDC_ROLES_CLAIM_PATH` | Pfad zu Rollen im Token | `realm_access.roles` |
 | `OIDC_CLIENT_SECRET` | Client Secret (optional) | - |
+| `DATABASE_URL` | PostgreSQL-Verbindungs-URL | `postgresql://risk:risk@localhost:5432/risk_management` |
 
 ### Datenbank
 
-Die Anwendung verwendet SQLite. Die Datenbankdatei `data.db` wird automatisch im Projektverzeichnis erstellt. Das Schema wird beim ersten Start automatisch angelegt.
+Die Anwendung verwendet PostgreSQL als Datenbank. Die Verbindung wird über die Umgebungsvariable `DATABASE_URL` konfiguriert. Das Datenbankschema wird mit `npm run db:push` erstellt.
 
 ---
 
@@ -400,6 +410,9 @@ Die Anwendung verwendet SQLite. Die Datenbankdatei `data.db` wird automatisch im
 | `npm run test:e2e` | E2E-Tests ausführen |
 | `npm run test:e2e:ui` | E2E-Tests mit UI |
 | `npm run test:all` | Alle Tests ausführen |
+| `npm run db:generate` | Drizzle-Migrationen generieren |
+| `npm run db:migrate` | Drizzle-Migrationen ausführen |
+| `npm run db:push` | Datenbankschema direkt anwenden |
 
 ### Code-Qualität
 
@@ -416,11 +429,11 @@ npm run test:e2e
 
 ### Datenbank
 
-Die SQLite-Datenbank wird automatisch initialisiert. Zum Zurücksetzen:
+Die PostgreSQL-Datenbank wird über Docker Compose bereitgestellt. Zum Zurücksetzen:
 
 ```bash
-# Datenbank löschen (wird beim nächsten Start neu erstellt)
-rm data.db
+# Schema neu erstellen
+npm run db:push
 ```
 
 ---
@@ -493,7 +506,7 @@ Für Produktion müssen folgende Anpassungen vorgenommen werden:
 
 1. **Keycloak**: Produktions-Keycloak mit HTTPS konfigurieren
 2. **Umgebungsvariablen**: Produktions-URLs in `.env` setzen
-3. **Datenbank**: SQLite durch PostgreSQL/MySQL ersetzen (optional, für Skalierung)
+3. **Datenbank**: PostgreSQL-Produktionsinstanz konfigurieren
 4. **Session Store**: In-Memory Store durch Redis/DB-backed Store ersetzen
 
 ---
@@ -526,8 +539,8 @@ docker compose -f dev/keycloak/docker-compose.yml logs
 ### Datenbank-Fehler
 
 ```bash
-# Datenbank zurücksetzen
-rm data.db
+# Datenbankschema neu erstellen
+npm run db:push
 npm run dev
 ```
 

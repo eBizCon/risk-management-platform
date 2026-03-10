@@ -1,5 +1,7 @@
-import type { Database } from 'better-sqlite3';
-import type { ApplicationStatus, EmploymentStatus } from './schema';
+import { count } from 'drizzle-orm';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { applications } from './schema';
+import type { ApplicationStatus, EmploymentStatus, NewApplication } from './schema';
 import { calculateScore } from '../services/scoring';
 
 interface SeedApplicationTemplate {
@@ -9,24 +11,6 @@ interface SeedApplicationTemplate {
 	desiredRate: number;
 	employmentStatus: EmploymentStatus;
 	hasPaymentDefault: boolean;
-}
-
-interface InsertApplicationRow {
-	name: string;
-	income: number;
-	fixed_costs: number;
-	desired_rate: number;
-	employment_status: EmploymentStatus;
-	has_payment_default: number;
-	status: ApplicationStatus;
-	score: number;
-	traffic_light: 'red' | 'yellow' | 'green';
-	scoring_reasons: string;
-	processor_comment: string | null;
-	created_at: string;
-	submitted_at: string | null;
-	processed_at: string | null;
-	created_by: string;
 }
 
 const SEED_CREATED_BY = 'applicant@example.com';
@@ -114,8 +98,8 @@ const SEED_TEMPLATES: SeedApplicationTemplate[] = [
 	}
 ];
 
-const buildSeedRows = (): InsertApplicationRow[] => {
-	const rows: InsertApplicationRow[] = [];
+const buildSeedRows = (): Omit<NewApplication, 'id'>[] => {
+	const rows: Omit<NewApplication, 'id'>[] = [];
 	const totalRows = 32;
 	const now = Date.now();
 
@@ -144,77 +128,33 @@ const buildSeedRows = (): InsertApplicationRow[] => {
 		rows.push({
 			name: `${template.name} ${Math.floor(index / SEED_TEMPLATES.length) + 1}`,
 			income: template.income,
-			fixed_costs: template.fixedCosts,
-			desired_rate: template.desiredRate,
-			employment_status: template.employmentStatus,
-			has_payment_default: template.hasPaymentDefault ? 1 : 0,
+			fixedCosts: template.fixedCosts,
+			desiredRate: template.desiredRate,
+			employmentStatus: template.employmentStatus,
+			hasPaymentDefault: template.hasPaymentDefault,
 			status,
 			score: scoring.score,
-			traffic_light: scoring.trafficLight,
-			scoring_reasons: JSON.stringify(scoring.reasons),
-			processor_comment: processorComment,
-			created_at: createdAtDate.toISOString(),
-			submitted_at: status === 'draft' ? null : submittedAtDate.toISOString(),
-			processed_at:
+			trafficLight: scoring.trafficLight,
+			scoringReasons: JSON.stringify(scoring.reasons),
+			processorComment,
+			createdAt: createdAtDate.toISOString(),
+			submittedAt: status === 'draft' ? null : submittedAtDate.toISOString(),
+			processedAt:
 				status === 'approved' || status === 'rejected' ? processedAtDate.toISOString() : null,
-			created_by: SEED_CREATED_BY
+			createdBy: SEED_CREATED_BY
 		});
 	}
 
 	return rows;
 };
 
-export function seedDatabase(sqliteDb: Database): void {
-	const existingCount = sqliteDb.prepare('SELECT COUNT(*) as count FROM applications').get() as {
-		count: number;
-	};
+export async function seedDatabase(database: NodePgDatabase<Record<string, unknown>>): Promise<void> {
+	const [existingCount] = await database.select({ value: count() }).from(applications);
 
-	if (existingCount.count > 0) {
+	if ((existingCount?.value ?? 0) > 0) {
 		return;
 	}
 
 	const rows = buildSeedRows();
-	const insertStatement = sqliteDb.prepare(`
-		INSERT INTO applications (
-			name,
-			income,
-			fixed_costs,
-			desired_rate,
-			employment_status,
-			has_payment_default,
-			status,
-			score,
-			traffic_light,
-			scoring_reasons,
-			processor_comment,
-			created_at,
-			submitted_at,
-			processed_at,
-			created_by
-		) VALUES (
-			@name,
-			@income,
-			@fixed_costs,
-			@desired_rate,
-			@employment_status,
-			@has_payment_default,
-			@status,
-			@score,
-			@traffic_light,
-			@scoring_reasons,
-			@processor_comment,
-			@created_at,
-			@submitted_at,
-			@processed_at,
-			@created_by
-		)
-	`);
-
-	const insertMany = sqliteDb.transaction((entries: InsertApplicationRow[]) => {
-		for (const entry of entries) {
-			insertStatement.run(entry);
-		}
-	});
-
-	insertMany(rows);
+	await database.insert(applications).values(rows);
 }
