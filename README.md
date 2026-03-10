@@ -34,7 +34,7 @@ npm install
 cp .env.example .env
 
 # 4. Keycloak und PostgreSQL starten
-./dev/keycloak/keycloak-up.sh
+./dev/services-up.sh
 
 # 5. Warten bis Keycloak bereit ist (ca. 30 Sekunden)
 # Keycloak Admin-UI: http://localhost:8081 (admin/admin)
@@ -214,12 +214,13 @@ Die Anwendung folgt einer **Layered Architecture** mit klarer Trennung zwischen 
 
 ```
 risk-management-platform/
-├── dev/                          # Entwicklungs-Infrastruktur
-│   └── keycloak/                 # Keycloak Docker Setup
-│       ├── docker-compose.yml    # Keycloak Container-Definition
-│       ├── import/               # Realm-Konfiguration (auto-import)
-│       ├── keycloak-up.sh        # Start-Skript
-│       └── keycloak-down.sh      # Stop-Skript
+├── dev/                              # Entwicklungs-Infrastruktur
+│   ├── docker-compose.yml            # Keycloak + PostgreSQL
+│   ├── keycloak/                     # Keycloak-Konfiguration
+│   │   └── import/                   # Realm-Konfiguration (auto-import)
+│   │       └── risk-management-realm.json
+│   ├── services-up.sh                # Infrastruktur starten
+│   └── services-down.sh              # Infrastruktur stoppen
 │
 ├── e2e/                          # End-to-End Tests (Playwright)
 │   ├── helpers/                  # Test-Utilities (Auth-Helper)
@@ -308,7 +309,7 @@ risk-management-platform/
 
 - **Node.js** >= 18.x
 - **npm** >= 9.x
-- **Docker** & **Docker Compose** (für Keycloak)
+- **Docker** & **Docker Compose** (für Keycloak & PostgreSQL)
 
 ### Setup
 
@@ -320,7 +321,7 @@ npm install
 cp .env.example .env
 
 # 3. Keycloak und PostgreSQL starten
-./dev/keycloak/keycloak-up.sh
+./dev/services-up.sh
 
 # 4. Datenbankschema erstellen
 npm run db:push
@@ -338,17 +339,23 @@ npm run dev
 | Keycloak | http://localhost:8081 | Identity Provider Admin UI |
 | PostgreSQL | localhost:5432 | Datenbank |
 
-### Keycloak verwalten
+### Entwicklungsservices verwalten
 
 ```bash
-# Starten
-./dev/keycloak/keycloak-up.sh
+# Starten (Keycloak + PostgreSQL)
+./dev/services-up.sh
 
 # Stoppen
-./dev/keycloak/keycloak-down.sh
+./dev/services-down.sh
 
 # Logs anzeigen
-docker compose -f dev/keycloak/docker-compose.yml logs -f
+docker compose -f dev/docker-compose.yml logs -f
+
+# Nur Keycloak-Logs
+docker compose -f dev/docker-compose.yml logs -f keycloak
+
+# Nur PostgreSQL-Logs
+docker compose -f dev/docker-compose.yml logs -f postgres
 ```
 
 **Admin-Zugang:** http://localhost:8081 mit `admin` / `admin`
@@ -517,11 +524,11 @@ Für Produktion müssen folgende Anpassungen vorgenommen werden:
 
 ```bash
 # Logs prüfen
-docker compose -f dev/keycloak/docker-compose.yml logs
+docker compose -f dev/docker-compose.yml logs keycloak
 
 # Container neu starten
-./dev/keycloak/keycloak-down.sh
-./dev/keycloak/keycloak-up.sh
+./dev/services-down.sh
+./dev/services-up.sh
 ```
 
 ### "Login erforderlich" trotz Anmeldung
