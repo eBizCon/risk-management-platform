@@ -1,5 +1,5 @@
 <script lang="ts">
-	let { page, totalPages, onPageChange }: { page: number; totalPages: number; onPageChange: (page: number) => void } = $props();
+	let { page, totalPages, onPageChange, testIdPrefix = 'processor-pagination' }: { page: number; totalPages: number; onPageChange: (page: number) => void; testIdPrefix?: string } = $props();
 
 	const visiblePageCount = 5;
 
@@ -33,13 +33,13 @@
 	const isLast = $derived(page === totalPages);
 </script>
 
-<nav class="flex items-center justify-center gap-3" aria-label="Pagination" data-testid="processor-pagination">
+<nav class="flex items-center justify-center gap-3" aria-label="Pagination" data-testid={testIdPrefix}>
 	<button
 		type="button"
 		class="btn ghost btn-sm px-3 rounded-md"
 		onclick={() => handleSelect(1)}
 		disabled={isFirst}
-		data-testid="processor-pagination-first"
+		data-testid={`${testIdPrefix}-first`}
 	>
 		«
 	</button>
@@ -48,7 +48,7 @@
 		class="btn ghost btn-sm px-3 rounded-md"
 		onclick={() => handleSelect(page - 1)}
 		disabled={isFirst}
-		data-testid="processor-pagination-prev"
+		data-testid={`${testIdPrefix}-prev`}
 	>
 		‹
 	</button>
@@ -58,11 +58,11 @@
 			type="button"
 			class="btn ghost btn-sm px-3 rounded-md"
 			onclick={() => handleSelect(1)}
-			data-testid="processor-pagination-page-1"
+			data-testid={`${testIdPrefix}-page-1`}
 		>
 			1
 		</button>
-		<span class="text-secondary px-1" data-testid="processor-pagination-ellipsis-start">…</span>
+		<span class="text-secondary px-1" data-testid={`${testIdPrefix}-ellipsis-start`}>…</span>
 	{/if}
 
 	{#each visiblePages as visiblePage}
@@ -71,19 +71,19 @@
 			class={`btn btn-sm px-3 rounded-md ${visiblePage === page ? 'btn-primary' : 'ghost'}`}
 			onclick={() => handleSelect(visiblePage)}
 			aria-current={visiblePage === page ? 'page' : undefined}
-			data-testid={`processor-pagination-page-${visiblePage}`}
+			data-testid={`${testIdPrefix}-page-${visiblePage}`}
 		>
 			{visiblePage}
 		</button>
 	{/each}
 
 	{#if showTrailingEllipsis}
-		<span class="text-secondary px-1" data-testid="processor-pagination-ellipsis-end">…</span>
+		<span class="text-secondary px-1" data-testid={`${testIdPrefix}-ellipsis-end`}>…</span>
 		<button
 			type="button"
 			class="btn ghost btn-sm px-3 rounded-md"
 			onclick={() => handleSelect(totalPages)}
-			data-testid={`processor-pagination-page-${totalPages}`}
+			data-testid={`${testIdPrefix}-page-${totalPages}`}
 		>
 			{totalPages}
 		</button>
@@ -94,7 +94,7 @@
 		class="btn ghost btn-sm px-3 rounded-md"
 		onclick={() => handleSelect(page + 1)}
 		disabled={isLast}
-		data-testid="processor-pagination-next"
+		data-testid={`${testIdPrefix}-next`}
 	>
 		›
 	</button>
@@ -103,7 +103,7 @@
 		class="btn ghost btn-sm px-3 rounded-md"
 		onclick={() => handleSelect(totalPages)}
 		disabled={isLast}
-		data-testid="processor-pagination-last"
+		data-testid={`${testIdPrefix}-last`}
 	>
 		»
 	</button>
