@@ -2,9 +2,10 @@ import { test, expect } from './fixtures';
 import type { Page } from '@playwright/test';
 
 test.describe('Antragsteller (Applicant) Workflows', () => {
-
 	test.describe('Kreditantrag erstellen (Create Credit Application)', () => {
-		test('should display the home page with role-specific content', async ({ authenticatedPage }) => {
+		test('should display the home page with role-specific content', async ({
+			authenticatedPage
+		}) => {
 			await authenticatedPage.goto('/');
 			await expect(authenticatedPage.locator('h1')).toContainText('Risikomanagement');
 			await expect(
@@ -14,9 +15,7 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 
 		test('should navigate to new application form', async ({ authenticatedPage }) => {
 			await authenticatedPage.goto('/');
-			await authenticatedPage
-				.getByRole('link', { name: /Neuen Antrag erstellen/i })
-				.click();
+			await authenticatedPage.getByRole('link', { name: /Neuen Antrag erstellen/i }).click();
 			await expect(authenticatedPage).toHaveURL('/applications/new');
 			await expect(authenticatedPage.locator('h1')).toContainText('Kreditantrag erstellen');
 		});
@@ -33,7 +32,9 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await expect(authenticatedPage.getByTestId('radio-payment-default-no')).toBeVisible();
 		});
 
-		test('should show validation errors for empty form submission', async ({ authenticatedPage }) => {
+		test('should show validation errors for empty form submission', async ({
+			authenticatedPage
+		}) => {
 			await authenticatedPage.goto('/applications/new');
 
 			await authenticatedPage.getByTestId('input-name').fill('A');
@@ -44,6 +45,7 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await authenticatedPage.getByTestId('radio-payment-default-no').check();
 
 			await authenticatedPage.getByTestId('btn-save-draft').click();
+			await authenticatedPage.waitForLoadState('networkidle');
 
 			await expect(authenticatedPage.getByText(/mindestens 2 Zeichen/i)).toBeVisible();
 		});
@@ -63,7 +65,9 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await expect(authenticatedPage.getByText(/Einkommen muss positiv sein/i)).toBeVisible();
 		});
 
-		test('should show validation error when desired rate exceeds available income', async ({ authenticatedPage }) => {
+		test('should show validation error when desired rate exceeds available income', async ({
+			authenticatedPage
+		}) => {
 			await authenticatedPage.goto('/applications/new');
 
 			await authenticatedPage.getByTestId('input-name').fill('Test User');
@@ -75,7 +79,9 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 
 			await authenticatedPage.getByTestId('btn-save-draft').click();
 
-			await expect(authenticatedPage.getByText(/kann nicht höher sein als das verfügbare Einkommen/i)).toBeVisible();
+			await expect(
+				authenticatedPage.getByText(/kann nicht höher sein als das verfügbare Einkommen/i)
+			).toBeVisible();
 		});
 
 		test('should successfully create a draft application', async ({ authenticatedPage }) => {
@@ -94,7 +100,9 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await expect(authenticatedPage.getByTestId('status-badge-draft')).toBeVisible();
 		});
 
-		test('should successfully create and submit an application directly', async ({ authenticatedPage }) => {
+		test('should successfully create and submit an application directly', async ({
+			authenticatedPage
+		}) => {
 			await authenticatedPage.goto('/applications/new');
 
 			await authenticatedPage.getByTestId('input-name').fill('Anna Schmidt');
@@ -114,7 +122,6 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 	});
 
 	test.describe('Entwurf speichern und bearbeiten (Save and Edit Draft)', () => {
-
 		test('should filter applications by status', async ({ authenticatedPage }) => {
 			await authenticatedPage.goto('/applications');
 
@@ -136,6 +143,7 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await authenticatedPage.getByTestId('select-employment-status').selectOption('employed');
 			await authenticatedPage.getByTestId('radio-payment-default-no').check();
 			await authenticatedPage.getByTestId('btn-save-draft').click();
+			await authenticatedPage.waitForURL(/\/applications\/\d+/);
 
 			await authenticatedPage.getByTestId('submit-application').click();
 			await expect(authenticatedPage.getByTestId('confirm-dialog')).toBeVisible();
@@ -169,7 +177,9 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await page.getByTestId('radio-payment-default-no').check();
 		}
 
-		test('should show confirmation dialog when submitting new application', async ({ authenticatedPage }) => {
+		test('should show confirmation dialog when submitting new application', async ({
+			authenticatedPage
+		}) => {
 			await fillApplicationForm(authenticatedPage);
 
 			await authenticatedPage.getByTestId('btn-submit-application').click();
@@ -200,7 +210,9 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await expect(authenticatedPage.getByTestId('confirm-dialog')).not.toBeVisible();
 		});
 
-		test('should show confirmation dialog when submitting from edit page', async ({ authenticatedPage }) => {
+		test('should show confirmation dialog when submitting from edit page', async ({
+			authenticatedPage
+		}) => {
 			await fillApplicationForm(authenticatedPage);
 			await authenticatedPage.getByTestId('btn-save-draft').click();
 			await authenticatedPage.getByTestId('edit-application').click();
@@ -209,9 +221,12 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await expect(authenticatedPage.getByTestId('confirm-dialog')).toBeVisible();
 		});
 
-		test('should show confirmation dialog when submitting from detail page', async ({ authenticatedPage }) => {
+		test('should show confirmation dialog when submitting from detail page', async ({
+			authenticatedPage
+		}) => {
 			await fillApplicationForm(authenticatedPage);
 			await authenticatedPage.getByTestId('btn-save-draft').click();
+			await authenticatedPage.waitForURL(/\/applications\/\d+/);
 
 			await authenticatedPage.getByTestId('submit-application').click();
 
@@ -230,7 +245,9 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 	});
 
 	test.describe('Bewertungsergebnis einsehen (View Scoring Result)', () => {
-		test('should display score and traffic light for submitted application', async ({ authenticatedPage }) => {
+		test('should display score and traffic light for submitted application', async ({
+			authenticatedPage
+		}) => {
 			await authenticatedPage.goto('/applications/new');
 			await authenticatedPage.getByTestId('input-name').fill('Score Test');
 			await authenticatedPage.getByTestId('input-income').fill('5000');
@@ -253,7 +270,7 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await authenticatedPage.getByTestId('select-employment-status').selectOption('employed');
 			await authenticatedPage.getByTestId('radio-payment-default-no').check();
 			await authenticatedPage.getByTestId('btn-submit-application').click();
-	await authenticatedPage.getByTestId('confirm-dialog-confirm').click();
+			await authenticatedPage.getByTestId('confirm-dialog-confirm').click();
 			await expect(authenticatedPage.getByTestId('scoring-reasons')).toBeVisible();
 		});
 
@@ -270,7 +287,9 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await expect(authenticatedPage.getByTestId('traffic-light-green')).toBeVisible();
 		});
 
-		test('should show red traffic light for low score with payment default', async ({ authenticatedPage }) => {
+		test('should show red traffic light for low score with payment default', async ({
+			authenticatedPage
+		}) => {
 			await authenticatedPage.goto('/applications/new');
 
 			await authenticatedPage.waitForLoadState('networkidle');
@@ -307,7 +326,9 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await expect(authenticatedPage.getByTestId('application-table')).toBeVisible();
 		});
 
-		test('should show application details when clicking on an application', async ({ authenticatedPage }) => {
+		test('should show application details when clicking on an application', async ({
+			authenticatedPage
+		}) => {
 			await authenticatedPage.goto('/applications/new');
 			await authenticatedPage.getByTestId('input-name').fill('Detail View Test');
 			await authenticatedPage.getByTestId('input-income').fill('4000');

@@ -25,32 +25,49 @@ export const applicationSchema = z.object({
 	})
 });
 
-export const applicationWithBusinessRulesSchema = applicationSchema.refine(
-	(data) => data.fixedCosts < data.income,
-	{
+export const applicationWithBusinessRulesSchema = applicationSchema
+	.refine((data) => data.fixedCosts < data.income, {
 		message: 'Fixkosten müssen geringer als das Einkommen sein',
 		path: ['fixedCosts']
-	}
-).refine(
-	(data) => data.desiredRate <= (data.income - data.fixedCosts),
-	{
-		message: 'Gewünschte Rate kann nicht höher sein als das verfügbare Einkommen (Einkommen minus Fixkosten)',
+	})
+	.refine((data) => data.desiredRate <= data.income - data.fixedCosts, {
+		message:
+			'Gewünschte Rate kann nicht höher sein als das verfügbare Einkommen (Einkommen minus Fixkosten)',
 		path: ['desiredRate']
-	}
-);
+	});
 
-export const processorDecisionSchema = z.object({
-	decision: z.enum(['approved', 'rejected'], {
-		message: 'Bitte wählen Sie eine Entscheidung'
-	}),
-	comment: z.string().optional()
-}).refine(
-	(data) => data.decision !== 'rejected' || (data.comment && data.comment.trim().length > 0),
-	{
-		message: 'Bei Ablehnung ist eine Begründung erforderlich',
-		path: ['comment']
-	}
-);
+export const processorDecisionSchema = z
+	.object({
+		decision: z.enum(['approved', 'rejected'], {
+			message: 'Bitte wählen Sie eine Entscheidung'
+		}),
+		comment: z.string().optional()
+	})
+	.refine(
+		(data) => data.decision !== 'rejected' || (data.comment && data.comment.trim().length > 0),
+		{
+			message: 'Bei Ablehnung ist eine Begründung erforderlich',
+			path: ['comment']
+		}
+	);
+
+export const applicationInquirySchema = z.object({
+	inquiryText: z
+		.string()
+		.trim()
+		.min(5, 'Die Rückfrage muss mindestens 5 Zeichen lang sein')
+		.max(2000, 'Die Rückfrage darf maximal 2000 Zeichen lang sein')
+});
+
+export const applicationInquiryResponseSchema = z.object({
+	responseText: z
+		.string()
+		.trim()
+		.min(1, 'Die Antwort darf nicht leer sein')
+		.max(2000, 'Die Antwort darf maximal 2000 Zeichen lang sein')
+});
 
 export type ApplicationInput = z.infer<typeof applicationSchema>;
 export type ProcessorDecision = z.infer<typeof processorDecisionSchema>;
+export type ApplicationInquiryInput = z.infer<typeof applicationInquirySchema>;
+export type ApplicationInquiryResponseInput = z.infer<typeof applicationInquiryResponseSchema>;

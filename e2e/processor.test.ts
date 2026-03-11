@@ -185,7 +185,9 @@ test.describe('Antragsbearbeiter (Processor) Workflows', () => {
 
 				await page.getByRole('button', { name: /Entscheidung speichern|Absenden|Submit/i }).click();
 
-				await expect(page.getByText(/Begründung.*erforderlich|Kommentar.*Pflicht|comment.*required/i)).toBeVisible();
+				await expect(
+					page.getByText(/Begründung.*erforderlich|Kommentar.*Pflicht|comment.*required/i)
+				).toBeVisible();
 			}
 		});
 
@@ -248,13 +250,13 @@ test.describe('Antragsbearbeiter (Processor) Workflows', () => {
 			await createTestSession(page, 'applicant');
 
 			await page.goto('/applications/new');
-			await page.getByLabel(/Name/i).fill('Comment Display Test');
-			await page.getByLabel(/Monatliches Einkommen/i).fill('5000');
-			await page.getByLabel(/Monatliche Fixkosten/i).fill('2000');
-			await page.getByLabel(/Gewünschte Rate/i).fill('500');
-			await page.getByLabel(/Beschäftigungsstatus/i).selectOption('employed');
-			await page.getByLabel(/Nein/i).check();
-			await page.getByRole('button', { name: /Antrag einreichen/i }).click();
+			await page.getByTestId('input-name').fill('Comment Display Test');
+			await page.getByTestId('input-income').fill('5000');
+			await page.getByTestId('input-fixed-costs').fill('2000');
+			await page.getByTestId('input-desired-rate').fill('500');
+			await page.getByTestId('select-employment-status').selectOption('employed');
+			await page.getByTestId('radio-payment-default-no').check();
+			await page.getByTestId('btn-submit-application').click();
 			await page.getByTestId('confirm-dialog-confirm').click();
 
 			const url = page.url();

@@ -104,7 +104,7 @@ export async function processApplication(
 	comment?: string
 ): Promise<Application | null> {
 	const [existing] = await db.select().from(applications).where(eq(applications.id, id));
-	if (!existing || existing.status !== 'submitted') {
+	if (!existing || (existing.status !== 'submitted' && existing.status !== 'resubmitted')) {
 		return null;
 	}
 
@@ -154,9 +154,7 @@ export async function getProcessorApplicationsPaginated(params: {
 }): Promise<{ items: Application[]; totalCount: number }> {
 	const whereClause = params.status ? eq(applications.status, params.status) : undefined;
 	const totalQuery = db.select({ value: count() }).from(applications);
-	const [totalResult] = whereClause
-		? await totalQuery.where(whereClause)
-		: await totalQuery;
+	const [totalResult] = whereClause ? await totalQuery.where(whereClause) : await totalQuery;
 	const totalCount = totalResult?.value ?? 0;
 	const itemsQuery = db
 		.select()
@@ -164,9 +162,7 @@ export async function getProcessorApplicationsPaginated(params: {
 		.orderBy(desc(applications.createdAt))
 		.limit(params.pageSize)
 		.offset((params.page - 1) * params.pageSize);
-	const items = whereClause
-		? await itemsQuery.where(whereClause)
-		: await itemsQuery;
+	const items = whereClause ? await itemsQuery.where(whereClause) : await itemsQuery;
 
 	return { items, totalCount };
 }

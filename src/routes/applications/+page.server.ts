@@ -11,7 +11,14 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 
 	const applications = await getApplicationsByUser(
 		locals.user.email,
-		statusFilter as 'draft' | 'submitted' | 'approved' | 'rejected' | undefined
+		statusFilter as
+			| 'draft'
+			| 'submitted'
+			| 'needs_information'
+			| 'resubmitted'
+			| 'approved'
+			| 'rejected'
+			| undefined
 	);
 
 	return {

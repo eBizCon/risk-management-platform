@@ -12,6 +12,8 @@
 		{ value: '', label: 'Alle Status' },
 		{ value: 'draft', label: 'Entwürfe' },
 		{ value: 'submitted', label: 'Eingereicht' },
+		{ value: 'needs_information', label: 'Rückfrage offen' },
+		{ value: 'resubmitted', label: 'Erneut eingereicht' },
 		{ value: 'approved', label: 'Genehmigt' },
 		{ value: 'rejected', label: 'Abgelehnt' }
 	];
@@ -52,49 +54,49 @@
 </svelte:head>
 
 <RoleGuard requiredRole="applicant">
-<div class="space-y-6">
-	<div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-		<div>
-			<h1 class="text-2xl font-bold text-primary">Meine Anträge</h1>
-			<p class="text-secondary mt-1">Übersicht über alle Ihre Kreditanträge</p>
-		</div>
-		<a
-			href="/applications/new"
-			class="btn-primary inline-flex items-center px-4 py-2 w-full sm:w-auto"
-		>
-			<Plus class="w-5 h-5 mr-2" />
-			Neuer Antrag
-		</a>
-	</div>
-
-	<div class="card">
-		<div class="px-4 py-4 border-b border-default">
-			<div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-				<div class="flex items-center gap-2">
-					<Filter class="w-5 h-5 text-secondary" />
-					<select
-						onchange={handleFilterChange}
-						value={data.statusFilter || ''}
-						class="rounded-md border-default shadow-sm sm:text-sm"
-					>
-						{#each statusOptions as option}
-							<option value={option.value}>{option.label}</option>
-						{/each}
-					</select>
-				</div>
-				<span class="text-sm text-secondary">
-					{data.applications.length} Antrag/Anträge gefunden
-				</span>
+	<div class="space-y-6">
+		<div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+			<div>
+				<h1 class="text-2xl font-bold text-primary">Meine Anträge</h1>
+				<p class="text-secondary mt-1">Übersicht über alle Ihre Kreditanträge</p>
 			</div>
+			<a
+				href="/applications/new"
+				class="btn-primary inline-flex items-center px-4 py-2 w-full sm:w-auto"
+			>
+				<Plus class="w-5 h-5 mr-2" />
+				Neuer Antrag
+			</a>
 		</div>
 
-		<ApplicationTable
-			applications={data.applications}
-			isApplicantView={true}
-			onView={handleView}
-			onEdit={handleEdit}
-			onDelete={handleDelete}
-		/>
+		<div class="card">
+			<div class="px-4 py-4 border-b border-default">
+				<div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+					<div class="flex items-center gap-2">
+						<Filter class="w-5 h-5 text-secondary" />
+						<select
+							onchange={handleFilterChange}
+							value={data.statusFilter || ''}
+							class="rounded-md border-default shadow-sm sm:text-sm"
+						>
+							{#each statusOptions as option}
+								<option value={option.value}>{option.label}</option>
+							{/each}
+						</select>
+					</div>
+					<span class="text-sm text-secondary">
+						{data.applications.length} Antrag/Anträge gefunden
+					</span>
+				</div>
+			</div>
+
+			<ApplicationTable
+				applications={data.applications}
+				isApplicantView={true}
+				onView={handleView}
+				onEdit={handleEdit}
+				onDelete={handleDelete}
+			/>
+		</div>
 	</div>
-</div>
 </RoleGuard>

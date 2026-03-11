@@ -1,4 +1,12 @@
-import { pgTable, text, serial, doublePrecision, integer, boolean } from 'drizzle-orm/pg-core';
+import {
+	boolean,
+	doublePrecision,
+	integer,
+	pgTable,
+	serial,
+	text,
+	timestamp
+} from 'drizzle-orm/pg-core';
 
 export const applications = pgTable('applications', {
 	id: serial('id').primaryKey(),
@@ -11,7 +19,7 @@ export const applications = pgTable('applications', {
 	}).notNull(),
 	hasPaymentDefault: boolean('has_payment_default').notNull(),
 	status: text('status', {
-		enum: ['draft', 'submitted', 'approved', 'rejected']
+		enum: ['draft', 'submitted', 'needs_information', 'resubmitted', 'approved', 'rejected']
 	})
 		.notNull()
 		.default('draft'),
@@ -27,8 +35,34 @@ export const applications = pgTable('applications', {
 	createdBy: text('created_by').notNull()
 });
 
+export const applicationInquiries = pgTable('application_inquiries', {
+	id: serial('id').primaryKey(),
+	applicationId: integer('application_id')
+		.notNull()
+		.references(() => applications.id, { onDelete: 'cascade' }),
+	inquiryText: text('inquiry_text').notNull(),
+	status: text('status', {
+		enum: ['open', 'answered']
+	})
+		.notNull()
+		.default('open'),
+	processorEmail: text('processor_email').notNull(),
+	responseText: text('response_text'),
+	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+	respondedAt: timestamp('responded_at', { withTimezone: true })
+});
+
 export type Application = typeof applications.$inferSelect;
+export type ApplicationInquiry = typeof applicationInquiries.$inferSelect;
+export type NewApplicationInquiry = typeof applicationInquiries.$inferInsert;
 export type NewApplication = typeof applications.$inferInsert;
-export type ApplicationStatus = 'draft' | 'submitted' | 'approved' | 'rejected';
+export type ApplicationStatus =
+	| 'draft'
+	| 'submitted'
+	| 'needs_information'
+	| 'resubmitted'
+	| 'approved'
+	| 'rejected';
+export type ApplicationInquiryStatus = 'open' | 'answered';
 export type EmploymentStatus = 'employed' | 'self_employed' | 'unemployed' | 'retired';
 export type TrafficLight = 'red' | 'yellow' | 'green';
