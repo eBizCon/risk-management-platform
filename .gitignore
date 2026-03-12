@@ -9,8 +9,10 @@ data.db
 .vercel
 .netlify
 .wrangler
-/.svelte-kit
+.svelte-kit
 /build
+frontend/.svelte-kit
+frontend/build
 
 # OS
 .DS_Store
@@ -27,3 +29,10 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 playwright-report
 test-results
+
+# .NET
+backend/**/bin/
+backend/**/obj/
+backend/**/*.user
+backend/**/*.suo
+*.nupkg
