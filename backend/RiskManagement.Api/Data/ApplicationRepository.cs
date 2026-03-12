@@ -175,4 +175,37 @@ public class ApplicationRepository
         await _context.SaveChangesAsync();
         return true;
     }
+
+    public async Task<DashboardStats> GetDashboardStats(string? userEmail = null)
+    {
+        var query = _context.Applications.AsQueryable();
+        if (!string.IsNullOrEmpty(userEmail))
+        {
+            query = query.Where(a => a.CreatedBy == userEmail);
+        }
+
+        var draft = await query.CountAsync(a => a.Status == "draft");
+        var submitted = await query.CountAsync(a =>
+            a.Status == "submitted" || a.Status == "needs_information" || a.Status == "resubmitted");
+        var approved = await query.CountAsync(a => a.Status == "approved");
+        var rejected = await query.CountAsync(a => a.Status == "rejected");
+
+        return new DashboardStats
+        {
+            Draft = draft,
+            Submitted = submitted,
+            Approved = approved,
+            Rejected = rejected
+        };
+    }
+
+    public async Task<List<Application>> GetApplicationsForExport(string? status = null)
+    {
+        var query = _context.Applications.AsQueryable();
+        if (!string.IsNullOrEmpty(status))
+        {
+            query = query.Where(a => a.Status == status);
+        }
+        return await query.OrderByDescending(a => a.CreatedAt).ToListAsync();
+    }
 }

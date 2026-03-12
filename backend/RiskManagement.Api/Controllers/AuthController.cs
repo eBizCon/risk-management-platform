@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using RiskManagement.Api.Data;
 using RiskManagement.Api.Models;
 using RiskManagement.Api.Services;
 
@@ -10,14 +11,16 @@ public class AuthController : ControllerBase
     private readonly SessionService _sessionService;
     private readonly OidcService _oidcService;
     private readonly IConfiguration _configuration;
+    private readonly ApplicationRepository _repository;
 
     private const int TempCookieMaxAgeSeconds = 300;
 
-    public AuthController(SessionService sessionService, OidcService oidcService, IConfiguration configuration)
+    public AuthController(SessionService sessionService, OidcService oidcService, IConfiguration configuration, ApplicationRepository repository)
     {
         _sessionService = sessionService;
         _oidcService = oidcService;
         _configuration = configuration;
+        _repository = repository;
     }
 
     private CookieOptions GetTempCookieOptions()
@@ -167,6 +170,20 @@ public class AuthController : ControllerBase
             Name = user.Name,
             Role = user.Role
         });
+    }
+
+    [HttpGet("api/dashboard/stats")]
+    public async Task<IActionResult> GetDashboardStats()
+    {
+        var user = GetUser();
+        if (user == null || (user.Role != "applicant" && user.Role != "processor"))
+        {
+            return Ok(new { });
+        }
+
+        var userEmail = user.Role == "applicant" ? user.Email : null;
+        var stats = await _repository.GetDashboardStats(userEmail);
+        return Ok(stats);
     }
 
     private void DeleteTempCookies()
