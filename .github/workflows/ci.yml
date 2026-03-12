@@ -9,6 +9,14 @@ on:
 jobs:
   lint-and-check:
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://localhost:5432/dummy
+      OIDC_ISSUER: http://localhost:8081/realms/risk-management
+      OIDC_CLIENT_ID: risk-management-app
+      OIDC_REDIRECT_URI: http://localhost:5173/auth/callback
+      OIDC_POST_LOGOUT_REDIRECT_URI: http://localhost:5173
+      OIDC_SCOPE: openid profile email
+      OIDC_ROLES_CLAIM_PATH: resource_access.risk-management-app.roles
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -48,6 +56,14 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://localhost:5432/dummy
+      OIDC_ISSUER: http://localhost:8081/realms/risk-management
+      OIDC_CLIENT_ID: risk-management-app
+      OIDC_REDIRECT_URI: http://localhost:5173/auth/callback
+      OIDC_POST_LOGOUT_REDIRECT_URI: http://localhost:5173
+      OIDC_SCOPE: openid profile email
+      OIDC_ROLES_CLAIM_PATH: resource_access.risk-management-app.roles
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
