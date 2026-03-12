@@ -1,4 +1,4 @@
-import { eq, and, desc, count } from 'drizzle-orm';
+import { eq, and, desc, count, inArray } from 'drizzle-orm';
 import { db, applications } from '../../db';
 import type { Application, NewApplication, ApplicationStatus } from '../../db/schema';
 import { calculateScore } from '../scoring';
@@ -199,6 +199,12 @@ export async function getProcessorApplicationStats(): Promise<{
 	};
 }
 
+export async function getApplicationsForExport(status?: ApplicationStatus): Promise<Application[]> {
+	const whereClause = status ? eq(applications.status, status) : undefined;
+	const query = db.select().from(applications).orderBy(desc(applications.createdAt));
+	return whereClause ? await query.where(whereClause) : await query;
+}
+
 export async function deleteApplication(id: number): Promise<boolean> {
 	const [existing] = await db.select().from(applications).where(eq(applications.id, id));
 	if (!existing || existing.status !== 'draft') {
@@ -207,4 +213,61 @@ export async function deleteApplication(id: number): Promise<boolean> {
 
 	await db.delete(applications).where(eq(applications.id, id));
 	return true;
+}
+
+export type DashboardStats = {
+	draft: number;
+	submitted: number;
+	approved: number;
+	rejected: number;
+};
+
+export async function getDashboardStats(userEmail?: string): Promise<DashboardStats> {
+	const baseCondition = userEmail ? eq(applications.createdBy, userEmail) : undefined;
+
+	const [draftResult] = await db
+		.select({ value: count() })
+		.from(applications)
+		.where(
+			baseCondition
+				? and(baseCondition, eq(applications.status, 'draft'))
+				: eq(applications.status, 'draft')
+		);
+
+	const [submittedResult] = await db
+		.select({ value: count() })
+		.from(applications)
+		.where(
+			baseCondition
+				? and(
+						baseCondition,
+						inArray(applications.status, ['submitted', 'needs_information', 'resubmitted'])
+					)
+				: inArray(applications.status, ['submitted', 'needs_information', 'resubmitted'])
+		);
+
+	const [approvedResult] = await db
+		.select({ value: count() })
+		.from(applications)
+		.where(
+			baseCondition
+				? and(baseCondition, eq(applications.status, 'approved'))
+				: eq(applications.status, 'approved')
+		);
+
+	const [rejectedResult] = await db
+		.select({ value: count() })
+		.from(applications)
+		.where(
+			baseCondition
+				? and(baseCondition, eq(applications.status, 'rejected'))
+				: eq(applications.status, 'rejected')
+		);
+
+	return {
+		draft: draftResult?.value ?? 0,
+		submitted: submittedResult?.value ?? 0,
+		approved: approvedResult?.value ?? 0,
+		rejected: rejectedResult?.value ?? 0
+	};
 }

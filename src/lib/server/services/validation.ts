@@ -67,6 +67,15 @@ export const applicationInquiryResponseSchema = z.object({
 		.max(2000, 'Die Antwort darf maximal 2000 Zeichen lang sein')
 });
 
+export const csvExportSchema = z.object({
+	status: z
+		.enum(['draft', 'submitted', 'needs_information', 'resubmitted', 'approved', 'rejected'], {
+			message: 'Ungültiger Status-Filter für den Export'
+		})
+		.optional()
+});
+
+export type CsvExportInput = z.infer<typeof csvExportSchema>;
 export type ApplicationInput = z.infer<typeof applicationSchema>;
 export type ProcessorDecision = z.infer<typeof processorDecisionSchema>;
 export type ApplicationInquiryInput = z.infer<typeof applicationInquirySchema>;
