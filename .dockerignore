@@ -1,0 +1,9 @@
+node_modules
+.svelte-kit
+build
+.git
+dev
+e2e
+backlog
+.windsurf
+*.md

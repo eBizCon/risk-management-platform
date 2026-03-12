@@ -1,15 +1,15 @@
 import { drizzle } from 'drizzle-orm/node-postgres';
 import pg from 'pg';
-import { DATABASE_URL } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 import * as schema from './schema';
 
 const pool = new pg.Pool({
-	connectionString: DATABASE_URL
+	connectionString: env.DATABASE_URL
 });
 
 export const db = drizzle(pool, { schema });
 
-export { applicationInquiries, applications } from './schema';
+export { applicationInquiries, applications, sessions } from './schema';
 export type {
 	Application,
 	ApplicationInquiry,
@@ -18,5 +18,7 @@ export type {
 	NewApplicationInquiry,
 	ApplicationStatus,
 	EmploymentStatus,
-	TrafficLight
+	TrafficLight,
+	Session,
+	NewSession
 } from './schema';

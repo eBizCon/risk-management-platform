@@ -1,4 +1,5 @@
 import {
+	bigint,
 	boolean,
 	doublePrecision,
 	integer,
@@ -52,6 +53,15 @@ export const applicationInquiries = pgTable('application_inquiries', {
 	respondedAt: timestamp('responded_at', { withTimezone: true })
 });
 
+export const sessions = pgTable('sessions', {
+	id: text('id').primaryKey(),
+	userId: text('user_id').notNull(),
+	userEmail: text('user_email').notNull(),
+	userName: text('user_name').notNull(),
+	userRole: text('user_role', { enum: ['applicant', 'processor'] }).notNull(),
+	userIdToken: text('user_id_token'),
+	expiresAt: bigint('expires_at', { mode: 'number' }).notNull()
+});
 export type Application = typeof applications.$inferSelect;
 export type ApplicationInquiry = typeof applicationInquiries.$inferSelect;
 export type NewApplicationInquiry = typeof applicationInquiries.$inferInsert;
@@ -66,3 +76,6 @@ export type ApplicationStatus =
 export type ApplicationInquiryStatus = 'open' | 'answered';
 export type EmploymentStatus = 'employed' | 'self_employed' | 'unemployed' | 'retired';
 export type TrafficLight = 'red' | 'yellow' | 'green';
+
+export type Session = typeof sessions.$inferSelect;
+export type NewSession = typeof sessions.$inferInsert;
