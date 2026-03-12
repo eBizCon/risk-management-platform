@@ -51,14 +51,14 @@ module keycloak 'modules/containerApp.bicep' = {
     location: location
     environmentId: containerAppsEnv.outputs.environmentId
     image: 'quay.io/keycloak/keycloak:26.0'
-    command: ['start']
+    command: ['/opt/keycloak/bin/kc.sh', 'start']
     ingressPort: 8080
     ingressExternal: true
     minReplicas: 1
     maxReplicas: 1
     envVars: [
       { name: 'KC_DB', value: 'postgres' }
-      { name: 'KC_DB_URL', value: 'jdbc:postgresql://${postgres.outputs.fqdn}:5432/keycloak' }
+      { name: 'KC_DB_URL', value: 'jdbc:postgresql://${postgres.outputs.fqdn}:5432/keycloak?sslmode=require' }
       { name: 'KC_DB_USERNAME', value: postgres.outputs.adminUsername }
       { name: 'KC_DB_PASSWORD', value: postgresAdminPassword }
       { name: 'KC_HTTP_PORT', value: '8080' }
