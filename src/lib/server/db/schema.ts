@@ -1,4 +1,4 @@
-import { pgTable, text, serial, doublePrecision, integer, boolean } from 'drizzle-orm/pg-core';
+import { pgTable, text, serial, doublePrecision, integer, boolean, bigint } from 'drizzle-orm/pg-core';
 
 export const applications = pgTable('applications', {
 	id: serial('id').primaryKey(),
@@ -27,8 +27,21 @@ export const applications = pgTable('applications', {
 	createdBy: text('created_by').notNull()
 });
 
+export const sessions = pgTable('sessions', {
+	id: text('id').primaryKey(),
+	userId: text('user_id').notNull(),
+	userEmail: text('user_email').notNull(),
+	userName: text('user_name').notNull(),
+	userRole: text('user_role', { enum: ['applicant', 'processor'] }).notNull(),
+	userIdToken: text('user_id_token'),
+	expiresAt: bigint('expires_at', { mode: 'number' }).notNull()
+});
+
 export type Application = typeof applications.$inferSelect;
 export type NewApplication = typeof applications.$inferInsert;
 export type ApplicationStatus = 'draft' | 'submitted' | 'approved' | 'rejected';
 export type EmploymentStatus = 'employed' | 'self_employed' | 'unemployed' | 'retired';
 export type TrafficLight = 'red' | 'yellow' | 'green';
+
+export type Session = typeof sessions.$inferSelect;
+export type NewSession = typeof sessions.$inferInsert;

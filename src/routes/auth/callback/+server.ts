@@ -36,7 +36,7 @@ export const GET: RequestHandler = async ({ request, cookies }) => {
 		idToken
 	};
 
-	createSession(cookies, user);
+	await createSession(cookies, user);
 
 	const returnTo = cookies.get('returnTo');
 	deleteTempCookies(cookies);

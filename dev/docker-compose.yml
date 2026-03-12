@@ -7,10 +7,9 @@ services:
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN_USERNAME:-admin}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
     ports:
-      - "8081:8081"
+      - '8081:8081'
     volumes:
       - ./keycloak/import:/opt/keycloak/data/import
-      - keycloak_data:/opt/keycloak/data/h2
     restart: unless-stopped
 
   postgres:
@@ -20,11 +19,10 @@ services:
       POSTGRES_PASSWORD: risk
       POSTGRES_DB: risk_management
     ports:
-      - "5432:5432"
+      - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
 
 volumes:
-  keycloak_data:
   postgres_data:

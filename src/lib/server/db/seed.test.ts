@@ -11,12 +11,27 @@ describe('database seed', () => {
 	let database: ReturnType<typeof drizzle>;
 
 	beforeAll(async () => {
+		const dbUrl = new URL(
+			process.env.DATABASE_URL || 'postgresql://risk:risk@localhost:5432/risk_management_test'
+		);
+		const dbName = dbUrl.pathname.slice(1);
+
+		const adminUrl = new URL(dbUrl.toString());
+		adminUrl.pathname = '/postgres';
+		const adminPool = new pg.Pool({ connectionString: adminUrl.toString() });
+		try {
+			await adminPool.query(`CREATE DATABASE "${dbName}"`);
+		} catch (err: unknown) {
+			if ((err as { code?: string }).code !== '42P04') throw err;
+		} finally {
+			await adminPool.end();
+		}
+
 		pool = new pg.Pool({
 			connectionString: process.env.DATABASE_URL
 		});
 		database = drizzle(pool);
 
-		// Create the table if it doesn't exist (for test isolation)
 		await database.execute(sql`
 			CREATE TABLE IF NOT EXISTS applications (
 				id SERIAL PRIMARY KEY,
