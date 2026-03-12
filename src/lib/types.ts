@@ -12,6 +12,8 @@ export const employmentStatusLabels: Record<string, string> = {
 export const statusLabels: Record<string, string> = {
 	draft: 'Entwurf',
 	submitted: 'Eingereicht',
+	needs_information: 'Rückfrage offen',
+	resubmitted: 'Erneut eingereicht',
 	approved: 'Genehmigt',
 	rejected: 'Abgelehnt'
 };

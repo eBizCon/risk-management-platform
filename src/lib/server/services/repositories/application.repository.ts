@@ -199,6 +199,18 @@ export async function getProcessorApplicationStats(): Promise<{
 	};
 }
 
+export async function updateApplicationStatus(
+	id: number,
+	status: ApplicationStatus
+): Promise<Application | null> {
+	const [result] = await db
+		.update(applications)
+		.set({ status })
+		.where(eq(applications.id, id))
+		.returning();
+	return result ?? null;
+}
+
 export async function getApplicationsForExport(status?: ApplicationStatus): Promise<Application[]> {
 	const whereClause = status ? eq(applications.status, status) : undefined;
 	const query = db.select().from(applications).orderBy(desc(applications.createdAt));

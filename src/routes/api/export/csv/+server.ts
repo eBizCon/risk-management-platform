@@ -3,6 +3,13 @@ import { csvExportSchema } from '$lib/server/services/validation';
 import { requestCsvExport } from '$lib/server/services/csv-export.service';
 
 export const GET: RequestHandler = async ({ url, locals }) => {
+	if (!locals.user) {
+		return new Response(JSON.stringify({ error: 'Login erforderlich' }), {
+			status: 401,
+			headers: { 'content-type': 'application/json' }
+		});
+	}
+
 	const statusParam = url.searchParams.get('status') ?? undefined;
 
 	const parsed = csvExportSchema.safeParse({ status: statusParam });

@@ -1,6 +1,4 @@
-import { eq } from 'drizzle-orm';
 import { error } from '@sveltejs/kit';
-import { applications, db } from '../db';
 import type { Application, ApplicationInquiry } from '../db/schema';
 import {
 	answerApplicationInquiry,
@@ -8,7 +6,10 @@ import {
 	getApplicationInquiries,
 	getLatestOpenInquiry
 } from './repositories/application-inquiry.repository';
-import { getApplicationById } from './repositories/application.repository';
+import {
+	getApplicationById,
+	updateApplicationStatus
+} from './repositories/application.repository';
 
 const ensureInquiryCreationAllowed = (application: Application) => {
 	if (application.status !== 'submitted' && application.status !== 'resubmitted') {
@@ -52,12 +53,7 @@ export async function createInquiryForApplication(params: {
 		processorEmail: params.processorEmail
 	});
 
-	await db
-		.update(applications)
-		.set({
-			status: 'needs_information'
-		})
-		.where(eq(applications.id, params.applicationId));
+	await updateApplicationStatus(params.applicationId, 'needs_information');
 
 	return inquiry;
 }
@@ -90,12 +86,7 @@ export async function answerInquiryForApplication(params: {
 		throw error(500, 'Die Rückfrageantwort konnte nicht gespeichert werden');
 	}
 
-	await db
-		.update(applications)
-		.set({
-			status: 'resubmitted'
-		})
-		.where(eq(applications.id, params.applicationId));
+	await updateApplicationStatus(params.applicationId, 'resubmitted');
 
 	return inquiry;
 }

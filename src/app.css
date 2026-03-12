@@ -217,6 +217,16 @@ a {
 	color: var(--color-info);
 }
 
+.status-needs_information {
+	background-color: color-mix(in srgb, var(--color-warning) 15%, transparent);
+	color: var(--color-warning);
+}
+
+.status-resubmitted {
+	background-color: color-mix(in srgb, var(--color-info) 15%, transparent);
+	color: var(--color-info);
+}
+
 .status-approved {
 	background-color: color-mix(in srgb, var(--color-success) 15%, transparent);
 	color: var(--color-success);
