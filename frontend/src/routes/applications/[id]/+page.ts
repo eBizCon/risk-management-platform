@@ -16,5 +16,17 @@ export const load: PageLoad = async ({ fetch, params }) => {
 		throw error(res.status, 'Fehler beim Laden');
 	}
 
-	return { application: await res.json() };
+	const application = await res.json();
+
+	let inquiries: unknown[] = [];
+	try {
+		const inquiriesRes = await fetch(`/api/applications/${id}/inquiries`);
+		if (inquiriesRes.ok) {
+			inquiries = await inquiriesRes.json();
+		}
+	} catch {
+		// ignore fetch errors for inquiries
+	}
+
+	return { application, inquiries };
 };

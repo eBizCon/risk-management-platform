@@ -63,7 +63,7 @@
 		event.preventDefault();
 		answerInquiryErrors = {};
 
-		const res = await fetch(`/api/applications/${app.id}/answer-inquiry`, {
+		const res = await fetch(`/api/applications/${app.id}/inquiry/response`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({ responseText })

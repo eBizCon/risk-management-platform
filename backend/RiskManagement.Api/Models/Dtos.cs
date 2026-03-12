@@ -81,3 +81,13 @@ public class DashboardStats
     public int Approved { get; set; }
     public int Rejected { get; set; }
 }
+
+public class InquiryCreateDto
+{
+    public string InquiryText { get; set; } = string.Empty;
+}
+
+public class InquiryResponseDto
+{
+    public string ResponseText { get; set; } = string.Empty;
+}

@@ -49,6 +49,19 @@ using (var scope = app.Services.CreateScope())
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     await dbContext.Database.EnsureCreatedAsync();
 
+    // Ensure application_inquiries table exists (EnsureCreatedAsync only works on empty databases)
+    await dbContext.Database.ExecuteSqlRawAsync(@"
+        CREATE TABLE IF NOT EXISTS application_inquiries (
+            id SERIAL PRIMARY KEY,
+            application_id INTEGER NOT NULL REFERENCES applications(id) ON DELETE CASCADE,
+            inquiry_text TEXT NOT NULL,
+            status TEXT NOT NULL DEFAULT 'open',
+            processor_email TEXT NOT NULL,
+            response_text TEXT,
+            created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            responded_at TIMESTAMPTZ
+        )");
+
     var seeder = scope.ServiceProvider.GetRequiredService<DatabaseSeeder>();
     await seeder.SeedAsync();
 }

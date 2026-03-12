@@ -208,4 +208,63 @@ public class ApplicationRepository
         }
         return await query.OrderByDescending(a => a.CreatedAt).ToListAsync();
     }
+
+    public async Task<Application?> UpdateApplicationStatus(int id, string status)
+    {
+        var existing = await _context.Applications.FindAsync(id);
+        if (existing == null) return null;
+
+        existing.Status = status;
+        await _context.SaveChangesAsync();
+        return existing;
+    }
+
+    // Inquiry methods
+
+    public async Task<List<ApplicationInquiry>> GetApplicationInquiries(int applicationId)
+    {
+        return await _context.ApplicationInquiries
+            .Where(i => i.ApplicationId == applicationId)
+            .OrderBy(i => i.CreatedAt)
+            .ThenBy(i => i.Id)
+            .ToListAsync();
+    }
+
+    public async Task<ApplicationInquiry?> GetLatestOpenInquiry(int applicationId)
+    {
+        return await _context.ApplicationInquiries
+            .Where(i => i.ApplicationId == applicationId && i.Status == "open")
+            .OrderByDescending(i => i.CreatedAt)
+            .ThenByDescending(i => i.Id)
+            .FirstOrDefaultAsync();
+    }
+
+    public async Task<ApplicationInquiry> CreateApplicationInquiry(int applicationId, string inquiryText, string processorEmail)
+    {
+        var inquiry = new ApplicationInquiry
+        {
+            ApplicationId = applicationId,
+            InquiryText = inquiryText,
+            ProcessorEmail = processorEmail,
+            Status = "open",
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _context.ApplicationInquiries.Add(inquiry);
+        await _context.SaveChangesAsync();
+        return inquiry;
+    }
+
+    public async Task<ApplicationInquiry?> AnswerApplicationInquiry(int inquiryId, string responseText)
+    {
+        var inquiry = await _context.ApplicationInquiries.FindAsync(inquiryId);
+        if (inquiry == null) return null;
+
+        inquiry.ResponseText = responseText;
+        inquiry.RespondedAt = DateTime.UtcNow;
+        inquiry.Status = "answered";
+
+        await _context.SaveChangesAsync();
+        return inquiry;
+    }
 }

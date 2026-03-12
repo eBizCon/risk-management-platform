@@ -26,8 +26,16 @@ public class AuthMiddleware
         return pathname.StartsWith("/_app/") || pathname.StartsWith("/assets/");
     }
 
+    private static bool IsInquiryEndpoint(string pathname)
+    {
+        // Inquiry endpoints have mixed role requirements - controller handles role checking
+        return pathname.StartsWith("/api/applications") &&
+               (pathname.Contains("/inquiry") || pathname.Contains("/answer-inquiry") || pathname.EndsWith("/inquiries"));
+    }
+
     private static bool RequiresApplicant(string pathname)
     {
+        if (IsInquiryEndpoint(pathname)) return false;
         return pathname.StartsWith("/applications") || pathname.StartsWith("/api/applications");
     }
 
