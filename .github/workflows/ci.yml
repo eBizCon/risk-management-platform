@@ -7,68 +7,62 @@ on:
     branches: [main]
 
 jobs:
-  lint-and-check:
+  frontend-lint-and-check:
     runs-on: ubuntu-latest
-    env:
-      DATABASE_URL: postgresql://localhost:5432/dummy
-      OIDC_ISSUER: http://localhost:8081/realms/risk-management
-      OIDC_CLIENT_ID: risk-management-app
-      OIDC_REDIRECT_URI: http://localhost:5173/auth/callback
-      OIDC_POST_LOGOUT_REDIRECT_URI: http://localhost:5173
-      OIDC_SCOPE: openid profile email
-      OIDC_ROLES_CLAIM_PATH: resource_access.risk-management-app.roles
+    defaults:
+      run:
+        working-directory: frontend
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
+          cache-dependency-path: frontend/package-lock.json
       - run: npm ci
       - run: npm run lint
       - run: npm run check
 
-  test-unit:
+  frontend-test-unit:
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:17
-        env:
-          POSTGRES_USER: risk
-          POSTGRES_PASSWORD: risk
-          POSTGRES_DB: risk_management_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U risk"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-    env:
-      DATABASE_URL: postgresql://risk:risk@localhost:5432/risk_management_test
+    defaults:
+      run:
+        working-directory: frontend
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
+          cache-dependency-path: frontend/package-lock.json
       - run: npm ci
       - run: npm run test
 
-  build:
+  frontend-build:
     runs-on: ubuntu-latest
-    env:
-      DATABASE_URL: postgresql://localhost:5432/dummy
-      OIDC_ISSUER: http://localhost:8081/realms/risk-management
-      OIDC_CLIENT_ID: risk-management-app
-      OIDC_REDIRECT_URI: http://localhost:5173/auth/callback
-      OIDC_POST_LOGOUT_REDIRECT_URI: http://localhost:5173
-      OIDC_SCOPE: openid profile email
-      OIDC_ROLES_CLAIM_PATH: resource_access.risk-management-app.roles
+    defaults:
+      run:
+        working-directory: frontend
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
+          cache-dependency-path: frontend/package-lock.json
       - run: npm ci
       - run: npm run build
+
+  backend-build-and-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - run: dotnet restore
+      - run: dotnet build --no-restore
+      - run: dotnet test --no-build --verbosity normal
