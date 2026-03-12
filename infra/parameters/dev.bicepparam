@@ -1,4 +1,4 @@
 using '../main.bicep'
 
-param location = 'germanywestcentral'
+param location = 'northeurope'
 param environmentName = 'dev'
