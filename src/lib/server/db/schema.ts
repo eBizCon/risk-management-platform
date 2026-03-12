@@ -1,4 +1,4 @@
-import { pgTable, text, serial, doublePrecision, integer, boolean } from 'drizzle-orm/pg-core';
+import { pgTable, text, serial, doublePrecision, integer, boolean, bigint } from 'drizzle-orm/pg-core';
 
 export const applications = pgTable('applications', {
 	id: serial('id').primaryKey(),
@@ -25,6 +25,16 @@ export const applications = pgTable('applications', {
 	submittedAt: text('submitted_at'),
 	processedAt: text('processed_at'),
 	createdBy: text('created_by').notNull()
+});
+
+export const sessions = pgTable('sessions', {
+	id: text('id').primaryKey(),
+	userId: text('user_id').notNull(),
+	userEmail: text('user_email').notNull(),
+	userName: text('user_name').notNull(),
+	userRole: text('user_role', { enum: ['applicant', 'processor'] }).notNull(),
+	userIdToken: text('user_id_token'),
+	expiresAt: bigint('expires_at', { mode: 'number' }).notNull()
 });
 
 export type Application = typeof applications.$inferSelect;

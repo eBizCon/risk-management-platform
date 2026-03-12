@@ -1,6 +1,32 @@
 import { dev } from '$app/environment';
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import type { Cookies } from '@sveltejs/kit';
+
+const mockInsert = vi.fn().mockReturnValue({ values: vi.fn().mockResolvedValue(undefined) });
+const mockSelectResult: Record<string, unknown>[] = [];
+const mockSelect = vi.fn().mockReturnValue({
+	from: vi.fn().mockReturnValue({
+		where: vi.fn().mockImplementation(() => Promise.resolve([...mockSelectResult]))
+	})
+});
+const mockDeleteResult = vi.fn().mockResolvedValue(undefined);
+const mockDelete = vi.fn().mockReturnValue({
+	where: mockDeleteResult,
+	then: (resolve: (v: unknown) => void) => resolve(undefined)
+});
+
+vi.mock('$lib/server/db', () => ({
+	db: {
+		insert: (...args: unknown[]) => mockInsert(...args),
+		select: (...args: unknown[]) => mockSelect(...args),
+		delete: (...args: unknown[]) => mockDelete(...args)
+	}
+}));
+
+vi.mock('$lib/server/db/schema', () => ({
+	sessions: { id: 'id' }
+}));
+
 import {
 	SESSION_COOKIE_NAME,
 	SESSION_MAX_AGE_SECONDS,
@@ -33,20 +59,21 @@ const createCookiesMock = () => {
 
 describe('session service', () => {
 	beforeEach(() => {
-		clearSessions();
+		vi.clearAllMocks();
+		mockSelectResult.length = 0;
 	});
 
 	afterEach(() => {
 		vi.restoreAllMocks();
 	});
 
-	it('creates a session and sets cookie with secure based on env', () => {
+	it('creates a session and inserts into db', async () => {
 		const cookies = createCookiesMock();
 
-		const sessionId = createSession(cookies, mockUser);
+		const sessionId = await createSession(cookies, mockUser);
 
 		expect(sessionId).toBeDefined();
-		expect(getSession(sessionId)).toEqual(mockUser);
+		expect(mockInsert).toHaveBeenCalled();
 		expect(cookies.set).toHaveBeenCalledWith(
 			SESSION_COOKIE_NAME,
 			sessionId,
@@ -60,28 +87,64 @@ describe('session service', () => {
 		);
 	});
 
-	it('returns null for missing session', () => {
-		expect(getSession(undefined)).toBeNull();
-		expect(getSession('unknown')).toBeNull();
+	it('returns null for missing session', async () => {
+		expect(await getSession(undefined)).toBeNull();
+		expect(await getSession('unknown')).toBeNull();
 	});
 
-	it('deletes expired sessions', () => {
-		const cookies = createCookiesMock();
-		const sessionId = createSession(cookies, mockUser);
-
+	it('deletes expired sessions', async () => {
 		const now = Date.now();
-		vi.spyOn(Date, 'now').mockReturnValue(now + (SESSION_MAX_AGE_SECONDS + 1) * 1000);
+		mockSelectResult.push({
+			id: 'session-1',
+			userId: 'user-1',
+			userEmail: 'test@example.com',
+			userName: 'Test User',
+			userRole: 'applicant',
+			userIdToken: null,
+			expiresAt: now - 1000
+		});
 
-		expect(getSession(sessionId)).toBeNull();
+		const result = await getSession('session-1');
+
+		expect(result).toBeNull();
+		expect(mockDelete).toHaveBeenCalled();
 	});
 
-	it('deletes session and cookie', () => {
+	it('returns user for valid session', async () => {
+		const now = Date.now();
+		mockSelectResult.push({
+			id: 'session-1',
+			userId: 'user-1',
+			userEmail: 'test@example.com',
+			userName: 'Test User',
+			userRole: 'applicant',
+			userIdToken: null,
+			expiresAt: now + 60_000
+		});
+
+		const result = await getSession('session-1');
+
+		expect(result).toEqual({
+			id: 'user-1',
+			email: 'test@example.com',
+			name: 'Test User',
+			role: 'applicant',
+			idToken: undefined
+		});
+	});
+
+	it('deletes session and cookie', async () => {
 		const cookies = createCookiesMock();
-		const sessionId = createSession(cookies, mockUser);
 
-		deleteSession(cookies, sessionId);
+		await deleteSession(cookies, 'session-1');
 
-		expect(getSession(sessionId)).toBeNull();
+		expect(mockDelete).toHaveBeenCalled();
 		expect(cookies.delete).toHaveBeenCalledWith(SESSION_COOKIE_NAME, { path: '/' });
+	});
+
+	it('clears all sessions', async () => {
+		await clearSessions();
+
+		expect(mockDelete).toHaveBeenCalled();
 	});
 });

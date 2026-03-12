@@ -9,7 +9,7 @@ const pool = new pg.Pool({
 
 export const db = drizzle(pool, { schema });
 
-export { applications } from './schema';
+export { applications, sessions } from './schema';
 export type {
 	Application,
 	NewApplication,

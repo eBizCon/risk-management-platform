@@ -51,7 +51,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		role
 	};
 
-	const sessionId = createSession(cookies, user);
+	const sessionId = await createSession(cookies, user);
 
 	return json({ sessionId });
 };
@@ -63,7 +63,7 @@ export const DELETE: RequestHandler = async ({ cookies }) => {
 
 	const sessionId = cookies.get(SESSION_COOKIE_NAME);
 
-	deleteSession(cookies, sessionId);
+	await deleteSession(cookies, sessionId);
 
 	return new Response(null, { status: 204 });
 };

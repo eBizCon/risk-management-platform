@@ -30,7 +30,7 @@ export const handle: Handle = async ({ event, resolve }) => {
   const isApiRoute = pathname.startsWith('/api/');
 
   const sessionId = event.cookies.get(SESSION_COOKIE_NAME);
-  const user = getSession(sessionId);
+  const user = await getSession(sessionId);
 
   if (user) {
     event.locals.user = user;

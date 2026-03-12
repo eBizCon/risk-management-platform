@@ -5,9 +5,9 @@ import { deleteSession, getSession, SESSION_COOKIE_NAME } from '$lib/server/serv
 
 export const GET: RequestHandler = async ({ cookies }) => {
   const sessionId = cookies.get(SESSION_COOKIE_NAME);
-  const sessionUser = getSession(sessionId);
+  const sessionUser = await getSession(sessionId);
 
-  deleteSession(cookies, sessionId);
+  await deleteSession(cookies, sessionId);
 
   if (sessionUser?.idToken) {
     const logoutUrl = await buildLogoutUrl(sessionUser.idToken);
