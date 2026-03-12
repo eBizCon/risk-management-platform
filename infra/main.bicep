@@ -90,8 +90,8 @@ module app 'modules/containerApp.bicep' = {
       { name: 'OIDC_ISSUER', value: 'https://${keycloak.outputs.fqdn}/realms/risk-management' }
       { name: 'OIDC_CLIENT_ID', value: 'risk-management-app' }
       { name: 'OIDC_CLIENT_SECRET', value: oidcClientSecret }
-      { name: 'OIDC_REDIRECT_URI', value: 'https://${prefix}-app.${location}.azurecontainerapps.io/auth/callback' }
-      { name: 'OIDC_POST_LOGOUT_REDIRECT_URI', value: 'https://${prefix}-app.${location}.azurecontainerapps.io' }
+      { name: 'OIDC_REDIRECT_URI', value: 'https://${prefix}-app.${containerAppsEnv.outputs.defaultDomain}/auth/callback' }
+      { name: 'OIDC_POST_LOGOUT_REDIRECT_URI', value: 'https://${prefix}-app.${containerAppsEnv.outputs.defaultDomain}' }
       { name: 'OIDC_SCOPE', value: 'openid profile email' }
       { name: 'OIDC_ROLES_CLAIM_PATH', value: 'resource_access.risk-management-app.roles' }
       { name: 'PORT', value: '3000' }

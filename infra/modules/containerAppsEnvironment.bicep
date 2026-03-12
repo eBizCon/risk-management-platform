@@ -30,3 +30,4 @@ resource containerAppsEnv 'Microsoft.App/managedEnvironments@2023-05-01' = {
 }
 
 output environmentId string = containerAppsEnv.id
+output defaultDomain string = containerAppsEnv.properties.defaultDomain
