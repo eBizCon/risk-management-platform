@@ -15,5 +15,7 @@ export type {
 	NewApplication,
 	ApplicationStatus,
 	EmploymentStatus,
-	TrafficLight
+	TrafficLight,
+	Session,
+	NewSession
 } from './schema';

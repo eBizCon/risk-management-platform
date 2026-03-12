@@ -2,29 +2,16 @@ import { dev } from '$app/environment';
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import type { Cookies } from '@sveltejs/kit';
 
-const mockInsert = vi.fn().mockReturnValue({ values: vi.fn().mockResolvedValue(undefined) });
-const mockSelectResult: Record<string, unknown>[] = [];
-const mockSelect = vi.fn().mockReturnValue({
-	from: vi.fn().mockReturnValue({
-		where: vi.fn().mockImplementation(() => Promise.resolve([...mockSelectResult]))
-	})
-});
-const mockDeleteResult = vi.fn().mockResolvedValue(undefined);
-const mockDelete = vi.fn().mockReturnValue({
-	where: mockDeleteResult,
-	then: (resolve: (v: unknown) => void) => resolve(undefined)
-});
+const mockInsertSession = vi.fn().mockResolvedValue(undefined);
+const mockFindSessionById = vi.fn().mockResolvedValue(null);
+const mockDeleteSessionById = vi.fn().mockResolvedValue(undefined);
+const mockDeleteAllSessions = vi.fn().mockResolvedValue(undefined);
 
-vi.mock('$lib/server/db', () => ({
-	db: {
-		insert: (...args: unknown[]) => mockInsert(...args),
-		select: (...args: unknown[]) => mockSelect(...args),
-		delete: (...args: unknown[]) => mockDelete(...args)
-	}
-}));
-
-vi.mock('$lib/server/db/schema', () => ({
-	sessions: { id: 'id' }
+vi.mock('../repositories/session.repository', () => ({
+	insertSession: (...args: unknown[]) => mockInsertSession(...args),
+	findSessionById: (...args: unknown[]) => mockFindSessionById(...args),
+	deleteSessionById: (...args: unknown[]) => mockDeleteSessionById(...args),
+	deleteAllSessions: (...args: unknown[]) => mockDeleteAllSessions(...args)
 }));
 
 import {
@@ -60,7 +47,6 @@ const createCookiesMock = () => {
 describe('session service', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
-		mockSelectResult.length = 0;
 	});
 
 	afterEach(() => {
@@ -73,7 +59,7 @@ describe('session service', () => {
 		const sessionId = await createSession(cookies, mockUser);
 
 		expect(sessionId).toBeDefined();
-		expect(mockInsert).toHaveBeenCalled();
+		expect(mockInsertSession).toHaveBeenCalled();
 		expect(cookies.set).toHaveBeenCalledWith(
 			SESSION_COOKIE_NAME,
 			sessionId,
@@ -94,7 +80,7 @@ describe('session service', () => {
 
 	it('deletes expired sessions', async () => {
 		const now = Date.now();
-		mockSelectResult.push({
+		mockFindSessionById.mockResolvedValueOnce({
 			id: 'session-1',
 			userId: 'user-1',
 			userEmail: 'test@example.com',
@@ -107,12 +93,12 @@ describe('session service', () => {
 		const result = await getSession('session-1');
 
 		expect(result).toBeNull();
-		expect(mockDelete).toHaveBeenCalled();
+		expect(mockDeleteSessionById).toHaveBeenCalledWith('session-1');
 	});
 
 	it('returns user for valid session', async () => {
 		const now = Date.now();
-		mockSelectResult.push({
+		mockFindSessionById.mockResolvedValueOnce({
 			id: 'session-1',
 			userId: 'user-1',
 			userEmail: 'test@example.com',
@@ -138,13 +124,13 @@ describe('session service', () => {
 
 		await deleteSession(cookies, 'session-1');
 
-		expect(mockDelete).toHaveBeenCalled();
+		expect(mockDeleteSessionById).toHaveBeenCalledWith('session-1');
 		expect(cookies.delete).toHaveBeenCalledWith(SESSION_COOKIE_NAME, { path: '/' });
 	});
 
 	it('clears all sessions', async () => {
 		await clearSessions();
 
-		expect(mockDelete).toHaveBeenCalled();
+		expect(mockDeleteAllSessions).toHaveBeenCalled();
 	});
 });

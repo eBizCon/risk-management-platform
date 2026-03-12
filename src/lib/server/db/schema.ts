@@ -42,3 +42,6 @@ export type NewApplication = typeof applications.$inferInsert;
 export type ApplicationStatus = 'draft' | 'submitted' | 'approved' | 'rejected';
 export type EmploymentStatus = 'employed' | 'self_employed' | 'unemployed' | 'retired';
 export type TrafficLight = 'red' | 'yellow' | 'green';
+
+export type Session = typeof sessions.$inferSelect;
+export type NewSession = typeof sessions.$inferInsert;

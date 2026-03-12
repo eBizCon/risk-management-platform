@@ -1,8 +1,11 @@
 import { dev } from '$app/environment';
-import { eq } from 'drizzle-orm';
 import type { Cookies } from '@sveltejs/kit';
-import { db } from '$lib/server/db';
-import { sessions } from '$lib/server/db/schema';
+import {
+	insertSession,
+	findSessionById,
+	deleteSessionById,
+	deleteAllSessions
+} from '../repositories/session.repository';
 
 export const SESSION_COOKIE_NAME = 'session';
 export const SESSION_MAX_AGE_SECONDS = 60 * 60;
@@ -11,7 +14,7 @@ export const createSession = async (cookies: Cookies, user: App.User): Promise<s
   const sessionId = crypto.randomUUID();
   const expiresAt = Date.now() + SESSION_MAX_AGE_SECONDS * 1000;
 
-  await db.insert(sessions).values({
+  await insertSession({
     id: sessionId,
     userId: user.id,
     userEmail: user.email,
@@ -37,14 +40,14 @@ export const getSession = async (sessionId: string | undefined): Promise<App.Use
     return null;
   }
 
-  const [record] = await db.select().from(sessions).where(eq(sessions.id, sessionId));
+  const record = await findSessionById(sessionId);
 
   if (!record) {
     return null;
   }
 
   if (record.expiresAt <= Date.now()) {
-    await db.delete(sessions).where(eq(sessions.id, sessionId));
+    await deleteSessionById(sessionId);
     return null;
   }
 
@@ -59,12 +62,12 @@ export const getSession = async (sessionId: string | undefined): Promise<App.Use
 
 export const deleteSession = async (cookies: Cookies, sessionId: string | undefined): Promise<void> => {
   if (sessionId) {
-    await db.delete(sessions).where(eq(sessions.id, sessionId));
+    await deleteSessionById(sessionId);
   }
 
   cookies.delete(SESSION_COOKIE_NAME, { path: '/' });
 };
 
 export const clearSessions = async (): Promise<void> => {
-  await db.delete(sessions);
+  await deleteAllSessions();
 };
