@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { ChartJS } from './chartjs-register';
-	import type { DashboardStats } from '$lib/server/services/repositories/application.repository';
+	import type { DashboardStats } from '$lib/types';
 
 	let { stats }: { stats: DashboardStats } = $props();
 

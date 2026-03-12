@@ -1,5 +1,6 @@
 import { error } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
+import type { ApplicationInquiry } from '$lib/types';
 
 export const load: PageLoad = async ({ fetch, params }) => {
 	const id = parseInt(params.id);
@@ -18,7 +19,7 @@ export const load: PageLoad = async ({ fetch, params }) => {
 
 	const application = await res.json();
 
-	let inquiries: unknown[] = [];
+	let inquiries: ApplicationInquiry[] = [];
 	try {
 		const inquiriesRes = await fetch(`/api/applications/${id}/inquiries`);
 		if (inquiriesRes.ok) {

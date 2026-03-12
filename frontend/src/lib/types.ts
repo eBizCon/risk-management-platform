@@ -35,6 +35,25 @@ export interface User {
 	role: UserRole;
 }
 
+export interface DashboardStats {
+	total: number;
+	draft: number;
+	submitted: number;
+	approved: number;
+	rejected: number;
+}
+
+export interface ApplicationInquiry {
+	id: number;
+	applicationId: number;
+	inquiryText: string;
+	status: string;
+	processorEmail: string;
+	responseText: string | null;
+	createdAt: string;
+	respondedAt: string | null;
+}
+
 export const employmentStatusLabels: Record<string, string> = {
 	employed: 'Angestellt',
 	self_employed: 'Selbstständig',

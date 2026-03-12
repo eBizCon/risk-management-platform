@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { FileText, Send, CheckCircle, XCircle } from 'lucide-svelte';
-	import type { DashboardStats } from '$lib/server/services/repositories/application.repository';
+	import type { DashboardStats } from '$lib/types';
 
 	let { stats }: { stats: DashboardStats } = $props();
 

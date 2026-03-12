@@ -1,7 +1,7 @@
 <script lang="ts">
 	import StatusBarChart from './StatusBarChart.svelte';
 	import StatusPieChart from './StatusPieChart.svelte';
-	import type { DashboardStats } from '$lib/server/services/repositories/application.repository';
+	import type { DashboardStats } from '$lib/types';
 
 	let { stats }: { stats: DashboardStats } = $props();
 </script>

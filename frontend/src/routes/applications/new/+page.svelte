@@ -2,9 +2,6 @@
 	import ApplicationForm from '$lib/components/ApplicationForm.svelte';
 	import RoleGuard from '$lib/components/RoleGuard.svelte';
 	import { ArrowLeft } from 'lucide-svelte';
-	import type { ActionData } from './$types';
-
-	let { form }: { form: ActionData } = $props();
 </script>
 
 <svelte:head>
@@ -26,7 +23,7 @@
 	<div class="card p-6">
 		<h1 class="text-2xl font-bold text-primary mb-6">Neuen Kreditantrag erstellen</h1>
 		
-		<ApplicationForm errors={form?.errors} />
+		<ApplicationForm />
 	</div>
 </div>
 </RoleGuard>

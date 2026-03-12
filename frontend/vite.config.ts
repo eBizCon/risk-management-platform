@@ -1,7 +1,7 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
 
-const backendUrl = process.env.BACKEND_URL ?? 'http://localhost:5000';
+const backendUrl = 'http://localhost:5000';
 
 export default defineConfig({
 	plugins: [sveltekit()],
