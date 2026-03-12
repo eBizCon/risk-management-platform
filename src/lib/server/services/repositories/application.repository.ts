@@ -1,4 +1,4 @@
-import { eq, and, desc, count } from 'drizzle-orm';
+import { eq, and, desc, count, inArray } from 'drizzle-orm';
 import { db, applications } from '../../db';
 import type { Application, NewApplication, ApplicationStatus } from '../../db/schema';
 import { calculateScore } from '../scoring';
@@ -104,7 +104,7 @@ export async function processApplication(
 	comment?: string
 ): Promise<Application | null> {
 	const [existing] = await db.select().from(applications).where(eq(applications.id, id));
-	if (!existing || existing.status !== 'submitted') {
+	if (!existing || (existing.status !== 'submitted' && existing.status !== 'resubmitted')) {
 		return null;
 	}
 
@@ -154,9 +154,7 @@ export async function getProcessorApplicationsPaginated(params: {
 }): Promise<{ items: Application[]; totalCount: number }> {
 	const whereClause = params.status ? eq(applications.status, params.status) : undefined;
 	const totalQuery = db.select({ value: count() }).from(applications);
-	const [totalResult] = whereClause
-		? await totalQuery.where(whereClause)
-		: await totalQuery;
+	const [totalResult] = whereClause ? await totalQuery.where(whereClause) : await totalQuery;
 	const totalCount = totalResult?.value ?? 0;
 	const itemsQuery = db
 		.select()
@@ -164,9 +162,7 @@ export async function getProcessorApplicationsPaginated(params: {
 		.orderBy(desc(applications.createdAt))
 		.limit(params.pageSize)
 		.offset((params.page - 1) * params.pageSize);
-	const items = whereClause
-		? await itemsQuery.where(whereClause)
-		: await itemsQuery;
+	const items = whereClause ? await itemsQuery.where(whereClause) : await itemsQuery;
 
 	return { items, totalCount };
 }
@@ -203,6 +199,24 @@ export async function getProcessorApplicationStats(): Promise<{
 	};
 }
 
+export async function updateApplicationStatus(
+	id: number,
+	status: ApplicationStatus
+): Promise<Application | null> {
+	const [result] = await db
+		.update(applications)
+		.set({ status })
+		.where(eq(applications.id, id))
+		.returning();
+	return result ?? null;
+}
+
+export async function getApplicationsForExport(status?: ApplicationStatus): Promise<Application[]> {
+	const whereClause = status ? eq(applications.status, status) : undefined;
+	const query = db.select().from(applications).orderBy(desc(applications.createdAt));
+	return whereClause ? await query.where(whereClause) : await query;
+}
+
 export async function deleteApplication(id: number): Promise<boolean> {
 	const [existing] = await db.select().from(applications).where(eq(applications.id, id));
 	if (!existing || existing.status !== 'draft') {
@@ -211,4 +225,61 @@ export async function deleteApplication(id: number): Promise<boolean> {
 
 	await db.delete(applications).where(eq(applications.id, id));
 	return true;
+}
+
+export type DashboardStats = {
+	draft: number;
+	submitted: number;
+	approved: number;
+	rejected: number;
+};
+
+export async function getDashboardStats(userEmail?: string): Promise<DashboardStats> {
+	const baseCondition = userEmail ? eq(applications.createdBy, userEmail) : undefined;
+
+	const [draftResult] = await db
+		.select({ value: count() })
+		.from(applications)
+		.where(
+			baseCondition
+				? and(baseCondition, eq(applications.status, 'draft'))
+				: eq(applications.status, 'draft')
+		);
+
+	const [submittedResult] = await db
+		.select({ value: count() })
+		.from(applications)
+		.where(
+			baseCondition
+				? and(
+						baseCondition,
+						inArray(applications.status, ['submitted', 'needs_information', 'resubmitted'])
+					)
+				: inArray(applications.status, ['submitted', 'needs_information', 'resubmitted'])
+		);
+
+	const [approvedResult] = await db
+		.select({ value: count() })
+		.from(applications)
+		.where(
+			baseCondition
+				? and(baseCondition, eq(applications.status, 'approved'))
+				: eq(applications.status, 'approved')
+		);
+
+	const [rejectedResult] = await db
+		.select({ value: count() })
+		.from(applications)
+		.where(
+			baseCondition
+				? and(baseCondition, eq(applications.status, 'rejected'))
+				: eq(applications.status, 'rejected')
+		);
+
+	return {
+		draft: draftResult?.value ?? 0,
+		submitted: submittedResult?.value ?? 0,
+		approved: approvedResult?.value ?? 0,
+		rejected: rejectedResult?.value ?? 0
+	};
 }
