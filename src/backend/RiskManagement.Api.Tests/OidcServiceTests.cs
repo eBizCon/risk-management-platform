@@ -1,9 +1,9 @@
 using System.Text.Json;
-using RiskManagement.Api.Services;
+using RiskManagement.Api.Extensions;
 
 namespace RiskManagement.Api.Tests;
 
-public class OidcServiceTests
+public class RoleClaimHelperTests
 {
     private static readonly string[] AllowedRoles = { "applicant", "processor" };
 
@@ -13,7 +13,7 @@ public class OidcServiceTests
         var json = JsonSerializer.Deserialize<JsonElement>(
             """{"resource_access": {"roles": ["applicant", "other", "processor"]}}""");
 
-        var roles = OidcService.ExtractRolesFromClaims(json, "resource_access.roles", AllowedRoles);
+        var roles = RoleClaimHelper.ExtractRolesFromClaims(json, "resource_access.roles", AllowedRoles);
 
         Assert.Equal(new[] { "applicant", "processor" }, roles);
     }
@@ -24,7 +24,7 @@ public class OidcServiceTests
         var json = JsonSerializer.Deserialize<JsonElement>(
             """{"resource_access": {"role": "processor"}}""");
 
-        var roles = OidcService.ExtractRolesFromClaims(json, "resource_access.role", AllowedRoles);
+        var roles = RoleClaimHelper.ExtractRolesFromClaims(json, "resource_access.role", AllowedRoles);
 
         Assert.Equal(new[] { "processor" }, roles);
     }
@@ -35,7 +35,7 @@ public class OidcServiceTests
         var json = JsonSerializer.Deserialize<JsonElement>(
             """{"other": {}}""");
 
-        var roles = OidcService.ExtractRolesFromClaims(json, "resource_access.roles", AllowedRoles);
+        var roles = RoleClaimHelper.ExtractRolesFromClaims(json, "resource_access.roles", AllowedRoles);
 
         Assert.Empty(roles);
     }
@@ -46,7 +46,7 @@ public class OidcServiceTests
         var json = JsonSerializer.Deserialize<JsonElement>(
             """{"resource_access": {"roles": ["applicant"]}}""");
 
-        var roles = OidcService.ExtractRolesFromClaims(json, "", AllowedRoles);
+        var roles = RoleClaimHelper.ExtractRolesFromClaims(json, "", AllowedRoles);
 
         Assert.Empty(roles);
     }

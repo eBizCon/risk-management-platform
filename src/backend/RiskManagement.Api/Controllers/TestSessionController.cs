@@ -1,6 +1,8 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using RiskManagement.Api.Models;
-using RiskManagement.Api.Services;
 
 namespace RiskManagement.Api.Controllers;
 
@@ -8,13 +10,6 @@ namespace RiskManagement.Api.Controllers;
 [Route("api/test/session")]
 public class TestSessionController : ControllerBase
 {
-    private readonly SessionService _sessionService;
-
-    public TestSessionController(SessionService sessionService)
-    {
-        _sessionService = sessionService;
-    }
-
     private static bool IsTestMode()
     {
         var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
@@ -23,7 +18,7 @@ public class TestSessionController : ControllerBase
     }
 
     [HttpPost]
-    public IActionResult CreateTestSession([FromBody] TestSessionCreateDto dto)
+    public async Task<IActionResult> CreateTestSession([FromBody] TestSessionCreateDto dto)
     {
         if (!IsTestMode())
         {
@@ -51,29 +46,40 @@ public class TestSessionController : ControllerBase
             ["processor"] = "processor@example.com"
         };
 
-        var user = new UserSession
+        var email = dto.Email ?? (defaultEmails.ContainsKey(dto.Role) ? defaultEmails[dto.Role] : $"{dto.Role}@example.com");
+
+        var claims = new List<Claim>
         {
-            Id = dto.Id,
-            Email = dto.Email ?? (defaultEmails.ContainsKey(dto.Role) ? defaultEmails[dto.Role] : $"{dto.Role}@example.com"),
-            Name = dto.Name,
-            Role = dto.Role
+            new(ClaimTypes.NameIdentifier, dto.Id),
+            new(ClaimTypes.Email, email),
+            new(ClaimTypes.Name, dto.Name),
+            new(ClaimTypes.Role, dto.Role)
         };
 
-        var sessionId = _sessionService.CreateSession(HttpContext, user);
+        var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+        var principal = new ClaimsPrincipal(identity);
 
-        return Ok(new { sessionId });
+        await HttpContext.SignInAsync(
+            CookieAuthenticationDefaults.AuthenticationScheme,
+            principal,
+            new AuthenticationProperties
+            {
+                IsPersistent = false,
+                ExpiresUtc = DateTimeOffset.UtcNow.AddHours(1)
+            });
+
+        return Ok(new { sessionId = "cookie-auth" });
     }
 
     [HttpDelete]
-    public IActionResult DeleteTestSession()
+    public async Task<IActionResult> DeleteTestSession()
     {
         if (!IsTestMode())
         {
             return NotFound(new { error = "Not found" });
         }
 
-        var sessionId = Request.Cookies[SessionService.SessionCookieName];
-        _sessionService.DeleteSession(HttpContext, sessionId);
+        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
         return NoContent();
     }

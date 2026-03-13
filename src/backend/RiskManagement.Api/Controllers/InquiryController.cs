@@ -1,10 +1,13 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RiskManagement.Api.Data;
+using RiskManagement.Api.Extensions;
 using RiskManagement.Api.Models;
 
 namespace RiskManagement.Api.Controllers;
 
 [ApiController]
+[Authorize]
 public class InquiryController : ControllerBase
 {
     private readonly ApplicationRepository _repository;
@@ -14,18 +17,11 @@ public class InquiryController : ControllerBase
         _repository = repository;
     }
 
-    private UserSession? GetUser() => HttpContext.Items["User"] as UserSession;
-
     [HttpGet("api/applications/{id:int}/inquiries")]
     public async Task<IActionResult> GetInquiries(int id)
     {
-        var user = GetUser();
-        if (user == null)
-        {
-            return Unauthorized(new { error = "Login erforderlich" });
-        }
-
-        if (user.Role != "applicant" && user.Role != "processor")
+        var role = User.GetRole();
+        if (role != "applicant" && role != "processor")
         {
             return StatusCode(403, new { error = "Keine Berechtigung" });
         }
@@ -36,7 +32,7 @@ public class InquiryController : ControllerBase
             return NotFound(new { error = "Antrag nicht gefunden" });
         }
 
-        if (user.Role == "applicant" && application.CreatedBy != user.Email)
+        if (role == "applicant" && application.CreatedBy != User.GetEmail())
         {
             return StatusCode(403, new { error = "Keine Berechtigung" });
         }
@@ -48,13 +44,7 @@ public class InquiryController : ControllerBase
     [HttpPost("api/applications/{id:int}/inquiry")]
     public async Task<IActionResult> CreateInquiry(int id, [FromBody] InquiryCreateDto dto)
     {
-        var user = GetUser();
-        if (user == null)
-        {
-            return Unauthorized(new { error = "Login erforderlich" });
-        }
-
-        if (user.Role != "processor")
+        if (User.GetRole() != "processor")
         {
             return StatusCode(403, new { error = "Keine Berechtigung" });
         }
@@ -81,7 +71,7 @@ public class InquiryController : ControllerBase
             return Conflict(new { error = "Es existiert bereits eine offene Rückfrage für diesen Antrag" });
         }
 
-        var inquiry = await _repository.CreateApplicationInquiry(id, dto.InquiryText, user.Email);
+        var inquiry = await _repository.CreateApplicationInquiry(id, dto.InquiryText, User.GetEmail());
         await _repository.UpdateApplicationStatus(id, "needs_information");
 
         return StatusCode(201, inquiry);
@@ -90,13 +80,7 @@ public class InquiryController : ControllerBase
     [HttpPost("api/applications/{id:int}/inquiry/response")]
     public async Task<IActionResult> RespondToInquiry(int id, [FromBody] InquiryResponseDto dto)
     {
-        var user = GetUser();
-        if (user == null)
-        {
-            return Unauthorized(new { error = "Login erforderlich" });
-        }
-
-        if (user.Role != "applicant")
+        if (User.GetRole() != "applicant")
         {
             return StatusCode(403, new { error = "Keine Berechtigung" });
         }
@@ -112,7 +96,7 @@ public class InquiryController : ControllerBase
             return NotFound(new { error = "Antrag nicht gefunden" });
         }
 
-        if (application.CreatedBy != user.Email)
+        if (application.CreatedBy != User.GetEmail())
         {
             return StatusCode(403, new { error = "Keine Berechtigung" });
         }

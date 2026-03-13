@@ -1,6 +1,8 @@
 using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RiskManagement.Api.Data;
+using RiskManagement.Api.Extensions;
 using RiskManagement.Api.Models;
 using RiskManagement.Api.Validation;
 
@@ -8,6 +10,7 @@ namespace RiskManagement.Api.Controllers;
 
 [ApiController]
 [Route("api/applications")]
+[Authorize]
 public class ApplicationsController : ControllerBase
 {
     private readonly ApplicationRepository _repository;
@@ -24,36 +27,22 @@ public class ApplicationsController : ControllerBase
         _updateValidator = updateValidator;
     }
 
-    private UserSession? GetUser() => HttpContext.Items["User"] as UserSession;
-
     [HttpGet]
     public async Task<IActionResult> GetApplications([FromQuery] string? status)
     {
-        var user = GetUser();
-        if (user == null)
-        {
-            return Unauthorized(new { error = "Login erforderlich" });
-        }
-
-        if (user.Role != "applicant")
+        if (User.GetRole() != "applicant")
         {
             return StatusCode(403, new { error = "Keine Berechtigung" });
         }
 
-        var applications = await _repository.GetApplicationsByUser(user.Email, status);
+        var applications = await _repository.GetApplicationsByUser(User.GetEmail(), status);
         return Ok(applications);
     }
 
     [HttpPost]
     public async Task<IActionResult> CreateApplication([FromBody] ApplicationCreateDto dto)
     {
-        var user = GetUser();
-        if (user == null)
-        {
-            return Unauthorized(new { error = "Login erforderlich" });
-        }
-
-        if (user.Role != "applicant")
+        if (User.GetRole() != "applicant")
         {
             return StatusCode(403, new { error = "Keine Berechtigung" });
         }
@@ -83,7 +72,7 @@ public class ApplicationsController : ControllerBase
             EmploymentStatus = dto.EmploymentStatus,
             HasPaymentDefault = dto.HasPaymentDefault,
             Status = "draft",
-            CreatedBy = user.Email
+            CreatedBy = User.GetEmail()
         });
 
         if (dto.Action == "submit" && application != null)
@@ -101,24 +90,19 @@ public class ApplicationsController : ControllerBase
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetApplication(int id)
     {
-        var user = GetUser();
-        if (user == null)
-        {
-            return Unauthorized(new { error = "Login erforderlich" });
-        }
-
         var application = await _repository.GetApplicationById(id);
         if (application == null)
         {
             return NotFound(new { error = "Antrag nicht gefunden" });
         }
 
-        if (user.Role == "applicant" && application.CreatedBy != user.Email)
+        var role = User.GetRole();
+        if (role == "applicant" && application.CreatedBy != User.GetEmail())
         {
             return StatusCode(403, new { error = "Keine Berechtigung" });
         }
 
-        if (user.Role != "applicant" && user.Role != "processor")
+        if (role != "applicant" && role != "processor")
         {
             return StatusCode(403, new { error = "Keine Berechtigung" });
         }
@@ -129,13 +113,7 @@ public class ApplicationsController : ControllerBase
     [HttpPut("{id:int}")]
     public async Task<IActionResult> UpdateApplication(int id, [FromBody] ApplicationUpdateDto dto)
     {
-        var user = GetUser();
-        if (user == null)
-        {
-            return Unauthorized(new { error = "Login erforderlich" });
-        }
-
-        if (user.Role != "applicant")
+        if (User.GetRole() != "applicant")
         {
             return StatusCode(403, new { error = "Keine Berechtigung" });
         }
@@ -146,7 +124,7 @@ public class ApplicationsController : ControllerBase
             return NotFound(new { error = "Antrag nicht gefunden" });
         }
 
-        if (existing.CreatedBy != user.Email)
+        if (existing.CreatedBy != User.GetEmail())
         {
             return StatusCode(403, new { error = "Keine Berechtigung" });
         }
@@ -188,13 +166,7 @@ public class ApplicationsController : ControllerBase
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteApplication(int id)
     {
-        var user = GetUser();
-        if (user == null)
-        {
-            return Unauthorized(new { error = "Login erforderlich" });
-        }
-
-        if (user.Role != "applicant")
+        if (User.GetRole() != "applicant")
         {
             return StatusCode(403, new { error = "Keine Berechtigung" });
         }
@@ -205,7 +177,7 @@ public class ApplicationsController : ControllerBase
             return NotFound(new { error = "Antrag nicht gefunden" });
         }
 
-        if (existing.CreatedBy != user.Email)
+        if (existing.CreatedBy != User.GetEmail())
         {
             return StatusCode(403, new { error = "Keine Berechtigung" });
         }
@@ -222,13 +194,7 @@ public class ApplicationsController : ControllerBase
     [HttpPost("{id:int}/submit")]
     public async Task<IActionResult> SubmitApplication(int id)
     {
-        var user = GetUser();
-        if (user == null)
-        {
-            return Unauthorized(new { error = "Login erforderlich" });
-        }
-
-        if (user.Role != "applicant")
+        if (User.GetRole() != "applicant")
         {
             return StatusCode(403, new { error = "Keine Berechtigung" });
         }
@@ -239,7 +205,7 @@ public class ApplicationsController : ControllerBase
             return NotFound(new { error = "Antrag nicht gefunden" });
         }
 
-        if (existing.CreatedBy != user.Email)
+        if (existing.CreatedBy != User.GetEmail())
         {
             return StatusCode(403, new { error = "Keine Berechtigung" });
         }

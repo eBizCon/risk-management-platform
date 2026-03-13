@@ -1,5 +1,7 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RiskManagement.Api.Data;
+using RiskManagement.Api.Extensions;
 using RiskManagement.Api.Models;
 using RiskManagement.Api.Validation;
 
@@ -7,6 +9,7 @@ namespace RiskManagement.Api.Controllers;
 
 [ApiController]
 [Route("api/processor")]
+[Authorize]
 public class ProcessorController : ControllerBase
 {
     private readonly ApplicationRepository _repository;
@@ -18,21 +21,13 @@ public class ProcessorController : ControllerBase
         _decisionValidator = decisionValidator;
     }
 
-    private UserSession? GetUser() => HttpContext.Items["User"] as UserSession;
-
     private static readonly string[] AllowedStatuses =
         { "submitted", "needs_information", "resubmitted", "approved", "rejected", "draft" };
 
     [HttpGet("applications")]
     public async Task<IActionResult> GetApplications([FromQuery] string? status, [FromQuery] int? page)
     {
-        var user = GetUser();
-        if (user == null)
-        {
-            return Unauthorized(new { error = "Login erforderlich" });
-        }
-
-        if (user.Role != "processor")
+        if (User.GetRole() != "processor")
         {
             return StatusCode(403, new { error = "Keine Berechtigung" });
         }
@@ -69,13 +64,7 @@ public class ProcessorController : ControllerBase
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetApplication(int id)
     {
-        var user = GetUser();
-        if (user == null)
-        {
-            return Unauthorized(new { error = "Login erforderlich" });
-        }
-
-        if (user.Role != "processor")
+        if (User.GetRole() != "processor")
         {
             return StatusCode(403, new { error = "Keine Berechtigung" });
         }
@@ -92,13 +81,7 @@ public class ProcessorController : ControllerBase
     [HttpPost("{id:int}/decide")]
     public async Task<IActionResult> ProcessDecision(int id, [FromBody] ProcessorDecisionDto dto)
     {
-        var user = GetUser();
-        if (user == null)
-        {
-            return Unauthorized(new { error = "Login erforderlich" });
-        }
-
-        if (user.Role != "processor")
+        if (User.GetRole() != "processor")
         {
             return StatusCode(403, new { error = "Keine Berechtigung" });
         }
