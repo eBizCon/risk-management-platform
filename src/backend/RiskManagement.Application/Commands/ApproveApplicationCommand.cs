@@ -8,7 +8,7 @@ namespace RiskManagement.Application.Commands;
 public record ApproveApplicationCommand(int ApplicationId, ApproveApplicationDto Dto)
     : ICommand<ApproveApplicationResult>;
 
-public record ApproveApplicationResult(ApplicationResponse Application, string Redirect);
+public record ApproveApplicationResult(ApplicationResponse Application);
 
 public class ApproveApplicationHandler : ICommandHandler<ApproveApplicationCommand, ApproveApplicationResult>
 {
@@ -44,7 +44,6 @@ public class ApproveApplicationHandler : ICommandHandler<ApproveApplicationComma
         await _dispatcher.PublishDomainEventsAsync(application, ct);
 
         return Result<ApproveApplicationResult>.Success(new ApproveApplicationResult(
-            ApplicationMapper.ToResponse(application),
-            $"/processor/{application.Id}"));
+            ApplicationMapper.ToResponse(application)));
     }
 }

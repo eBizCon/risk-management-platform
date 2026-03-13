@@ -35,17 +35,11 @@ public class ApplicationsController : ControllerBase
         if (submit)
         {
             var submitResult = await _dispatcher.SendAsync(new CreateAndSubmitApplicationCommand(dto, User.GetEmail()));
-            if (!submitResult.IsSuccess)
-                return submitResult.ToActionResult();
-
-            return Ok(new { application = submitResult.Value!.Application, redirect = submitResult.Value.Redirect });
+            return submitResult.ToActionResult();
         }
 
         var result = await _dispatcher.SendAsync(new CreateApplicationCommand(dto, User.GetEmail()));
-        if (!result.IsSuccess)
-            return result.ToActionResult();
-
-        return Ok(new { application = result.Value!.Application, redirect = result.Value.Redirect });
+        return result.ToActionResult();
     }
 
     [HttpGet("{id:int}")]
@@ -65,17 +59,11 @@ public class ApplicationsController : ControllerBase
         {
             var submitResult =
                 await _dispatcher.SendAsync(new UpdateAndSubmitApplicationCommand(id, dto, User.GetEmail()));
-            if (!submitResult.IsSuccess)
-                return submitResult.ToActionResult();
-
-            return Ok(new { application = submitResult.Value!.Application, redirect = submitResult.Value.Redirect });
+            return submitResult.ToActionResult();
         }
 
         var result = await _dispatcher.SendAsync(new UpdateApplicationCommand(id, dto, User.GetEmail()));
-        if (!result.IsSuccess)
-            return result.ToActionResult();
-
-        return Ok(new { application = result.Value!.Application, redirect = result.Value.Redirect });
+        return result.ToActionResult();
     }
 
     [HttpDelete("{id:int}")]

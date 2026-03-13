@@ -10,20 +10,20 @@ namespace RiskManagement.Application.Commands;
 public record UpdateAndSubmitApplicationCommand(int ApplicationId, ApplicationUpdateDto Dto, string UserEmail)
     : ICommand<UpdateAndSubmitApplicationResult>;
 
-public record UpdateAndSubmitApplicationResult(ApplicationResponse Application, string Redirect);
+public record UpdateAndSubmitApplicationResult(ApplicationResponse Application);
 
 public class
     UpdateAndSubmitApplicationHandler : ICommandHandler<UpdateAndSubmitApplicationCommand,
     UpdateAndSubmitApplicationResult>
 {
     private readonly IApplicationRepository _repository;
-    private readonly ScoringService _scoringService;
+    private readonly IScoringService _scoringService;
     private readonly IValidator<ApplicationUpdateDto> _validator;
     private readonly IDispatcher _dispatcher;
 
     public UpdateAndSubmitApplicationHandler(
         IApplicationRepository repository,
-        ScoringService scoringService,
+        IScoringService scoringService,
         IValidator<ApplicationUpdateDto> validator,
         IDispatcher dispatcher)
     {
@@ -65,7 +65,6 @@ public class
         await _dispatcher.PublishDomainEventsAsync(application, ct);
 
         return Result<UpdateAndSubmitApplicationResult>.Success(new UpdateAndSubmitApplicationResult(
-            ApplicationMapper.ToResponse(application),
-            $"/applications/{application.Id}?submitted=true"));
+            ApplicationMapper.ToResponse(application)));
     }
 }

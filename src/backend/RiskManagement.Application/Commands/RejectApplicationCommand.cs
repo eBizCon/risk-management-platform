@@ -7,7 +7,7 @@ namespace RiskManagement.Application.Commands;
 
 public record RejectApplicationCommand(int ApplicationId, RejectApplicationDto Dto) : ICommand<RejectApplicationResult>;
 
-public record RejectApplicationResult(ApplicationResponse Application, string Redirect);
+public record RejectApplicationResult(ApplicationResponse Application);
 
 public class RejectApplicationHandler : ICommandHandler<RejectApplicationCommand, RejectApplicationResult>
 {
@@ -43,7 +43,6 @@ public class RejectApplicationHandler : ICommandHandler<RejectApplicationCommand
         await _dispatcher.PublishDomainEventsAsync(application, ct);
 
         return Result<RejectApplicationResult>.Success(new RejectApplicationResult(
-            ApplicationMapper.ToResponse(application),
-            $"/processor/{application.Id}"));
+            ApplicationMapper.ToResponse(application)));
     }
 }

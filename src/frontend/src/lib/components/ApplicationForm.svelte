@@ -66,8 +66,8 @@
 			}
 
 			const result = await res.json();
-			if (result.redirect) {
-				await goto(result.redirect);
+			if (result.application?.id) {
+				await goto(`/applications/${result.application.id}`);
 			}
 		} finally {
 			isSubmitting = false;

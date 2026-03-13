@@ -10,17 +10,17 @@ namespace RiskManagement.Application.Commands;
 
 public record CreateApplicationCommand(ApplicationCreateDto Dto, string UserEmail) : ICommand<CreateApplicationResult>;
 
-public record CreateApplicationResult(ApplicationResponse Application, string Redirect);
+public record CreateApplicationResult(ApplicationResponse Application);
 
 public class CreateApplicationHandler : ICommandHandler<CreateApplicationCommand, CreateApplicationResult>
 {
     private readonly IApplicationRepository _repository;
-    private readonly ScoringService _scoringService;
+    private readonly IScoringService _scoringService;
     private readonly IValidator<ApplicationCreateDto> _validator;
 
     public CreateApplicationHandler(
         IApplicationRepository repository,
-        ScoringService scoringService,
+        IScoringService scoringService,
         IValidator<ApplicationCreateDto> validator)
     {
         _repository = repository;
@@ -52,7 +52,6 @@ public class CreateApplicationHandler : ICommandHandler<CreateApplicationCommand
         await _repository.SaveChangesAsync(ct);
 
         return Result<CreateApplicationResult>.Success(new CreateApplicationResult(
-            ApplicationMapper.ToResponse(application),
-            $"/applications/{application.Id}"));
+            ApplicationMapper.ToResponse(application)));
     }
 }

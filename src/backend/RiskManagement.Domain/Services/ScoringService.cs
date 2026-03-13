@@ -2,7 +2,7 @@ using RiskManagement.Domain.ValueObjects;
 
 namespace RiskManagement.Domain.Services;
 
-public class ScoringService
+public class ScoringService : IScoringService
 {
     public ScoringResult CalculateScore(
         double income,

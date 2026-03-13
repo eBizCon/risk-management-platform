@@ -11,7 +11,7 @@ namespace RiskManagement.Infrastructure.Seeding;
 public class DatabaseSeeder
 {
     private readonly ApplicationDbContext _context;
-    private readonly ScoringService _scoringService;
+    private readonly IScoringService _scoringService;
 
     private const string SeedCreatedBy = "applicant@example.com";
 
@@ -46,7 +46,7 @@ public class DatabaseSeeder
             ("Lea Hartmann", 2700, 2200, 300, "unemployed", false)
         };
 
-    public DatabaseSeeder(ApplicationDbContext context, ScoringService scoringService)
+    public DatabaseSeeder(ApplicationDbContext context, IScoringService scoringService)
     {
         _context = context;
         _scoringService = scoringService;

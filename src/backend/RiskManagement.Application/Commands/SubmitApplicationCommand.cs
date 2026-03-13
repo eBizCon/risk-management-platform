@@ -10,10 +10,10 @@ public record SubmitApplicationCommand(int ApplicationId, string UserEmail) : IC
 public class SubmitApplicationHandler : ICommandHandler<SubmitApplicationCommand, ApplicationResponse>
 {
     private readonly IApplicationRepository _repository;
-    private readonly ScoringService _scoringService;
+    private readonly IScoringService _scoringService;
     private readonly IDispatcher _dispatcher;
 
-    public SubmitApplicationHandler(IApplicationRepository repository, ScoringService scoringService,
+    public SubmitApplicationHandler(IApplicationRepository repository, IScoringService scoringService,
         IDispatcher dispatcher)
     {
         _repository = repository;

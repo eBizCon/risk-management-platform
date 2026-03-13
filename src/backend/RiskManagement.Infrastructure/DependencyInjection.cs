@@ -28,7 +28,7 @@ public static class DependencyInjection
 
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
-        services.AddSingleton<ScoringService>();
+        services.AddSingleton<IScoringService, ScoringService>();
 
         services.AddScoped<IValidator<ApplicationCreateDto>, ApplicationValidator>();
         services.AddScoped<IValidator<ApplicationUpdateDto>, ApplicationUpdateValidator>();

@@ -40,19 +40,13 @@ public class ProcessorController : ControllerBase
     public async Task<IActionResult> ApproveApplication(int id, [FromBody] ApproveApplicationDto dto)
     {
         var result = await _dispatcher.SendAsync(new ApproveApplicationCommand(id, dto));
-        if (!result.IsSuccess)
-            return result.ToActionResult();
-
-        return Ok(new { application = result.Value!.Application, redirect = result.Value.Redirect });
+        return result.ToActionResult();
     }
 
     [HttpPost("{id:int}/reject")]
     public async Task<IActionResult> RejectApplication(int id, [FromBody] RejectApplicationDto dto)
     {
         var result = await _dispatcher.SendAsync(new RejectApplicationCommand(id, dto));
-        if (!result.IsSuccess)
-            return result.ToActionResult();
-
-        return Ok(new { application = result.Value!.Application, redirect = result.Value.Redirect });
+        return result.ToActionResult();
     }
 }

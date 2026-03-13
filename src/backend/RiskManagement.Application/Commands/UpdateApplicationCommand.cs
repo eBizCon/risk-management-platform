@@ -10,17 +10,17 @@ namespace RiskManagement.Application.Commands;
 public record UpdateApplicationCommand(int ApplicationId, ApplicationUpdateDto Dto, string UserEmail)
     : ICommand<UpdateApplicationResult>;
 
-public record UpdateApplicationResult(ApplicationResponse Application, string Redirect);
+public record UpdateApplicationResult(ApplicationResponse Application);
 
 public class UpdateApplicationHandler : ICommandHandler<UpdateApplicationCommand, UpdateApplicationResult>
 {
     private readonly IApplicationRepository _repository;
-    private readonly ScoringService _scoringService;
+    private readonly IScoringService _scoringService;
     private readonly IValidator<ApplicationUpdateDto> _validator;
 
     public UpdateApplicationHandler(
         IApplicationRepository repository,
-        ScoringService scoringService,
+        IScoringService scoringService,
         IValidator<ApplicationUpdateDto> validator)
     {
         _repository = repository;
@@ -57,7 +57,6 @@ public class UpdateApplicationHandler : ICommandHandler<UpdateApplicationCommand
         await _repository.SaveChangesAsync(ct);
 
         return Result<UpdateApplicationResult>.Success(new UpdateApplicationResult(
-            ApplicationMapper.ToResponse(application),
-            $"/applications/{application.Id}"));
+            ApplicationMapper.ToResponse(application)));
     }
 }

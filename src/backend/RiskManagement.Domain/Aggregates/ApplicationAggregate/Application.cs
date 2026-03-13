@@ -40,7 +40,7 @@ public class Application : AggregateRoot
         EmploymentStatus employmentStatus,
         bool hasPaymentDefault,
         string createdBy,
-        ScoringService scoringService)
+        IScoringService scoringService)
     {
         var app = new Application
         {
@@ -59,7 +59,7 @@ public class Application : AggregateRoot
         return app;
     }
 
-    public void Submit(ScoringService scoringService)
+    public void Submit(IScoringService scoringService)
     {
         if (Status != ApplicationStatus.Draft)
             throw new InvalidStatusTransitionException(Status, ApplicationStatus.Submitted);
@@ -102,7 +102,7 @@ public class Application : AggregateRoot
         double desiredRate,
         EmploymentStatus employmentStatus,
         bool hasPaymentDefault,
-        ScoringService scoringService)
+        IScoringService scoringService)
     {
         if (Status != ApplicationStatus.Draft)
             throw new DomainException("Nur Entwürfe können bearbeitet werden");
@@ -153,7 +153,7 @@ public class Application : AggregateRoot
         Status = ApplicationStatus.Resubmitted;
     }
 
-    private void ApplyScoring(ScoringService scoringService)
+    private void ApplyScoring(IScoringService scoringService)
     {
         var result =
             scoringService.CalculateScore(Income, FixedCosts, DesiredRate, EmploymentStatus, HasPaymentDefault);
