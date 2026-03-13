@@ -46,10 +46,7 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Middleware pipeline
-if (app.Environment.IsDevelopment())
-{
-    app.UseCors();
-}
+if (app.Environment.IsDevelopment()) app.UseCors();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseAuthentication();
@@ -63,4 +60,6 @@ app.MapFallbackToFile("index.html");
 app.Run();
 
 // Make Program accessible for integration tests
-public partial class Program { }
+public partial class Program
+{
+}

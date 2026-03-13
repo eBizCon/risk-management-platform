@@ -20,25 +20,14 @@ public class TestSessionController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateTestSession([FromBody] TestSessionCreateDto dto)
     {
-        if (!IsTestMode())
-        {
-            return NotFound(new { error = "Not found" });
-        }
+        if (!IsTestMode()) return NotFound(new { error = "Not found" });
 
         if (string.IsNullOrEmpty(dto.Role) || !AppRoles.All.Contains(dto.Role))
-        {
             return BadRequest(new { error = "Invalid role" });
-        }
 
-        if (string.IsNullOrEmpty(dto.Id))
-        {
-            return BadRequest(new { error = "Invalid id" });
-        }
+        if (string.IsNullOrEmpty(dto.Id)) return BadRequest(new { error = "Invalid id" });
 
-        if (string.IsNullOrEmpty(dto.Name))
-        {
-            return BadRequest(new { error = "Invalid name" });
-        }
+        if (string.IsNullOrEmpty(dto.Name)) return BadRequest(new { error = "Invalid name" });
 
         var defaultEmails = new Dictionary<string, string>
         {
@@ -46,7 +35,8 @@ public class TestSessionController : ControllerBase
             [AppRoles.Processor] = "processor@example.com"
         };
 
-        var email = dto.Email ?? (defaultEmails.ContainsKey(dto.Role) ? defaultEmails[dto.Role] : $"{dto.Role}@example.com");
+        var email = dto.Email ??
+                    (defaultEmails.ContainsKey(dto.Role) ? defaultEmails[dto.Role] : $"{dto.Role}@example.com");
 
         var claims = new List<Claim>
         {
@@ -74,10 +64,7 @@ public class TestSessionController : ControllerBase
     [HttpDelete]
     public async Task<IActionResult> DeleteTestSession()
     {
-        if (!IsTestMode())
-        {
-            return NotFound(new { error = "Not found" });
-        }
+        if (!IsTestMode()) return NotFound(new { error = "Not found" });
 
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 

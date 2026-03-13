@@ -33,17 +33,18 @@ public class DatabaseSeeder
         "Antrag aufgrund negativer Gesamtbewertung abgelehnt."
     };
 
-    private static readonly (string Name, double Income, double FixedCosts, double DesiredRate, string EmploymentStatus, bool HasPaymentDefault)[] Templates =
-    {
-        ("Max Mustermann", 5200, 1900, 700, "employed", false),
-        ("Sofia Wagner", 4000, 2200, 700, "self_employed", false),
-        ("Jonas Becker", 3300, 2100, 500, "employed", false),
-        ("Elena Fischer", 2800, 2100, 450, "unemployed", true),
-        ("Noah Klein", 6100, 2400, 850, "employed", false),
-        ("Mila Schmitt", 3900, 1900, 850, "retired", false),
-        ("Paul Neumann", 3100, 2300, 420, "self_employed", true),
-        ("Lea Hartmann", 2700, 2200, 300, "unemployed", false)
-    };
+    private static readonly (string Name, double Income, double FixedCosts, double DesiredRate, string EmploymentStatus,
+        bool HasPaymentDefault)[] Templates =
+        {
+            ("Max Mustermann", 5200, 1900, 700, "employed", false),
+            ("Sofia Wagner", 4000, 2200, 700, "self_employed", false),
+            ("Jonas Becker", 3300, 2100, 500, "employed", false),
+            ("Elena Fischer", 2800, 2100, 450, "unemployed", true),
+            ("Noah Klein", 6100, 2400, 850, "employed", false),
+            ("Mila Schmitt", 3900, 1900, 850, "retired", false),
+            ("Paul Neumann", 3100, 2300, 420, "self_employed", true),
+            ("Lea Hartmann", 2700, 2200, 300, "unemployed", false)
+        };
 
     public DatabaseSeeder(ApplicationDbContext context, ScoringService scoringService)
     {
@@ -54,10 +55,7 @@ public class DatabaseSeeder
     public async Task SeedAsync()
     {
         var existingCount = await _context.Applications.CountAsync();
-        if (existingCount > 0)
-        {
-            return;
-        }
+        if (existingCount > 0) return;
 
         const int totalRows = 32;
         var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
@@ -81,13 +79,8 @@ public class DatabaseSeeder
 
             string? processorComment = null;
             if (status == "approved")
-            {
                 processorComment = ApprovedComments[index % ApprovedComments.Length];
-            }
-            else if (status == "rejected")
-            {
-                processorComment = RejectedComments[index % RejectedComments.Length];
-            }
+            else if (status == "rejected") processorComment = RejectedComments[index % RejectedComments.Length];
 
             var application = ApplicationEntity.Create(
                 $"{template.Name} {index / Templates.Length + 1}",

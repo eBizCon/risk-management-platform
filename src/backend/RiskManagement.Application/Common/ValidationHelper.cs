@@ -14,6 +14,7 @@ public static class ValidationHelper
                 errors[key] = Array.Empty<string>();
             errors[key] = errors[key].Append(failure.ErrorMessage).ToArray();
         }
+
         return errors;
     }
 

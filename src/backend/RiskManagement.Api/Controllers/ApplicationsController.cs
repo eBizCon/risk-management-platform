@@ -29,7 +29,8 @@ public class ApplicationsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateApplication([FromBody] ApplicationCreateDto dto, [FromQuery] bool submit = false)
+    public async Task<IActionResult> CreateApplication([FromBody] ApplicationCreateDto dto,
+        [FromQuery] bool submit = false)
     {
         if (submit)
         {
@@ -57,11 +58,13 @@ public class ApplicationsController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
-    public async Task<IActionResult> UpdateApplication(int id, [FromBody] ApplicationUpdateDto dto, [FromQuery] bool submit = false)
+    public async Task<IActionResult> UpdateApplication(int id, [FromBody] ApplicationUpdateDto dto,
+        [FromQuery] bool submit = false)
     {
         if (submit)
         {
-            var submitResult = await _dispatcher.SendAsync(new UpdateAndSubmitApplicationCommand(id, dto, User.GetEmail()));
+            var submitResult =
+                await _dispatcher.SendAsync(new UpdateAndSubmitApplicationCommand(id, dto, User.GetEmail()));
             if (!submitResult.IsSuccess)
                 return submitResult.ToActionResult();
 

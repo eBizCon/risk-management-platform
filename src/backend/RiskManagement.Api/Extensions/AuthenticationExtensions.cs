@@ -56,24 +56,16 @@ public static class AuthenticationExtensions
 
                 options.Scope.Clear();
                 foreach (var scope in oidcOptions.Scope.Trim('"').Split(' ', StringSplitOptions.RemoveEmptyEntries))
-                {
                     options.Scope.Add(scope);
-                }
 
-                if (environment.IsDevelopment())
-                {
-                    options.RequireHttpsMetadata = false;
-                }
+                if (environment.IsDevelopment()) options.RequireHttpsMetadata = false;
 
                 options.Events = new OpenIdConnectEvents
                 {
                     OnTokenValidated = context =>
                     {
                         var accessToken = context.TokenEndpointResponse?.AccessToken;
-                        if (string.IsNullOrEmpty(accessToken))
-                        {
-                            return Task.CompletedTask;
-                        }
+                        if (string.IsNullOrEmpty(accessToken)) return Task.CompletedTask;
 
                         try
                         {
@@ -90,37 +82,25 @@ public static class AuthenticationExtensions
                             var identity = context.Principal?.Identity as ClaimsIdentity;
                             if (identity != null)
                             {
-                                foreach (var role in roles)
-                                {
-                                    identity.AddClaim(new Claim(ClaimTypes.Role, role));
-                                }
+                                foreach (var role in roles) identity.AddClaim(new Claim(ClaimTypes.Role, role));
 
                                 if (!identity.HasClaim(c => c.Type == ClaimTypes.NameIdentifier))
                                 {
                                     var sub = identity.FindFirst("sub")?.Value;
-                                    if (sub != null)
-                                    {
-                                        identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, sub));
-                                    }
+                                    if (sub != null) identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, sub));
                                 }
 
                                 if (!identity.HasClaim(c => c.Type == ClaimTypes.Email))
                                 {
                                     var email = identity.FindFirst("email")?.Value;
-                                    if (email != null)
-                                    {
-                                        identity.AddClaim(new Claim(ClaimTypes.Email, email));
-                                    }
+                                    if (email != null) identity.AddClaim(new Claim(ClaimTypes.Email, email));
                                 }
 
                                 if (!identity.HasClaim(c => c.Type == ClaimTypes.Name))
                                 {
                                     var name = identity.FindFirst("name")?.Value
                                                ?? identity.FindFirst("preferred_username")?.Value;
-                                    if (name != null)
-                                    {
-                                        identity.AddClaim(new Claim(ClaimTypes.Name, name));
-                                    }
+                                    if (name != null) identity.AddClaim(new Claim(ClaimTypes.Name, name));
                                 }
                             }
                         }

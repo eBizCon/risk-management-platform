@@ -16,7 +16,8 @@ public class GetApplicationsByUserHandler : IQueryHandler<GetApplicationsByUserQ
         _repository = repository;
     }
 
-    public async Task<Result<ApplicationResponse[]>> HandleAsync(GetApplicationsByUserQuery query, CancellationToken ct = default)
+    public async Task<Result<ApplicationResponse[]>> HandleAsync(GetApplicationsByUserQuery query,
+        CancellationToken ct = default)
     {
         ApplicationStatus? status = null;
         if (!string.IsNullOrEmpty(query.Status))

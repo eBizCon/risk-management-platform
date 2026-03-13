@@ -15,7 +15,8 @@ public class GetDashboardStatsHandler : IQueryHandler<GetDashboardStatsQuery, Da
         _repository = repository;
     }
 
-    public async Task<Result<DashboardStatsDto>> HandleAsync(GetDashboardStatsQuery query, CancellationToken ct = default)
+    public async Task<Result<DashboardStatsDto>> HandleAsync(GetDashboardStatsQuery query,
+        CancellationToken ct = default)
     {
         var email = query.UserRole == "processor" ? null : query.UserEmail;
         var stats = await _repository.GetDashboardStatsAsync(email, ct);

@@ -21,7 +21,8 @@ public class ApplicationRepository : IApplicationRepository
             .FirstOrDefaultAsync(a => a.Id == id, ct);
     }
 
-    public async Task<List<ApplicationEntity>> GetByUserAsync(string email, ApplicationStatus? status = null, CancellationToken ct = default)
+    public async Task<List<ApplicationEntity>> GetByUserAsync(string email, ApplicationStatus? status = null,
+        CancellationToken ct = default)
     {
         var query = _context.Applications.Where(a => a.CreatedBy == email);
 
@@ -31,7 +32,8 @@ public class ApplicationRepository : IApplicationRepository
         return await query.ToListAsync(ct);
     }
 
-    public async Task<(List<ApplicationEntity> Items, int TotalCount)> GetAllPaginatedAsync(ApplicationStatus? status, int page, int pageSize, CancellationToken ct = default)
+    public async Task<(List<ApplicationEntity> Items, int TotalCount)> GetAllPaginatedAsync(ApplicationStatus? status,
+        int page, int pageSize, CancellationToken ct = default)
     {
         var query = _context.Applications.AsQueryable();
 
@@ -103,7 +105,8 @@ public class ApplicationRepository : IApplicationRepository
         };
     }
 
-    public async Task<List<ApplicationEntity>> GetApplicationsForExportAsync(ApplicationStatus? status = null, CancellationToken ct = default)
+    public async Task<List<ApplicationEntity>> GetApplicationsForExportAsync(ApplicationStatus? status = null,
+        CancellationToken ct = default)
     {
         var query = _context.Applications.AsQueryable();
         if (status is not null)

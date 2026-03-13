@@ -7,7 +7,9 @@ using RiskManagement.Infrastructure.Dispatching;
 namespace RiskManagement.Api.Tests;
 
 public record TestCommand(string Value) : ICommand<string>;
+
 public record TestQuery(string Value) : IQuery<string>;
+
 public record TestEvent(string Value) : IDomainEvent
 {
     public DateTime OccurredOn { get; } = DateTime.UtcNow;
@@ -16,18 +18,25 @@ public record TestEvent(string Value) : IDomainEvent
 public class TestCommandHandler : ICommandHandler<TestCommand, string>
 {
     public Task<Result<string>> HandleAsync(TestCommand command, CancellationToken ct = default)
-        => Task.FromResult(Result<string>.Success($"handled:{command.Value}"));
+    {
+        return Task.FromResult(Result<string>.Success($"handled:{command.Value}"));
+    }
 }
 
 public class TestQueryHandler : IQueryHandler<TestQuery, string>
 {
     public Task<Result<string>> HandleAsync(TestQuery query, CancellationToken ct = default)
-        => Task.FromResult(Result<string>.Success($"queried:{query.Value}"));
+    {
+        return Task.FromResult(Result<string>.Success($"queried:{query.Value}"));
+    }
 }
 
 public class TestAggregate : AggregateRoot
 {
-    public void RaiseEvent(IDomainEvent domainEvent) => AddDomainEvent(domainEvent);
+    public void RaiseEvent(IDomainEvent domainEvent)
+    {
+        AddDomainEvent(domainEvent);
+    }
 }
 
 public class DispatcherTests
@@ -99,8 +108,7 @@ public class DispatcherTests
         var services = new ServiceCollection();
         var dispatcher = CreateDispatcher(services);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
-            () => dispatcher.SendAsync(new TestCommand("missing")));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => dispatcher.SendAsync(new TestCommand("missing")));
     }
 
     [Fact]
@@ -109,8 +117,7 @@ public class DispatcherTests
         var services = new ServiceCollection();
         var dispatcher = CreateDispatcher(services);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
-            () => dispatcher.QueryAsync(new TestQuery("missing")));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => dispatcher.QueryAsync(new TestQuery("missing")));
     }
 
     [Fact]
@@ -128,8 +135,10 @@ public class DispatcherTests
 
         await dispatcher.PublishDomainEventsAsync(aggregate);
 
-        handler.Verify(h => h.HandleAsync(It.Is<TestEvent>(e => e.Value == "e1"), It.IsAny<CancellationToken>()), Times.Once);
-        handler.Verify(h => h.HandleAsync(It.Is<TestEvent>(e => e.Value == "e2"), It.IsAny<CancellationToken>()), Times.Once);
+        handler.Verify(h => h.HandleAsync(It.Is<TestEvent>(e => e.Value == "e1"), It.IsAny<CancellationToken>()),
+            Times.Once);
+        handler.Verify(h => h.HandleAsync(It.Is<TestEvent>(e => e.Value == "e2"), It.IsAny<CancellationToken>()),
+            Times.Once);
         Assert.Empty(aggregate.DomainEvents);
     }
 }

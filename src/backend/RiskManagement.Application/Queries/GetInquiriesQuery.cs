@@ -3,7 +3,8 @@ using RiskManagement.Domain.Aggregates.ApplicationAggregate;
 
 namespace RiskManagement.Application.Queries;
 
-public record GetInquiriesQuery(int ApplicationId, string UserEmail, string UserRole) : IQuery<List<ApplicationInquiry>>;
+public record GetInquiriesQuery(int ApplicationId, string UserEmail, string UserRole)
+    : IQuery<List<ApplicationInquiry>>;
 
 public class GetInquiriesHandler : IQueryHandler<GetInquiriesQuery, List<ApplicationInquiry>>
 {
@@ -14,7 +15,8 @@ public class GetInquiriesHandler : IQueryHandler<GetInquiriesQuery, List<Applica
         _repository = repository;
     }
 
-    public async Task<Result<List<ApplicationInquiry>>> HandleAsync(GetInquiriesQuery query, CancellationToken ct = default)
+    public async Task<Result<List<ApplicationInquiry>>> HandleAsync(GetInquiriesQuery query,
+        CancellationToken ct = default)
     {
         var application = await _repository.GetByIdAsync(query.ApplicationId, ct);
         if (application is null)

@@ -34,7 +34,8 @@ public class ApplicationValidator : AbstractValidator<ApplicationCreateDto>
 
         RuleFor(x => x.DesiredRate)
             .Must((dto, desiredRate) => desiredRate <= dto.Income - dto.FixedCosts)
-            .WithMessage("Gewünschte Rate kann nicht höher sein als das verfügbare Einkommen (Einkommen minus Fixkosten)");
+            .WithMessage(
+                "Gewünschte Rate kann nicht höher sein als das verfügbare Einkommen (Einkommen minus Fixkosten)");
     }
 }
 
@@ -68,6 +69,7 @@ public class ApplicationUpdateValidator : AbstractValidator<ApplicationUpdateDto
 
         RuleFor(x => x.DesiredRate)
             .Must((dto, desiredRate) => desiredRate <= dto.Income - dto.FixedCosts)
-            .WithMessage("Gewünschte Rate kann nicht höher sein als das verfügbare Einkommen (Einkommen minus Fixkosten)");
+            .WithMessage(
+                "Gewünschte Rate kann nicht höher sein als das verfügbare Einkommen (Einkommen minus Fixkosten)");
     }
 }

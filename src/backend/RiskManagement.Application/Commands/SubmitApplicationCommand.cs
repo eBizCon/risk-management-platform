@@ -13,14 +13,16 @@ public class SubmitApplicationHandler : ICommandHandler<SubmitApplicationCommand
     private readonly ScoringService _scoringService;
     private readonly IDispatcher _dispatcher;
 
-    public SubmitApplicationHandler(IApplicationRepository repository, ScoringService scoringService, IDispatcher dispatcher)
+    public SubmitApplicationHandler(IApplicationRepository repository, ScoringService scoringService,
+        IDispatcher dispatcher)
     {
         _repository = repository;
         _scoringService = scoringService;
         _dispatcher = dispatcher;
     }
 
-    public async Task<Result<ApplicationResponse>> HandleAsync(SubmitApplicationCommand command, CancellationToken ct = default)
+    public async Task<Result<ApplicationResponse>> HandleAsync(SubmitApplicationCommand command,
+        CancellationToken ct = default)
     {
         var application = await _repository.GetByIdAsync(command.ApplicationId, ct);
         if (application is null)

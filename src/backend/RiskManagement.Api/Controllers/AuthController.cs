@@ -30,10 +30,7 @@ public class AuthController : ControllerBase
     {
         var frontendBase = _oidcOptions.RedirectUri.TrimEnd('/');
         var redirectUri = $"{frontendBase}/";
-        if (!string.IsNullOrEmpty(returnTo) && returnTo.StartsWith("/"))
-        {
-            redirectUri = $"{frontendBase}{returnTo}";
-        }
+        if (!string.IsNullOrEmpty(returnTo) && returnTo.StartsWith("/")) redirectUri = $"{frontendBase}{returnTo}";
 
         return Challenge(new AuthenticationProperties { RedirectUri = redirectUri },
             OpenIdConnectDefaults.AuthenticationScheme);
@@ -52,10 +49,7 @@ public class AuthController : ControllerBase
     [HttpGet("api/auth/user")]
     public IActionResult GetCurrentUser()
     {
-        if (User.Identity?.IsAuthenticated != true)
-        {
-            return Ok(new { });
-        }
+        if (User.Identity?.IsAuthenticated != true) return Ok(new { });
 
         return Ok(User.ToUserDto());
     }
@@ -63,16 +57,10 @@ public class AuthController : ControllerBase
     [HttpGet("api/dashboard/stats")]
     public async Task<IActionResult> GetDashboardStats()
     {
-        if (User.Identity?.IsAuthenticated != true)
-        {
-            return Ok(new { });
-        }
+        if (User.Identity?.IsAuthenticated != true) return Ok(new { });
 
         var role = User.GetRole();
-        if (!User.IsApplicant() && !User.IsProcessor())
-        {
-            return Ok(new { });
-        }
+        if (!User.IsApplicant() && !User.IsProcessor()) return Ok(new { });
 
         var result = await _dispatcher.QueryAsync(new GetDashboardStatsQuery(User.GetEmail(), role));
         return result.ToActionResult();

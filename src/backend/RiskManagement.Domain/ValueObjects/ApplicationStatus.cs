@@ -34,13 +34,25 @@ public sealed class ApplicationStatus : IEquatable<ApplicationStatus>
         throw new ArgumentException($"Invalid ApplicationStatus: '{value}'", nameof(value));
     }
 
-    public override string ToString() => Value;
+    public override string ToString()
+    {
+        return Value;
+    }
 
-    public bool Equals(ApplicationStatus? other) => other is not null && Value == other.Value;
+    public bool Equals(ApplicationStatus? other)
+    {
+        return other is not null && Value == other.Value;
+    }
 
-    public override bool Equals(object? obj) => obj is ApplicationStatus other && Equals(other);
+    public override bool Equals(object? obj)
+    {
+        return obj is ApplicationStatus other && Equals(other);
+    }
 
-    public override int GetHashCode() => Value.GetHashCode();
+    public override int GetHashCode()
+    {
+        return Value.GetHashCode();
+    }
 
     public static bool operator ==(ApplicationStatus? left, ApplicationStatus? right)
     {
@@ -49,5 +61,8 @@ public sealed class ApplicationStatus : IEquatable<ApplicationStatus>
         return left.Equals(right);
     }
 
-    public static bool operator !=(ApplicationStatus? left, ApplicationStatus? right) => !(left == right);
+    public static bool operator !=(ApplicationStatus? left, ApplicationStatus? right)
+    {
+        return !(left == right);
+    }
 }

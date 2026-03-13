@@ -28,13 +28,25 @@ public sealed class TrafficLight : IEquatable<TrafficLight>
         throw new ArgumentException($"Invalid TrafficLight: '{value}'", nameof(value));
     }
 
-    public override string ToString() => Value;
+    public override string ToString()
+    {
+        return Value;
+    }
 
-    public bool Equals(TrafficLight? other) => other is not null && Value == other.Value;
+    public bool Equals(TrafficLight? other)
+    {
+        return other is not null && Value == other.Value;
+    }
 
-    public override bool Equals(object? obj) => obj is TrafficLight other && Equals(other);
+    public override bool Equals(object? obj)
+    {
+        return obj is TrafficLight other && Equals(other);
+    }
 
-    public override int GetHashCode() => Value.GetHashCode();
+    public override int GetHashCode()
+    {
+        return Value.GetHashCode();
+    }
 
     public static bool operator ==(TrafficLight? left, TrafficLight? right)
     {
@@ -43,5 +55,8 @@ public sealed class TrafficLight : IEquatable<TrafficLight>
         return left.Equals(right);
     }
 
-    public static bool operator !=(TrafficLight? left, TrafficLight? right) => !(left == right);
+    public static bool operator !=(TrafficLight? left, TrafficLight? right)
+    {
+        return !(left == right);
+    }
 }

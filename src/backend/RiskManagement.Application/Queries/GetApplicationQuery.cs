@@ -15,7 +15,8 @@ public class GetApplicationHandler : IQueryHandler<GetApplicationQuery, Applicat
         _repository = repository;
     }
 
-    public async Task<Result<ApplicationResponse>> HandleAsync(GetApplicationQuery query, CancellationToken ct = default)
+    public async Task<Result<ApplicationResponse>> HandleAsync(GetApplicationQuery query,
+        CancellationToken ct = default)
     {
         var application = await _repository.GetByIdAsync(query.ApplicationId, ct);
         if (application is null)

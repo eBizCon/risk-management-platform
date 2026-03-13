@@ -12,7 +12,9 @@ public class ApplicationInquiry : Entity
     public DateTime CreatedAt { get; private set; }
     public DateTime? RespondedAt { get; private set; }
 
-    private ApplicationInquiry() { }
+    private ApplicationInquiry()
+    {
+    }
 
     internal ApplicationInquiry(int applicationId, string inquiryText, string processorEmail)
     {

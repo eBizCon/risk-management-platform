@@ -7,7 +7,8 @@ using RiskManagement.Domain.ValueObjects;
 
 namespace RiskManagement.Application.Commands;
 
-public record UpdateApplicationCommand(int ApplicationId, ApplicationUpdateDto Dto, string UserEmail) : ICommand<UpdateApplicationResult>;
+public record UpdateApplicationCommand(int ApplicationId, ApplicationUpdateDto Dto, string UserEmail)
+    : ICommand<UpdateApplicationResult>;
 
 public record UpdateApplicationResult(ApplicationResponse Application, string Redirect);
 
@@ -27,7 +28,8 @@ public class UpdateApplicationHandler : ICommandHandler<UpdateApplicationCommand
         _validator = validator;
     }
 
-    public async Task<Result<UpdateApplicationResult>> HandleAsync(UpdateApplicationCommand command, CancellationToken ct = default)
+    public async Task<Result<UpdateApplicationResult>> HandleAsync(UpdateApplicationCommand command,
+        CancellationToken ct = default)
     {
         var application = await _repository.GetByIdAsync(command.ApplicationId, ct);
         if (application is null)

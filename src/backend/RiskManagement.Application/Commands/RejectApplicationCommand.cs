@@ -15,14 +15,16 @@ public class RejectApplicationHandler : ICommandHandler<RejectApplicationCommand
     private readonly IValidator<RejectApplicationDto> _validator;
     private readonly IDispatcher _dispatcher;
 
-    public RejectApplicationHandler(IApplicationRepository repository, IValidator<RejectApplicationDto> validator, IDispatcher dispatcher)
+    public RejectApplicationHandler(IApplicationRepository repository, IValidator<RejectApplicationDto> validator,
+        IDispatcher dispatcher)
     {
         _repository = repository;
         _validator = validator;
         _dispatcher = dispatcher;
     }
 
-    public async Task<Result<RejectApplicationResult>> HandleAsync(RejectApplicationCommand command, CancellationToken ct = default)
+    public async Task<Result<RejectApplicationResult>> HandleAsync(RejectApplicationCommand command,
+        CancellationToken ct = default)
     {
         var validationResult = await _validator.ValidateAsync(command.Dto, ct);
         if (!validationResult.IsValid)

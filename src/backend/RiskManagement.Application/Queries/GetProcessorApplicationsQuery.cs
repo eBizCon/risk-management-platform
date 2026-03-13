@@ -5,9 +5,11 @@ using RiskManagement.Domain.ValueObjects;
 
 namespace RiskManagement.Application.Queries;
 
-public record GetProcessorApplicationsQuery(string? Status = null, int Page = 1, int PageSize = 10) : IQuery<ProcessorApplicationsResponse>;
+public record GetProcessorApplicationsQuery(string? Status = null, int Page = 1, int PageSize = 10)
+    : IQuery<ProcessorApplicationsResponse>;
 
-public class GetProcessorApplicationsHandler : IQueryHandler<GetProcessorApplicationsQuery, ProcessorApplicationsResponse>
+public class
+    GetProcessorApplicationsHandler : IQueryHandler<GetProcessorApplicationsQuery, ProcessorApplicationsResponse>
 {
     private readonly IApplicationRepository _repository;
 
@@ -16,7 +18,8 @@ public class GetProcessorApplicationsHandler : IQueryHandler<GetProcessorApplica
         _repository = repository;
     }
 
-    public async Task<Result<ProcessorApplicationsResponse>> HandleAsync(GetProcessorApplicationsQuery query, CancellationToken ct = default)
+    public async Task<Result<ProcessorApplicationsResponse>> HandleAsync(GetProcessorApplicationsQuery query,
+        CancellationToken ct = default)
     {
         ApplicationStatus? status = null;
         if (!string.IsNullOrEmpty(query.Status))

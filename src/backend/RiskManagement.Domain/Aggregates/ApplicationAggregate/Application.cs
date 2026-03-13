@@ -28,7 +28,9 @@ public class Application : AggregateRoot
     private readonly List<ApplicationInquiry> _inquiries = new();
     public IReadOnlyList<ApplicationInquiry> Inquiries => _inquiries.AsReadOnly();
 
-    private Application() { }
+    private Application()
+    {
+    }
 
     public static Application Create(
         string name,
@@ -153,7 +155,8 @@ public class Application : AggregateRoot
 
     private void ApplyScoring(ScoringService scoringService)
     {
-        var result = scoringService.CalculateScore(Income, FixedCosts, DesiredRate, EmploymentStatus, HasPaymentDefault);
+        var result =
+            scoringService.CalculateScore(Income, FixedCosts, DesiredRate, EmploymentStatus, HasPaymentDefault);
         Score = result.Score;
         TrafficLight = result.TrafficLight;
         ScoringReasons = JsonSerializer.Serialize(result.Reasons);

@@ -259,10 +259,7 @@ public class ScoringServiceTests
     {
         var result = _scoringService.CalculateScore(5000, 2000, 600, EmploymentStatus.Employed, false);
 
-        if (result.Score == 75)
-        {
-            Assert.Equal(TrafficLight.Green, result.TrafficLight);
-        }
+        if (result.Score == 75) Assert.Equal(TrafficLight.Green, result.TrafficLight);
     }
 
     [Fact]
@@ -270,9 +267,6 @@ public class ScoringServiceTests
     {
         var result = _scoringService.CalculateScore(4000, 2200, 600, EmploymentStatus.SelfEmployed, false);
 
-        if (result.Score == 50)
-        {
-            Assert.Equal(TrafficLight.Yellow, result.TrafficLight);
-        }
+        if (result.Score == 50) Assert.Equal(TrafficLight.Yellow, result.TrafficLight);
     }
 }

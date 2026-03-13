@@ -58,10 +58,7 @@ public static class DependencyInjection
                 if (!iface.IsGenericType)
                     continue;
 
-                if (iface.GetGenericTypeDefinition() == openGenericInterface)
-                {
-                    services.AddScoped(iface, type);
-                }
+                if (iface.GetGenericTypeDefinition() == openGenericInterface) services.AddScoped(iface, type);
             }
         }
     }

@@ -7,11 +7,14 @@ using RiskManagement.Domain.ValueObjects;
 
 namespace RiskManagement.Application.Commands;
 
-public record UpdateAndSubmitApplicationCommand(int ApplicationId, ApplicationUpdateDto Dto, string UserEmail) : ICommand<UpdateAndSubmitApplicationResult>;
+public record UpdateAndSubmitApplicationCommand(int ApplicationId, ApplicationUpdateDto Dto, string UserEmail)
+    : ICommand<UpdateAndSubmitApplicationResult>;
 
 public record UpdateAndSubmitApplicationResult(ApplicationResponse Application, string Redirect);
 
-public class UpdateAndSubmitApplicationHandler : ICommandHandler<UpdateAndSubmitApplicationCommand, UpdateAndSubmitApplicationResult>
+public class
+    UpdateAndSubmitApplicationHandler : ICommandHandler<UpdateAndSubmitApplicationCommand,
+    UpdateAndSubmitApplicationResult>
 {
     private readonly IApplicationRepository _repository;
     private readonly ScoringService _scoringService;
@@ -30,7 +33,8 @@ public class UpdateAndSubmitApplicationHandler : ICommandHandler<UpdateAndSubmit
         _dispatcher = dispatcher;
     }
 
-    public async Task<Result<UpdateAndSubmitApplicationResult>> HandleAsync(UpdateAndSubmitApplicationCommand command, CancellationToken ct = default)
+    public async Task<Result<UpdateAndSubmitApplicationResult>> HandleAsync(UpdateAndSubmitApplicationCommand command,
+        CancellationToken ct = default)
     {
         var application = await _repository.GetByIdAsync(command.ApplicationId, ct);
         if (application is null)

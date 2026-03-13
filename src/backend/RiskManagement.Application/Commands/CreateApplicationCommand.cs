@@ -28,7 +28,8 @@ public class CreateApplicationHandler : ICommandHandler<CreateApplicationCommand
         _validator = validator;
     }
 
-    public async Task<Result<CreateApplicationResult>> HandleAsync(CreateApplicationCommand command, CancellationToken ct = default)
+    public async Task<Result<CreateApplicationResult>> HandleAsync(CreateApplicationCommand command,
+        CancellationToken ct = default)
     {
         var validationResult = await _validator.ValidateAsync(command.Dto, ct);
         if (!validationResult.IsValid)

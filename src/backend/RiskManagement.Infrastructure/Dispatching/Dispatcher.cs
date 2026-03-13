@@ -18,7 +18,7 @@ public class Dispatcher : IDispatcher
         var commandType = command.GetType();
         var handlerType = typeof(ICommandHandler<,>).MakeGenericType(commandType, typeof(TResult));
         var handler = _serviceProvider.GetService(handlerType)
-            ?? throw new InvalidOperationException($"No handler registered for {handlerType.Name}");
+                      ?? throw new InvalidOperationException($"No handler registered for {handlerType.Name}");
 
         var method = handlerType.GetMethod("HandleAsync")!;
         return (Task<Result<TResult>>)method.Invoke(handler, new object[] { command, ct })!;
@@ -29,7 +29,7 @@ public class Dispatcher : IDispatcher
         var queryType = query.GetType();
         var handlerType = typeof(IQueryHandler<,>).MakeGenericType(queryType, typeof(TResult));
         var handler = _serviceProvider.GetService(handlerType)
-            ?? throw new InvalidOperationException($"No handler registered for {handlerType.Name}");
+                      ?? throw new InvalidOperationException($"No handler registered for {handlerType.Name}");
 
         var method = handlerType.GetMethod("HandleAsync")!;
         return (Task<Result<TResult>>)method.Invoke(handler, new object[] { query, ct })!;
@@ -45,10 +45,7 @@ public class Dispatcher : IDispatcher
             return;
 
         var method = handlerType.GetMethod("HandleAsync")!;
-        foreach (var handler in handlers)
-        {
-            await (Task)method.Invoke(handler, new object[] { domainEvent, ct })!;
-        }
+        foreach (var handler in handlers) await (Task)method.Invoke(handler, new object[] { domainEvent, ct })!;
     }
 
     public async Task PublishDomainEventsAsync(AggregateRoot aggregate, CancellationToken ct = default)

@@ -4,7 +4,8 @@ using RiskManagement.Domain.Aggregates.ApplicationAggregate;
 
 namespace RiskManagement.Application.Commands;
 
-public record AnswerInquiryCommand(int ApplicationId, string ResponseText, string UserEmail) : ICommand<ApplicationResponse>;
+public record AnswerInquiryCommand(int ApplicationId, string ResponseText, string UserEmail)
+    : ICommand<ApplicationResponse>;
 
 public class AnswerInquiryHandler : ICommandHandler<AnswerInquiryCommand, ApplicationResponse>
 {
@@ -15,7 +16,8 @@ public class AnswerInquiryHandler : ICommandHandler<AnswerInquiryCommand, Applic
         _repository = repository;
     }
 
-    public async Task<Result<ApplicationResponse>> HandleAsync(AnswerInquiryCommand command, CancellationToken ct = default)
+    public async Task<Result<ApplicationResponse>> HandleAsync(AnswerInquiryCommand command,
+        CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(command.ResponseText))
             return Result<ApplicationResponse>.Failure("Antworttext darf nicht leer sein");

@@ -32,13 +32,25 @@ public sealed class EmploymentStatus : IEquatable<EmploymentStatus>
 
     public static string[] AllValues => All.Keys.ToArray();
 
-    public override string ToString() => Value;
+    public override string ToString()
+    {
+        return Value;
+    }
 
-    public bool Equals(EmploymentStatus? other) => other is not null && Value == other.Value;
+    public bool Equals(EmploymentStatus? other)
+    {
+        return other is not null && Value == other.Value;
+    }
 
-    public override bool Equals(object? obj) => obj is EmploymentStatus other && Equals(other);
+    public override bool Equals(object? obj)
+    {
+        return obj is EmploymentStatus other && Equals(other);
+    }
 
-    public override int GetHashCode() => Value.GetHashCode();
+    public override int GetHashCode()
+    {
+        return Value.GetHashCode();
+    }
 
     public static bool operator ==(EmploymentStatus? left, EmploymentStatus? right)
     {
@@ -47,5 +59,8 @@ public sealed class EmploymentStatus : IEquatable<EmploymentStatus>
         return left.Equals(right);
     }
 
-    public static bool operator !=(EmploymentStatus? left, EmploymentStatus? right) => !(left == right);
+    public static bool operator !=(EmploymentStatus? left, EmploymentStatus? right)
+    {
+        return !(left == right);
+    }
 }
