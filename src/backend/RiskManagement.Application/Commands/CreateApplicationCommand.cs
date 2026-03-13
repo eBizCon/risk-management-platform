@@ -8,7 +8,7 @@ using ApplicationEntity = RiskManagement.Domain.Aggregates.ApplicationAggregate.
 
 namespace RiskManagement.Application.Commands;
 
-public record CreateApplicationCommand(ApplicationCreateDto Dto, string UserEmail);
+public record CreateApplicationCommand(ApplicationCreateDto Dto, string UserEmail) : ICommand<CreateApplicationResult>;
 
 public record CreateApplicationResult(ApplicationResponse Application, string Redirect);
 

@@ -5,7 +5,7 @@ using RiskManagement.Domain.Aggregates.ApplicationAggregate;
 
 namespace RiskManagement.Application.Commands;
 
-public record ApproveApplicationCommand(int ApplicationId, ApproveApplicationDto Dto);
+public record ApproveApplicationCommand(int ApplicationId, ApproveApplicationDto Dto) : ICommand<ApproveApplicationResult>;
 
 public record ApproveApplicationResult(ApplicationResponse Application, string Redirect);
 
@@ -13,11 +13,13 @@ public class ApproveApplicationHandler : ICommandHandler<ApproveApplicationComma
 {
     private readonly IApplicationRepository _repository;
     private readonly IValidator<ApproveApplicationDto> _validator;
+    private readonly IDispatcher _dispatcher;
 
-    public ApproveApplicationHandler(IApplicationRepository repository, IValidator<ApproveApplicationDto> validator)
+    public ApproveApplicationHandler(IApplicationRepository repository, IValidator<ApproveApplicationDto> validator, IDispatcher dispatcher)
     {
         _repository = repository;
         _validator = validator;
+        _dispatcher = dispatcher;
     }
 
     public async Task<Result<ApproveApplicationResult>> HandleAsync(ApproveApplicationCommand command, CancellationToken ct = default)
@@ -35,6 +37,8 @@ public class ApproveApplicationHandler : ICommandHandler<ApproveApplicationComma
 
         application.Approve(command.Dto.Comment);
         await _repository.SaveChangesAsync(ct);
+
+        await _dispatcher.PublishDomainEventsAsync(application, ct);
 
         return Result<ApproveApplicationResult>.Success(new ApproveApplicationResult(
             ApplicationMapper.ToResponse(application),

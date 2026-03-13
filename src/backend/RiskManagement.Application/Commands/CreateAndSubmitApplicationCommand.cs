@@ -8,7 +8,7 @@ using ApplicationEntity = RiskManagement.Domain.Aggregates.ApplicationAggregate.
 
 namespace RiskManagement.Application.Commands;
 
-public record CreateAndSubmitApplicationCommand(ApplicationCreateDto Dto, string UserEmail);
+public record CreateAndSubmitApplicationCommand(ApplicationCreateDto Dto, string UserEmail) : ICommand<CreateAndSubmitApplicationResult>;
 
 public record CreateAndSubmitApplicationResult(ApplicationResponse Application, string Redirect);
 
@@ -17,15 +17,18 @@ public class CreateAndSubmitApplicationHandler : ICommandHandler<CreateAndSubmit
     private readonly IApplicationRepository _repository;
     private readonly ScoringService _scoringService;
     private readonly IValidator<ApplicationCreateDto> _validator;
+    private readonly IDispatcher _dispatcher;
 
     public CreateAndSubmitApplicationHandler(
         IApplicationRepository repository,
         ScoringService scoringService,
-        IValidator<ApplicationCreateDto> validator)
+        IValidator<ApplicationCreateDto> validator,
+        IDispatcher dispatcher)
     {
         _repository = repository;
         _scoringService = scoringService;
         _validator = validator;
+        _dispatcher = dispatcher;
     }
 
     public async Task<Result<CreateAndSubmitApplicationResult>> HandleAsync(CreateAndSubmitApplicationCommand command, CancellationToken ct = default)
@@ -52,6 +55,8 @@ public class CreateAndSubmitApplicationHandler : ICommandHandler<CreateAndSubmit
 
         application.Submit(_scoringService);
         await _repository.SaveChangesAsync(ct);
+
+        await _dispatcher.PublishDomainEventsAsync(application, ct);
 
         return Result<CreateAndSubmitApplicationResult>.Success(new CreateAndSubmitApplicationResult(
             ApplicationMapper.ToResponse(application),

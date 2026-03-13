@@ -6,7 +6,6 @@ using RiskManagement.Application.Commands;
 using RiskManagement.Application.Common;
 using RiskManagement.Application.DTOs;
 using RiskManagement.Application.Queries;
-using RiskManagement.Domain.Aggregates.ApplicationAggregate;
 
 namespace RiskManagement.Api.Controllers;
 
@@ -14,18 +13,11 @@ namespace RiskManagement.Api.Controllers;
 [Authorize]
 public class InquiryController : ControllerBase
 {
-    private readonly ICommandHandler<CreateInquiryCommand, object> _createHandler;
-    private readonly ICommandHandler<AnswerInquiryCommand, ApplicationResponse> _answerHandler;
-    private readonly IQueryHandler<GetInquiriesQuery, List<ApplicationInquiry>> _listHandler;
+    private readonly IDispatcher _dispatcher;
 
-    public InquiryController(
-        ICommandHandler<CreateInquiryCommand, object> createHandler,
-        ICommandHandler<AnswerInquiryCommand, ApplicationResponse> answerHandler,
-        IQueryHandler<GetInquiriesQuery, List<ApplicationInquiry>> listHandler)
+    public InquiryController(IDispatcher dispatcher)
     {
-        _createHandler = createHandler;
-        _answerHandler = answerHandler;
-        _listHandler = listHandler;
+        _dispatcher = dispatcher;
     }
 
     [HttpGet("api/applications/{id:int}/inquiries")]
@@ -33,7 +25,7 @@ public class InquiryController : ControllerBase
     public async Task<IActionResult> GetInquiries(int id)
     {
         var role = User.IsProcessor() ? "processor" : "applicant";
-        var result = await _listHandler.HandleAsync(new GetInquiriesQuery(id, User.GetEmail(), role));
+        var result = await _dispatcher.QueryAsync(new GetInquiriesQuery(id, User.GetEmail(), role));
         return result.ToActionResult();
     }
 
@@ -41,7 +33,7 @@ public class InquiryController : ControllerBase
     [Authorize(Policy = AuthPolicies.Processor)]
     public async Task<IActionResult> CreateInquiry(int id, [FromBody] InquiryCreateDto dto)
     {
-        var result = await _createHandler.HandleAsync(new CreateInquiryCommand(id, dto.InquiryText, User.GetEmail()));
+        var result = await _dispatcher.SendAsync(new CreateInquiryCommand(id, dto.InquiryText, User.GetEmail()));
         if (!result.IsSuccess)
             return result.ToActionResult();
 
@@ -52,7 +44,7 @@ public class InquiryController : ControllerBase
     [Authorize(Policy = AuthPolicies.Applicant)]
     public async Task<IActionResult> RespondToInquiry(int id, [FromBody] InquiryResponseDto dto)
     {
-        var result = await _answerHandler.HandleAsync(new AnswerInquiryCommand(id, dto.ResponseText, User.GetEmail()));
+        var result = await _dispatcher.SendAsync(new AnswerInquiryCommand(id, dto.ResponseText, User.GetEmail()));
         return result.ToActionResult();
     }
 

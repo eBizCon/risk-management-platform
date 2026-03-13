@@ -6,7 +6,6 @@ using Microsoft.Extensions.Options;
 using RiskManagement.Api.Extensions;
 using RiskManagement.Api.Models;
 using RiskManagement.Application.Common;
-using RiskManagement.Application.DTOs;
 using RiskManagement.Application.Queries;
 
 namespace RiskManagement.Api.Controllers;
@@ -15,14 +14,14 @@ namespace RiskManagement.Api.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly OidcOptions _oidcOptions;
-    private readonly IQueryHandler<GetDashboardStatsQuery, DashboardStatsDto> _dashboardHandler;
+    private readonly IDispatcher _dispatcher;
 
     public AuthController(
         IOptions<OidcOptions> oidcOptions,
-        IQueryHandler<GetDashboardStatsQuery, DashboardStatsDto> dashboardHandler)
+        IDispatcher dispatcher)
     {
         _oidcOptions = oidcOptions.Value;
-        _dashboardHandler = dashboardHandler;
+        _dispatcher = dispatcher;
     }
 
     [HttpGet("login")]
@@ -75,7 +74,7 @@ public class AuthController : ControllerBase
             return Ok(new { });
         }
 
-        var result = await _dashboardHandler.HandleAsync(new GetDashboardStatsQuery(User.GetEmail(), role));
+        var result = await _dispatcher.QueryAsync(new GetDashboardStatsQuery(User.GetEmail(), role));
         return result.ToActionResult();
     }
 }

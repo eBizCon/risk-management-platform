@@ -1,13 +1,13 @@
+using System.Reflection;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using RiskManagement.Application.Commands;
 using RiskManagement.Application.Common;
 using RiskManagement.Application.DTOs;
-using RiskManagement.Application.Queries;
 using RiskManagement.Application.Validation;
 using RiskManagement.Domain.Aggregates.ApplicationAggregate;
 using RiskManagement.Domain.Services;
+using RiskManagement.Infrastructure.Dispatching;
 using RiskManagement.Infrastructure.Persistence;
 using RiskManagement.Infrastructure.Seeding;
 
@@ -35,23 +35,34 @@ public static class DependencyInjection
         services.AddScoped<IValidator<ApproveApplicationDto>, ApproveApplicationValidator>();
         services.AddScoped<IValidator<RejectApplicationDto>, RejectApplicationValidator>();
 
-        services.AddScoped<ICommandHandler<CreateApplicationCommand, CreateApplicationResult>, CreateApplicationHandler>();
-        services.AddScoped<ICommandHandler<CreateAndSubmitApplicationCommand, CreateAndSubmitApplicationResult>, CreateAndSubmitApplicationHandler>();
-        services.AddScoped<ICommandHandler<SubmitApplicationCommand, ApplicationResponse>, SubmitApplicationHandler>();
-        services.AddScoped<ICommandHandler<UpdateApplicationCommand, UpdateApplicationResult>, UpdateApplicationHandler>();
-        services.AddScoped<ICommandHandler<UpdateAndSubmitApplicationCommand, UpdateAndSubmitApplicationResult>, UpdateAndSubmitApplicationHandler>();
-        services.AddScoped<ICommandHandler<DeleteApplicationCommand, bool>, DeleteApplicationHandler>();
-        services.AddScoped<ICommandHandler<ApproveApplicationCommand, ApproveApplicationResult>, ApproveApplicationHandler>();
-        services.AddScoped<ICommandHandler<RejectApplicationCommand, RejectApplicationResult>, RejectApplicationHandler>();
-        services.AddScoped<ICommandHandler<CreateInquiryCommand, object>, CreateInquiryHandler>();
-        services.AddScoped<ICommandHandler<AnswerInquiryCommand, ApplicationResponse>, AnswerInquiryHandler>();
+        services.AddScoped<IDispatcher, Dispatcher>();
 
-        services.AddScoped<IQueryHandler<GetApplicationQuery, ApplicationResponse>, GetApplicationHandler>();
-        services.AddScoped<IQueryHandler<GetApplicationsByUserQuery, ApplicationResponse[]>, GetApplicationsByUserHandler>();
-        services.AddScoped<IQueryHandler<GetProcessorApplicationsQuery, ProcessorApplicationsResponse>, GetProcessorApplicationsHandler>();
-        services.AddScoped<IQueryHandler<GetDashboardStatsQuery, DashboardStatsDto>, GetDashboardStatsHandler>();
-        services.AddScoped<IQueryHandler<GetInquiriesQuery, List<ApplicationInquiry>>, GetInquiriesHandler>();
+        RegisterHandlers(services, typeof(ICommandHandler<,>));
+        RegisterHandlers(services, typeof(IQueryHandler<,>));
+        RegisterHandlers(services, typeof(IDomainEventHandler<>));
 
         return services;
+    }
+
+    private static void RegisterHandlers(IServiceCollection services, Type openGenericInterface)
+    {
+        var assembly = Assembly.GetAssembly(typeof(ICommandHandler<,>))!;
+
+        foreach (var type in assembly.GetTypes())
+        {
+            if (type.IsAbstract || type.IsInterface)
+                continue;
+
+            foreach (var iface in type.GetInterfaces())
+            {
+                if (!iface.IsGenericType)
+                    continue;
+
+                if (iface.GetGenericTypeDefinition() == openGenericInterface)
+                {
+                    services.AddScoped(iface, type);
+                }
+            }
+        }
     }
 }

@@ -4,7 +4,7 @@ using RiskManagement.Domain.Aggregates.ApplicationAggregate;
 
 namespace RiskManagement.Application.Queries;
 
-public record GetDashboardStatsQuery(string? UserEmail, string UserRole);
+public record GetDashboardStatsQuery(string? UserEmail, string UserRole) : IQuery<DashboardStatsDto>;
 
 public class GetDashboardStatsHandler : IQueryHandler<GetDashboardStatsQuery, DashboardStatsDto>
 {

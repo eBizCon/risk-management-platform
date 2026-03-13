@@ -4,7 +4,7 @@ using RiskManagement.Domain.Aggregates.ApplicationAggregate;
 
 namespace RiskManagement.Application.Queries;
 
-public record GetApplicationQuery(int ApplicationId, string UserEmail, string UserRole);
+public record GetApplicationQuery(int ApplicationId, string UserEmail, string UserRole) : IQuery<ApplicationResponse>;
 
 public class GetApplicationHandler : IQueryHandler<GetApplicationQuery, ApplicationResponse>
 {

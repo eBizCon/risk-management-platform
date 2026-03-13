@@ -4,7 +4,7 @@ using RiskManagement.Domain.Aggregates.ApplicationAggregate;
 
 namespace RiskManagement.Application.Commands;
 
-public record AnswerInquiryCommand(int ApplicationId, string ResponseText, string UserEmail);
+public record AnswerInquiryCommand(int ApplicationId, string ResponseText, string UserEmail) : ICommand<ApplicationResponse>;
 
 public class AnswerInquiryHandler : ICommandHandler<AnswerInquiryCommand, ApplicationResponse>
 {

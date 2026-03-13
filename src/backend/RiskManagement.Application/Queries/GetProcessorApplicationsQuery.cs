@@ -5,7 +5,7 @@ using RiskManagement.Domain.ValueObjects;
 
 namespace RiskManagement.Application.Queries;
 
-public record GetProcessorApplicationsQuery(string? Status = null, int Page = 1, int PageSize = 10);
+public record GetProcessorApplicationsQuery(string? Status = null, int Page = 1, int PageSize = 10) : IQuery<ProcessorApplicationsResponse>;
 
 public class GetProcessorApplicationsHandler : IQueryHandler<GetProcessorApplicationsQuery, ProcessorApplicationsResponse>
 {

@@ -5,7 +5,7 @@ using RiskManagement.Domain.ValueObjects;
 
 namespace RiskManagement.Application.Queries;
 
-public record GetApplicationsByUserQuery(string UserEmail, string? Status = null);
+public record GetApplicationsByUserQuery(string UserEmail, string? Status = null) : IQuery<ApplicationResponse[]>;
 
 public class GetApplicationsByUserHandler : IQueryHandler<GetApplicationsByUserQuery, ApplicationResponse[]>
 {

@@ -14,42 +14,32 @@ namespace RiskManagement.Api.Controllers;
 [Authorize(Policy = AuthPolicies.Processor)]
 public class ProcessorController : ControllerBase
 {
-    private readonly ICommandHandler<ApproveApplicationCommand, ApproveApplicationResult> _approveHandler;
-    private readonly ICommandHandler<RejectApplicationCommand, RejectApplicationResult> _rejectHandler;
-    private readonly IQueryHandler<GetApplicationQuery, ApplicationResponse> _getHandler;
-    private readonly IQueryHandler<GetProcessorApplicationsQuery, ProcessorApplicationsResponse> _listHandler;
+    private readonly IDispatcher _dispatcher;
 
-    public ProcessorController(
-        ICommandHandler<ApproveApplicationCommand, ApproveApplicationResult> approveHandler,
-        ICommandHandler<RejectApplicationCommand, RejectApplicationResult> rejectHandler,
-        IQueryHandler<GetApplicationQuery, ApplicationResponse> getHandler,
-        IQueryHandler<GetProcessorApplicationsQuery, ProcessorApplicationsResponse> listHandler)
+    public ProcessorController(IDispatcher dispatcher)
     {
-        _approveHandler = approveHandler;
-        _rejectHandler = rejectHandler;
-        _getHandler = getHandler;
-        _listHandler = listHandler;
+        _dispatcher = dispatcher;
     }
 
     [HttpGet("applications")]
     public async Task<IActionResult> GetApplications([FromQuery] string? status, [FromQuery] int? page)
     {
         var safePage = Math.Max(page ?? 1, 1);
-        var result = await _listHandler.HandleAsync(new GetProcessorApplicationsQuery(status, safePage));
+        var result = await _dispatcher.QueryAsync(new GetProcessorApplicationsQuery(status, safePage));
         return result.ToActionResult();
     }
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetApplication(int id)
     {
-        var result = await _getHandler.HandleAsync(new GetApplicationQuery(id, User.GetEmail(), "processor"));
+        var result = await _dispatcher.QueryAsync(new GetApplicationQuery(id, User.GetEmail(), "processor"));
         return result.ToActionResult();
     }
 
     [HttpPost("{id:int}/approve")]
     public async Task<IActionResult> ApproveApplication(int id, [FromBody] ApproveApplicationDto dto)
     {
-        var result = await _approveHandler.HandleAsync(new ApproveApplicationCommand(id, dto));
+        var result = await _dispatcher.SendAsync(new ApproveApplicationCommand(id, dto));
         if (!result.IsSuccess)
             return result.ToActionResult();
 
@@ -59,7 +49,7 @@ public class ProcessorController : ControllerBase
     [HttpPost("{id:int}/reject")]
     public async Task<IActionResult> RejectApplication(int id, [FromBody] RejectApplicationDto dto)
     {
-        var result = await _rejectHandler.HandleAsync(new RejectApplicationCommand(id, dto));
+        var result = await _dispatcher.SendAsync(new RejectApplicationCommand(id, dto));
         if (!result.IsSuccess)
             return result.ToActionResult();
 

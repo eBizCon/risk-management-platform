@@ -3,7 +3,7 @@ using RiskManagement.Domain.Aggregates.ApplicationAggregate;
 
 namespace RiskManagement.Application.Queries;
 
-public record GetInquiriesQuery(int ApplicationId, string UserEmail, string UserRole);
+public record GetInquiriesQuery(int ApplicationId, string UserEmail, string UserRole) : IQuery<List<ApplicationInquiry>>;
 
 public class GetInquiriesHandler : IQueryHandler<GetInquiriesQuery, List<ApplicationInquiry>>
 {

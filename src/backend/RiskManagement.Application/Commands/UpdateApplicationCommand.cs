@@ -7,7 +7,7 @@ using RiskManagement.Domain.ValueObjects;
 
 namespace RiskManagement.Application.Commands;
 
-public record UpdateApplicationCommand(int ApplicationId, ApplicationUpdateDto Dto, string UserEmail);
+public record UpdateApplicationCommand(int ApplicationId, ApplicationUpdateDto Dto, string UserEmail) : ICommand<UpdateApplicationResult>;
 
 public record UpdateApplicationResult(ApplicationResponse Application, string Redirect);
 
