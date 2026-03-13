@@ -35,4 +35,5 @@ src/backend/**/bin/
 src/backend/**/obj/
 src/backend/**/*.user
 src/backend/**/*.suo
+src/backend/shared-keys/
 *.nupkg

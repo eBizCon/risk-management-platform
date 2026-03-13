@@ -1,8 +1,2 @@
+// Moved to SharedKernel.Exceptions — available via global using
 namespace RiskManagement.Domain.Exceptions;
-
-public class DomainException : Exception
-{
-    public DomainException(string message) : base(message)
-    {
-    }
-}

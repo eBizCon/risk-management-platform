@@ -38,8 +38,8 @@
 <div class="mobile-card" data-testid={`application-card-${application.id}`}>
 	<div class="mobile-card-header">
 		<div class="flex-1 min-w-0">
-			<div class="text-base font-semibold text-primary truncate" title={application.name}>
-				{application.name}
+			<div class="text-base font-semibold text-primary truncate" title={application.customerName ?? '-'}>
+				{application.customerName ?? '-'}
 			</div>
 		</div>
 		<StatusBadge status={application.status} />

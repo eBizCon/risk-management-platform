@@ -40,6 +40,10 @@ namespace RiskManagement.Infrastructure.Migrations
                         .HasColumnType("text")
                         .HasColumnName("created_by");
 
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("integer")
+                        .HasColumnName("customer_id");
+
                     b.Property<double>("DesiredRate")
                         .HasColumnType("double precision")
                         .HasColumnName("desired_rate");
@@ -60,11 +64,6 @@ namespace RiskManagement.Infrastructure.Migrations
                     b.Property<double>("Income")
                         .HasColumnType("double precision")
                         .HasColumnName("income");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("name");
 
                     b.Property<DateTime?>("ProcessedAt")
                         .HasColumnType("timestamp with time zone")

@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using RiskManagement.Api.Extensions;
 using RiskManagement.Api.Middleware;
 using RiskManagement.Infrastructure;
 using RiskManagement.Infrastructure.Persistence;
 using RiskManagement.Infrastructure.Seeding;
+using SharedKernel.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,9 +18,16 @@ builder.Services.AddControllers()
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")!;
 
+var customerServiceUrl = builder.Configuration["CUSTOMER_SERVICE_URL"] ?? "http://localhost:5001";
+var serviceApiKey = builder.Configuration["SERVICE_API_KEY"] ?? "";
+
 builder.Services.AddInfrastructure(connectionString);
-builder.Services.AddApplicationServices();
-builder.Services.AddHttpClient();
+builder.Services.AddApplicationServices(customerServiceUrl, serviceApiKey);
+
+var sharedKeysPath = Path.Combine(builder.Environment.ContentRootPath, "..", "shared-keys");
+builder.Services.AddDataProtection()
+    .SetApplicationName("risk-management-platform")
+    .PersistKeysToFileSystem(new DirectoryInfo(sharedKeysPath));
 
 builder.Services.AddOidcAuthentication(builder.Configuration, builder.Environment);
 
@@ -49,6 +58,7 @@ using (var scope = app.Services.CreateScope())
 if (app.Environment.IsDevelopment()) app.UseCors();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
+app.UseMiddleware<ApiKeyAuthMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseStaticFiles();

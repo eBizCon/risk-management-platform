@@ -1,7 +1,7 @@
 <script lang="ts">
 	import '../app.css';
 	import MobileMenu from '$lib/components/MobileMenu.svelte';
-	import { ClipboardList, FileText, Home, LogIn, LogOut, Menu, Settings } from 'lucide-svelte';
+	import { ClipboardList, FileText, Home, LogIn, LogOut, Menu, Settings, Users } from 'lucide-svelte';
 
 	let { data, children } = $props();
 
@@ -49,6 +49,14 @@
 							Startseite
 						</a>
 						{#if isApplicant}
+							<a
+								href="/customers"
+								class="nav-link inline-flex items-center px-3 py-2 text-sm font-medium rounded-md"
+								data-testid="nav-customers"
+							>
+								<Users class="w-4 h-4 mr-2" />
+								Meine Kunden
+							</a>
 							<a
 								href="/applications"
 								class="nav-link inline-flex items-center px-3 py-2 text-sm font-medium rounded-md"

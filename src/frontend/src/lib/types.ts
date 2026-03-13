@@ -9,9 +9,29 @@ export type EmploymentStatus = 'employed' | 'self_employed' | 'unemployed' | 're
 export type TrafficLight = 'red' | 'yellow' | 'green';
 export type UserRole = 'applicant' | 'processor' | 'risk_manager';
 
+export type CustomerStatus = 'Active' | 'Archived';
+
+export interface Customer {
+	id: number;
+	firstName: string;
+	lastName: string;
+	email: string | null;
+	phone: string;
+	dateOfBirth: string;
+	street: string;
+	city: string;
+	zipCode: string;
+	country: string;
+	status: CustomerStatus;
+	createdBy: string;
+	createdAt: string;
+	updatedAt: string | null;
+}
+
 export interface Application {
 	id: number;
-	name: string;
+	customerId: number;
+	customerName: string | null;
 	income: number;
 	fixedCosts: number;
 	desiredRate: number;
@@ -74,4 +94,9 @@ export const trafficLightLabels: Record<string, string> = {
 	green: 'Positiv',
 	yellow: 'Prüfung erforderlich',
 	red: 'Kritisch'
+};
+
+export const customerStatusLabels: Record<string, string> = {
+	Active: 'Aktiv',
+	Archived: 'Archiviert'
 };

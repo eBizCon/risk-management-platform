@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
-	import type { Application, EmploymentStatus } from '$lib/types';
+	import type { Application, Customer, EmploymentStatus } from '$lib/types';
 	import { employmentStatusLabels } from '$lib/types';
 
 	interface Props {
@@ -22,12 +22,29 @@
 	let showConfirmDialog = $state(false);
 	let pendingAction = $state<'submit' | null>(null);
 	let formRef: HTMLFormElement | null = null;
+	let customers = $state<Customer[]>([]);
+	let customersLoading = $state(true);
+
+	$effect(() => {
+		fetchActiveCustomers();
+	});
+
+	async function fetchActiveCustomers() {
+		try {
+			const res = await fetch('/api/customers/active');
+			if (res.ok) {
+				customers = await res.json();
+			}
+		} finally {
+			customersLoading = false;
+		}
+	}
 
 	function getFormData(): Record<string, unknown> {
 		if (!formRef) return {};
 		const fd = new FormData(formRef);
 		return {
-			name: fd.get('name') as string,
+			customerId: parseInt(fd.get('customerId') as string, 10),
 			income: parseFloat(fd.get('income') as string),
 			fixedCosts: parseFloat(fd.get('fixedCosts') as string),
 			desiredRate: parseFloat(fd.get('desiredRate') as string),
@@ -106,19 +123,33 @@
 	{/if}
 
 	<div>
-		<label for="name" class="form-label block">Name</label>
-		<input
-			type="text"
-			id="name"
-			name="name"
-			value={application?.name ?? ''}
-			required
-			class="mt-1 block w-full rounded-md border-default shadow-sm sm:text-sm"
-			placeholder="Vor- und Nachname"
-			data-testid="input-name"
-		/>
-		{#if errors.name}
-			<p class="mt-1 error-text">{errors.name[0]}</p>
+		<label for="customerId" class="form-label block">Kunde</label>
+		{#if customersLoading}
+			<div class="mt-1 text-sm text-secondary">Kunden werden geladen...</div>
+		{:else}
+			<select
+				id="customerId"
+				name="customerId"
+				required
+				class="mt-1 block w-full rounded-md border-default shadow-sm sm:text-sm"
+				data-testid="select-customer"
+			>
+				<option value="">Bitte Kunde wählen...</option>
+				{#each customers as c}
+					<option value={c.id} selected={application?.customerId === c.id}>
+						{c.lastName}, {c.firstName}
+					</option>
+				{/each}
+			</select>
+		{/if}
+		{#if customers.length === 0 && !customersLoading}
+			<p class="mt-1 text-sm text-secondary">
+				Keine aktiven Kunden vorhanden.
+				<a href="/customers/new" class="text-brand-primary hover:text-brand-primary-hover">Neuen Kunden anlegen</a>
+			</p>
+		{/if}
+		{#if errors.CustomerId}
+			<p class="mt-1 error-text" data-testid="customer-error">{errors.CustomerId[0]}</p>
 		{/if}
 	</div>
 

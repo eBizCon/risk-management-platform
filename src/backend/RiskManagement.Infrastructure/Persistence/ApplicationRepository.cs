@@ -148,4 +148,9 @@ public class ApplicationRepository : IApplicationRepository
 
         return await query.OrderByDescending(a => a.CreatedAt).ToListAsync(ct);
     }
+
+    public async Task<bool> ExistsForCustomerAsync(int customerId, CancellationToken ct = default)
+    {
+        return await _context.Applications.AnyAsync(a => a.CustomerId == customerId, ct);
+    }
 }

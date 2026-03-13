@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="All APIs" type="CompoundRunConfigurationType">
+    <toRun name="RiskManagement.Api: http" type="LaunchSettings" />
+    <toRun name="CustomerManagement.Api: http" type="LaunchSettings" />
+    <method v="2" />
+  </configuration>
+</component>

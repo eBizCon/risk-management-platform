@@ -2,7 +2,7 @@ namespace RiskManagement.Application.DTOs;
 
 public class ApplicationCreateDto
 {
-    public string Name { get; set; } = string.Empty;
+    public int CustomerId { get; set; }
     public double Income { get; set; }
     public double FixedCosts { get; set; }
     public double DesiredRate { get; set; }
@@ -12,7 +12,7 @@ public class ApplicationCreateDto
 
 public class ApplicationUpdateDto
 {
-    public string Name { get; set; } = string.Empty;
+    public int CustomerId { get; set; }
     public double Income { get; set; }
     public double FixedCosts { get; set; }
     public double DesiredRate { get; set; }
@@ -43,7 +43,8 @@ public class InquiryResponseDto
 public class ApplicationResponse
 {
     public int Id { get; set; }
-    public string Name { get; set; } = string.Empty;
+    public int CustomerId { get; set; }
+    public string? CustomerName { get; set; }
     public double Income { get; set; }
     public double FixedCosts { get; set; }
     public double DesiredRate { get; set; }

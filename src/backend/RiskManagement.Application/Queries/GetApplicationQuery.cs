@@ -1,5 +1,6 @@
 using RiskManagement.Application.Common;
 using RiskManagement.Application.DTOs;
+using RiskManagement.Application.Services;
 using RiskManagement.Domain.Aggregates.ApplicationAggregate;
 using RiskManagement.Domain.ValueObjects;
 using AppId = RiskManagement.Domain.Aggregates.ApplicationAggregate.ApplicationId;
@@ -11,10 +12,12 @@ public record GetApplicationQuery(int ApplicationId, string UserEmail, string Us
 public class GetApplicationHandler : IQueryHandler<GetApplicationQuery, ApplicationResponse>
 {
     private readonly IApplicationRepository _repository;
+    private readonly ICustomerNameService _customerNameService;
 
-    public GetApplicationHandler(IApplicationRepository repository)
+    public GetApplicationHandler(IApplicationRepository repository, ICustomerNameService customerNameService)
     {
         _repository = repository;
+        _customerNameService = customerNameService;
     }
 
     public async Task<Result<ApplicationResponse>> HandleAsync(GetApplicationQuery query,
@@ -27,6 +30,8 @@ public class GetApplicationHandler : IQueryHandler<GetApplicationQuery, Applicat
         if (query.UserRole != "processor" && application.CreatedBy != EmailAddress.Create(query.UserEmail))
             return Result<ApplicationResponse>.Forbidden("Zugriff verweigert");
 
-        return Result<ApplicationResponse>.Success(ApplicationMapper.ToResponse(application));
+        var response = ApplicationMapper.ToResponse(application);
+        response.CustomerName = await _customerNameService.GetCustomerNameAsync(application.CustomerId, ct);
+        return Result<ApplicationResponse>.Success(response);
     }
 }

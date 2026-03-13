@@ -122,8 +122,16 @@
 					<h2 class="text-lg font-semibold text-primary mb-4">Antragsteller</h2>
 					<dl class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 						<div>
-							<dt class="dl-label">Name</dt>
-							<dd class="mt-1 dl-value">{app.name}</dd>
+							<dt class="dl-label">Kunde</dt>
+							<dd class="mt-1 dl-value">
+								{#if app.customerName}
+									<a href="/customers/{app.customerId}" class="text-brand-primary hover:text-brand-primary-hover">
+										{app.customerName}
+									</a>
+								{:else}
+									-
+								{/if}
+							</dd>
 						</div>
 						<div>
 							<dt class="dl-label">Beschäftigungsstatus</dt>

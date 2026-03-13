@@ -1,6 +1,2 @@
+// Moved to SharedKernel.Common — available via global using
 namespace RiskManagement.Domain.Common;
-
-public interface IDomainEvent
-{
-    DateTime OccurredOn { get; }
-}

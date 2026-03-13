@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Application } from '$lib/types';
-	import { statusLabels, employmentStatusLabels } from '$lib/types';
+	import { employmentStatusLabels } from '$lib/types';
 	import StatusBadge from './StatusBadge.svelte';
 	import TrafficLight from './TrafficLight.svelte';
 	import { Eye, Edit, Trash2 } from 'lucide-svelte';
@@ -65,7 +65,7 @@
         <thead class="table-header">
             <tr>
                 <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                    Name
+                    Kunde
                 </th>
                 <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">
                     Status
@@ -93,7 +93,7 @@
             {#each applications as app}
                 <tr class="table-row" data-testid="application-row-{app.id}">
                     <td class="px-4 py-4 whitespace-nowrap">
-                        <div class="text-sm font-medium text-primary" data-testid="application-name-{app.id}">{app.name}</div>
+                        <div class="text-sm font-medium text-primary" data-testid="application-customer-{app.id}">{app.customerName ?? '-'}</div>
                         <div class="text-sm text-secondary">{employmentStatusLabels[app.employmentStatus]}</div>
                     </td>
                     <td class="px-4 py-4 whitespace-nowrap">

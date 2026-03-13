@@ -1,0 +1,49 @@
+using System.Net.Http.Json;
+using RiskManagement.Application.Services;
+
+namespace RiskManagement.Infrastructure.HttpClients;
+
+public class CustomerServiceClient : ICustomerNameService
+{
+    private readonly HttpClient _httpClient;
+
+    public CustomerServiceClient(HttpClient httpClient)
+    {
+        _httpClient = httpClient;
+    }
+
+    public async Task<string?> GetCustomerNameAsync(int customerId, CancellationToken ct = default)
+    {
+        try
+        {
+            var response = await _httpClient.GetAsync($"/api/internal/customers/{customerId}", ct);
+            if (!response.IsSuccessStatusCode)
+                return null;
+
+            var result = await response.Content.ReadFromJsonAsync<CustomerInternalResult>(cancellationToken: ct);
+            if (result?.Customer is null)
+                return null;
+
+            return $"{result.Customer.LastName}, {result.Customer.FirstName}";
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    public async Task<Dictionary<int, string>> GetCustomerNamesAsync(IEnumerable<int> customerIds, CancellationToken ct = default)
+    {
+        var names = new Dictionary<int, string>();
+        foreach (var id in customerIds.Distinct())
+        {
+            var name = await GetCustomerNameAsync(id, ct);
+            if (name is not null)
+                names[id] = name;
+        }
+        return names;
+    }
+
+    private record CustomerInternalDto(int Id, string FirstName, string LastName, string Status);
+    private record CustomerInternalResult(CustomerInternalDto Customer);
+}

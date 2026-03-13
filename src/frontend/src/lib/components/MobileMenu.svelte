@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Home, FileText, ClipboardList, LogOut, Settings, X } from 'lucide-svelte';
+	import { Home, FileText, ClipboardList, LogOut, Settings, Users, X } from 'lucide-svelte';
 	import type { User } from '$lib/types';
 
 	const { isOpen, onClose, user, isApplicant, isProcessor, isRiskManager } = $props<{
@@ -68,6 +68,14 @@
 				<span>Startseite</span>
 			</a>
 			{#if isApplicant}
+				<a
+					href="/customers"
+					class="nav-link flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium"
+					data-testid="mobile-nav-customers"
+				>
+					<Users class="w-4 h-4" />
+					<span>Meine Kunden</span>
+				</a>
 				<a
 					href="/applications"
 					class="nav-link flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium"

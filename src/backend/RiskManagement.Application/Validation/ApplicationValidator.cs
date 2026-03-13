@@ -8,9 +8,8 @@ public class ApplicationValidator : AbstractValidator<ApplicationCreateDto>
 {
     public ApplicationValidator()
     {
-        RuleFor(x => x.Name)
-            .MinimumLength(2).WithMessage("Name muss mindestens 2 Zeichen lang sein")
-            .MaximumLength(100).WithMessage("Name darf maximal 100 Zeichen lang sein");
+        RuleFor(x => x.CustomerId)
+            .GreaterThan(0).WithMessage("Kunde muss ausgewählt werden");
 
         RuleFor(x => x.Income)
             .GreaterThan(0).WithMessage("Einkommen muss positiv sein")
@@ -43,9 +42,8 @@ public class ApplicationUpdateValidator : AbstractValidator<ApplicationUpdateDto
 {
     public ApplicationUpdateValidator()
     {
-        RuleFor(x => x.Name)
-            .MinimumLength(2).WithMessage("Name muss mindestens 2 Zeichen lang sein")
-            .MaximumLength(100).WithMessage("Name darf maximal 100 Zeichen lang sein");
+        RuleFor(x => x.CustomerId)
+            .GreaterThan(0).WithMessage("Kunde muss ausgewählt werden");
 
         RuleFor(x => x.Income)
             .GreaterThan(0).WithMessage("Einkommen muss positiv sein")

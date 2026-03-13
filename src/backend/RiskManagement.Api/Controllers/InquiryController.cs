@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using RiskManagement.Api.Extensions;
 using RiskManagement.Api.Models;
 using RiskManagement.Application.Commands;
-using RiskManagement.Application.Common;
 using RiskManagement.Application.DTOs;
 using RiskManagement.Application.Queries;
 

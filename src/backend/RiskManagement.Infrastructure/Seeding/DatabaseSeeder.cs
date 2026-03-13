@@ -92,8 +92,9 @@ public class DatabaseSeeder
             var template = Templates[index % Templates.Length];
             var targetStatus = StatusCycle[index % StatusCycle.Length];
 
+            var customerId = index + 1;
             var application = ApplicationEntity.Create(
-                $"{template.Name} {index / Templates.Length + 1}",
+                customerId,
                 Money.Create((decimal)template.Income),
                 Money.Create((decimal)template.FixedCosts),
                 Money.CreatePositive((decimal)template.DesiredRate),

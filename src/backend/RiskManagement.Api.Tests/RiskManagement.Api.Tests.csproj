@@ -24,6 +24,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\SharedKernel\SharedKernel.csproj"/>
         <ProjectReference Include="..\RiskManagement.Api\RiskManagement.Api.csproj"/>
         <ProjectReference Include="..\RiskManagement.Domain\RiskManagement.Domain.csproj"/>
         <ProjectReference Include="..\RiskManagement.Application\RiskManagement.Application.csproj"/>

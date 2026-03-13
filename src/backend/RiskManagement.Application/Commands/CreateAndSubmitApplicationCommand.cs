@@ -53,7 +53,7 @@ public class
             return Result<CreateAndSubmitApplicationResult>.Failure("Keine Scoring-Konfiguration gefunden");
 
         var application = ApplicationEntity.Create(
-            command.Dto.Name,
+            command.Dto.CustomerId,
             Money.Create((decimal)command.Dto.Income),
             Money.Create((decimal)command.Dto.FixedCosts),
             Money.CreatePositive((decimal)command.Dto.DesiredRate),

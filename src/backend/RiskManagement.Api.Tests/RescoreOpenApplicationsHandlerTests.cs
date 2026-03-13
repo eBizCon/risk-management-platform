@@ -55,13 +55,13 @@ public class RescoreOpenApplicationsHandlerTests
             .ReturnsAsync(configVersion);
 
         var app1 = ApplicationEntity.Create(
-            "Test 1", Money.Create(5000), Money.Create(2000), Money.CreatePositive(500),
+            1, Money.Create(5000), Money.Create(2000), Money.CreatePositive(500),
             EmploymentStatus.Employed, false, EmailAddress.Create("user@test.com"),
             _scoringService, ScoringConfig.Default, configVersion.Id);
         app1.Submit(_scoringService, ScoringConfig.Default, configVersion.Id);
 
         var app2 = ApplicationEntity.Create(
-            "Test 2", Money.Create(3000), Money.Create(1000), Money.CreatePositive(300),
+            2, Money.Create(3000), Money.Create(1000), Money.CreatePositive(300),
             EmploymentStatus.SelfEmployed, false, EmailAddress.Create("user@test.com"),
             _scoringService, ScoringConfig.Default, configVersion.Id);
         app2.Submit(_scoringService, ScoringConfig.Default, configVersion.Id);

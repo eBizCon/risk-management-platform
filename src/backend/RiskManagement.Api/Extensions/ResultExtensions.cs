@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using RiskManagement.Application.Common;
 using RiskManagement.Application.DTOs;
 
 namespace RiskManagement.Api.Extensions;

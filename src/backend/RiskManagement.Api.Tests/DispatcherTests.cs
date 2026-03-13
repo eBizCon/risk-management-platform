@@ -1,8 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
-using RiskManagement.Application.Common;
-using RiskManagement.Domain.Common;
-using RiskManagement.Infrastructure.Dispatching;
+using SharedKernel.Common;
+using SharedKernel.Dispatching;
+using SharedKernel.Results;
 
 namespace RiskManagement.Api.Tests;
 
@@ -41,10 +41,10 @@ public class TestAggregate : AggregateRoot
 
 public class DispatcherTests
 {
-    private static Dispatcher CreateDispatcher(IServiceCollection services)
+    private static SharedKernel.Dispatching.Dispatcher CreateDispatcher(IServiceCollection services)
     {
         var provider = services.BuildServiceProvider();
-        return new Dispatcher(provider);
+        return new SharedKernel.Dispatching.Dispatcher(provider);
     }
 
     [Fact]

@@ -1,7 +1,2 @@
+// Moved to SharedKernel.Common — available via global using
 namespace RiskManagement.Domain.Common;
-
-public interface IHasDomainEvents
-{
-    IReadOnlyList<IDomainEvent> DomainEvents { get; }
-    void ClearDomainEvents();
-}

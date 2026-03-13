@@ -17,7 +17,7 @@ public class ValidationTests
     {
         var model = new ApplicationCreateDto
         {
-            Name = "Max Mustermann",
+            CustomerId = 1,
             Income = 4000,
             FixedCosts = 1500,
             DesiredRate = 500,
@@ -30,11 +30,11 @@ public class ValidationTests
     }
 
     [Fact]
-    public void Should_Reject_Empty_Name()
+    public void Should_Reject_Zero_CustomerId()
     {
         var model = new ApplicationCreateDto
         {
-            Name = "",
+            CustomerId = 0,
             Income = 4000,
             FixedCosts = 1500,
             DesiredRate = 500,
@@ -47,11 +47,11 @@ public class ValidationTests
     }
 
     [Fact]
-    public void Should_Reject_Name_Shorter_Than_2_Characters()
+    public void Should_Reject_Negative_CustomerId()
     {
         var model = new ApplicationCreateDto
         {
-            Name = "A",
+            CustomerId = -1,
             Income = 4000,
             FixedCosts = 1500,
             DesiredRate = 500,
@@ -61,7 +61,7 @@ public class ValidationTests
 
         var result = _applicationValidator.Validate(model);
         Assert.False(result.IsValid);
-        Assert.Contains(result.Errors, e => e.ErrorMessage.Contains("mindestens"));
+        Assert.Contains(result.Errors, e => e.ErrorMessage.Contains("Kunde"));
     }
 
     [Fact]
@@ -69,7 +69,7 @@ public class ValidationTests
     {
         var model = new ApplicationCreateDto
         {
-            Name = "Max Mustermann",
+            CustomerId = 1,
             Income = -100,
             FixedCosts = 1500,
             DesiredRate = 500,
@@ -87,7 +87,7 @@ public class ValidationTests
     {
         var model = new ApplicationCreateDto
         {
-            Name = "Max Mustermann",
+            CustomerId = 1,
             Income = 0,
             FixedCosts = 1500,
             DesiredRate = 500,
@@ -104,7 +104,7 @@ public class ValidationTests
     {
         var model = new ApplicationCreateDto
         {
-            Name = "Max Mustermann",
+            CustomerId = 1,
             Income = 4000,
             FixedCosts = -500,
             DesiredRate = 500,
@@ -122,7 +122,7 @@ public class ValidationTests
     {
         var model = new ApplicationCreateDto
         {
-            Name = "Max Mustermann",
+            CustomerId = 1,
             Income = 4000,
             FixedCosts = 0,
             DesiredRate = 500,
@@ -139,7 +139,7 @@ public class ValidationTests
     {
         var model = new ApplicationCreateDto
         {
-            Name = "Max Mustermann",
+            CustomerId = 1,
             Income = 4000,
             FixedCosts = 1500,
             DesiredRate = -100,
@@ -157,7 +157,7 @@ public class ValidationTests
     {
         var model = new ApplicationCreateDto
         {
-            Name = "Max Mustermann",
+            CustomerId = 1,
             Income = 4000,
             FixedCosts = 1500,
             DesiredRate = 500,
@@ -178,7 +178,7 @@ public class ValidationTests
         {
             var model = new ApplicationCreateDto
             {
-                Name = "Max Mustermann",
+                CustomerId = 1,
                 Income = 4000,
                 FixedCosts = 1500,
                 DesiredRate = 500,
@@ -198,7 +198,7 @@ public class ValidationTests
     {
         var model = new ApplicationUpdateDto
         {
-            Name = "Max Mustermann",
+            CustomerId = 1,
             Income = 3000,
             FixedCosts = 2000,
             DesiredRate = 1500,
@@ -216,7 +216,7 @@ public class ValidationTests
     {
         var model = new ApplicationUpdateDto
         {
-            Name = "Max Mustermann",
+            CustomerId = 1,
             Income = 4000,
             FixedCosts = 1500,
             DesiredRate = 500,
@@ -233,7 +233,7 @@ public class ValidationTests
     {
         var model = new ApplicationUpdateDto
         {
-            Name = "Max Mustermann",
+            CustomerId = 1,
             Income = 3000,
             FixedCosts = 2000,
             DesiredRate = 1000,

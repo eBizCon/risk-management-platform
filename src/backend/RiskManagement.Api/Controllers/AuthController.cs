@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using RiskManagement.Api.Extensions;
 using RiskManagement.Api.Models;
-using RiskManagement.Application.Common;
 using RiskManagement.Application.Queries;
 
 namespace RiskManagement.Api.Controllers;

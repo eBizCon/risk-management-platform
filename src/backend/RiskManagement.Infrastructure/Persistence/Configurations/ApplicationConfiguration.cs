@@ -22,7 +22,7 @@ public class ApplicationConfiguration : IEntityTypeConfiguration<ApplicationEnti
                 v => v.Value,
                 v => new AppId(v));
 
-        entity.Property(e => e.Name).HasColumnName("name").IsRequired();
+        entity.Property(e => e.CustomerId).HasColumnName("customer_id").IsRequired();
 
         entity.Property(e => e.Income)
             .HasColumnName("income")

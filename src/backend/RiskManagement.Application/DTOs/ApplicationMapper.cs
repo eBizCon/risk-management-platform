@@ -9,7 +9,7 @@ public static class ApplicationMapper
         return new ApplicationResponse
         {
             Id = application.Id.Value,
-            Name = application.Name,
+            CustomerId = application.CustomerId,
             Income = (double)application.Income.Amount,
             FixedCosts = (double)application.FixedCosts.Amount,
             DesiredRate = (double)application.DesiredRate.Amount,

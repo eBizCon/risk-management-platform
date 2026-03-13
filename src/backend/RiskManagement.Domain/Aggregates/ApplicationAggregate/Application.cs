@@ -10,7 +10,7 @@ namespace RiskManagement.Domain.Aggregates.ApplicationAggregate;
 
 public class Application : AggregateRoot<ApplicationId>
 {
-    public string Name { get; private set; } = string.Empty;
+    public int CustomerId { get; private set; }
     public Money Income { get; private set; } = Money.Zero;
     public Money FixedCosts { get; private set; } = Money.Zero;
     public Money DesiredRate { get; private set; } = Money.Zero;
@@ -35,7 +35,7 @@ public class Application : AggregateRoot<ApplicationId>
     }
 
     public static Application Create(
-        string name,
+        int customerId,
         Money income,
         Money fixedCosts,
         Money desiredRate,
@@ -46,8 +46,8 @@ public class Application : AggregateRoot<ApplicationId>
         ScoringConfig scoringConfig,
         ScoringConfigVersionId scoringConfigVersionId)
     {
-        if (string.IsNullOrWhiteSpace(name))
-            throw new DomainException("Name darf nicht leer sein");
+        if (customerId <= 0)
+            throw new DomainException("Kunde muss ausgewählt werden");
 
         if (income <= Money.Zero)
             throw new DomainException("Einkommen muss positiv sein");
@@ -63,7 +63,7 @@ public class Application : AggregateRoot<ApplicationId>
 
         var app = new Application
         {
-            Name = name,
+            CustomerId = customerId,
             Income = income,
             FixedCosts = fixedCosts,
             DesiredRate = desiredRate,
@@ -115,7 +115,7 @@ public class Application : AggregateRoot<ApplicationId>
     }
 
     public void UpdateDetails(
-        string name,
+        int customerId,
         Money income,
         Money fixedCosts,
         Money desiredRate,
@@ -128,8 +128,8 @@ public class Application : AggregateRoot<ApplicationId>
         if (Status != ApplicationStatus.Draft)
             throw new DomainException("Nur Entwürfe können bearbeitet werden");
 
-        if (string.IsNullOrWhiteSpace(name))
-            throw new DomainException("Name darf nicht leer sein");
+        if (customerId <= 0)
+            throw new DomainException("Kunde muss ausgewählt werden");
 
         if (income <= Money.Zero)
             throw new DomainException("Einkommen muss positiv sein");
@@ -143,7 +143,7 @@ public class Application : AggregateRoot<ApplicationId>
         if (desiredRate > income - fixedCosts)
             throw new DomainException("Gewünschte Rate darf das verfügbare Einkommen nicht übersteigen");
 
-        Name = name;
+        CustomerId = customerId;
         Income = income;
         FixedCosts = fixedCosts;
         DesiredRate = desiredRate;

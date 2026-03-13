@@ -55,7 +55,7 @@ public class UpdateApplicationHandler : ICommandHandler<UpdateApplicationCommand
             return Result<UpdateApplicationResult>.Failure("Keine Scoring-Konfiguration gefunden");
 
         application.UpdateDetails(
-            command.Dto.Name,
+            command.Dto.CustomerId,
             Money.Create((decimal)command.Dto.Income),
             Money.Create((decimal)command.Dto.FixedCosts),
             Money.CreatePositive((decimal)command.Dto.DesiredRate),
