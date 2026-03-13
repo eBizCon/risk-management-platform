@@ -196,6 +196,183 @@ Diese Liste ergänzt die bestehenden Use Cases (`use-cases.md`) um fachlich tief
 
 ---
 
+## L) DDD-Schulungs-Use-Cases: Domain Events, Policies & Specifications
+
+Diese Sektion bewertet Use Cases speziell danach, welche **neuen DDD-Patterns** sie für die Schulung einführen. Basis: Was bereits demonstriert wird vs. was in `domain-policy.md` und `backend-ddd.md` als nächste Konzepte vorgesehen ist.
+
+### Bereits demonstrierte DDD-Patterns
+
+| Pattern | Status | Wo |
+|---|---|---|
+| Aggregates + Child Entities | ✅ | `Application` + `ApplicationInquiry` |
+| Value Objects | ✅ | `Money`, `EmailAddress`, `TrafficLight`, etc. |
+| Strongly Typed IDs | ✅ | `ApplicationId`, `InquiryId` |
+| Domain Services | ✅ | `ScoringService` |
+| Guard Clauses | ✅ | `Create()`, `Submit()`, `Approve()`, etc. |
+| Domain Events (raised) | ✅ | 4 Events, aber **keine Handler** |
+| CQRS + Dispatcher | ✅ | Commands, Queries, custom Dispatcher |
+| Result Pattern | ✅ | Durchgängig |
+
+### Noch NICHT demonstrierte Patterns
+
+| Pattern | Aus den Regeln | Priorität für Schulung |
+|---|---|---|
+| **Domain Policies** (`IDomainPolicy<TEvent>`) | `domain-policy.md` + `backend-ddd.md` | Hoch — zentrales neues Konzept |
+| **Domain Event Handler** (echte Reaktion) | Regel: *"Every event SHOULD have at least one handler"* | Hoch — aktuell sind alle Events "dead code" |
+| **Specification Pattern** | `backend-ddd.md` beschrieben | Mittel — wiederverwendbare Geschäftsregeln |
+| **Pipeline Behaviors** | `domain-policy.md` beschrieben | Niedrig — eher technisch als fachlich |
+
+---
+
+### 51) ⭐ EMPFOHLEN: Auto-Decision Policy + In-App-Benachrichtigung
+
+**Fachliche Regel**: *"Wenn ein Antrag eingereicht wird UND die Ampel Grün ist (Score ≥ 80), wird er automatisch genehmigt. Bei Rot (Score < 30) automatisch abgelehnt. Bei Gelb entscheidet ein Sachbearbeiter. Nach jeder Entscheidung wird der Antragsteller per In-App-Notification benachrichtigt."*
+
+- **Ziel**: Automatische Entscheidung bei eindeutigen Fällen + Benachrichtigung als Side-Effect.
+- **Umsetzungsidee**:
+  - **Domain Policy** `AutoDecisionPolicy : IDomainPolicy<ApplicationSubmittedEvent>` — läuft VOR Save, gleiche Transaktion, ruft `application.Approve()` oder `application.Reject()` auf.
+  - **Specification** `AutoApprovableSpecification` / `AutoRejectableSpecification` — kapselt die Entscheidungslogik als wiederverwendbaren Ausdruck.
+  - **Domain Event Handler** `CreateNotificationOnDecisionHandler : IDomainEventHandler<ApplicationDecidedEvent>` — erstellt Notification NACH Save (Fire-and-Forget Side-Effect).
+  - **Neue Entity** `Notification` (eigenes kleines Aggregate mit `NotificationType`, `NotificationStatus`, `ReadAt`).
+  - **Dispatcher-Erweiterung**: `ExecutePoliciesAsync()` als neues Konzept neben `PublishDomainEventsAsync()`.
+- **Ergebnis**: Kompletter Pipeline-Fluss aus `domain-policy.md` wird demonstriert.
+
+**Demonstrierte Pipeline im Handler:**
+```
+SubmitApplicationHandler:
+  1. application.Submit()                    ← Business Logic (existiert)
+  2. dispatcher.ExecutePoliciesAsync()       ← Domain Policy (NEU, vor Save)
+  3. SaveChangesAsync()                      ← Persistence
+  4. dispatcher.PublishDomainEventsAsync()    ← Event Handler (NEU, nach Save)
+     → CreateNotificationOnDecisionHandler   ← Side-Effect: Notification erstellen
+```
+
+**Neue DDD-Patterns**: Domain Policy, Domain Event Handler, Specification, Dispatcher-Erweiterung, zweites Aggregate.
+
+**Schulungsbewertung**:
+- ✅ **4 neue Patterns** in einem Use Case
+- ✅ Direkt an bestehender `Submit()`-Logik aufsetzbar
+- ✅ Unterschied Policy vs. Event Handler wird am lebenden Code sichtbar
+- ✅ Frontend-Ergebnis sofort sichtbar (Notification-Badge)
+- ✅ Moderate Komplexität — in 2–3h umsetzbar
+- ⚠️ Aggregate `Notification` ist sehr klein — manche könnten es als "Overkill" empfinden
+
+---
+
+### 52) Alternative A: Audit Trail als Event Handler
+
+**Fachliche Regel**: *"Jede Statusänderung eines Antrags wird unveränderlich in einer Änderungshistorie protokolliert (wer, wann, was, alter/neuer Wert)."*
+
+- **Ziel**: Domain Event Handler schreiben Audit-Einträge für alle existierenden Events.
+- **Umsetzungsidee**:
+  - **Domain Event Handler** für `ApplicationSubmittedEvent`, `ApplicationDecidedEvent`, `ApplicationDeletedEvent`, `InquiryCreatedEvent`.
+  - **Neue Entity** `AuditEntry` (Timestamp, ActorEmail, Action, OldValue, NewValue, ApplicationId).
+  - Query `GetAuditTrailByApplication` für die Detailansicht.
+- **Ergebnis**: Alle bestehenden Events bekommen endlich Handler — kein "dead code" mehr.
+
+**Schulungsbewertung**:
+- ✅ Alle 4 existierenden Events werden "lebendig"
+- ✅ Einfaches, verständliches Konzept (Audit = Logging)
+- ✅ Zeigt gut, dass Events **nach Save** laufen (Fire-and-Forget)
+- ❌ **Keine Domain Policy** — zeigt nur After-Save Event Handler
+- ❌ Kein Unterschied Policy vs. Event sichtbar
+- ❌ Fachlich wenig spannend (Logging ist nicht "Business-Logik")
+
+**Fazit**: Guter Einstieg in Event Handler, aber **zeigt nur die Hälfte** des Konzepts (Events ja, Policies nein).
+
+---
+
+### 53) Alternative B: Antrag zurückziehen (Withdraw)
+
+**Fachliche Regel**: *"Ein Antragsteller kann einen eingereichten Antrag selbst zurückziehen, solange er noch nicht bearbeitet wurde."*
+
+- **Ziel**: Neuer Status `Withdrawn`, Methode `Withdraw()`, Domain Event `ApplicationWithdrawnEvent`, Event Handler für Benachrichtigung.
+- **Umsetzungsidee**:
+  - Neuer Status in `ApplicationStatus` Enumeration.
+  - Guard Clause: Nur aus `Submitted`/`Resubmitted` möglich.
+  - Domain Event + Handler (z.B. Processor-Benachrichtigung).
+  - Frontend: Button im Antrags-Detail.
+- **Ergebnis**: Antragsteller hat mehr Kontrolle.
+
+**Schulungsbewertung**:
+- ✅ Saubere Status-Transition mit Guard Clause
+- ✅ Neues Domain Event + Handler
+- ✅ Einfach zu verstehen, schnell umsetzbar (~1h)
+- ❌ **Keine Policy** — nur neuer Status + Event
+- ❌ Kein neues DDD-Pattern — nur Erweiterung bestehender Patterns
+- ❌ Fachlich korrekt, aber didaktisch wenig Mehrwert
+
+**Fazit**: Fachlich sinnvoll, aber **führt kein neues DDD-Konzept ein**. Eher geeignet als Aufwärmübung.
+
+---
+
+### 54) Alternative C: Vier-Augen-Prinzip (Second Approval)
+
+**Fachliche Regel**: *"Anträge mit Ampel Gelb oder Rot benötigen die Genehmigung von zwei verschiedenen Sachbearbeitern."*
+
+- **Ziel**: Domain Policy prüft nach `Approve()`, ob ein zweiter Approval nötig ist.
+- **Umsetzungsidee**:
+  - **Domain Policy** `FourEyesPrinciplePolicy : IDomainPolicy<ApplicationDecidedEvent>` — prüft vor Save ob Zweigenehmigung erforderlich.
+  - Neuer Status `AwaitingSecondApproval`.
+  - Neue Felder: `FirstApprovedBy`, `SecondApprovedBy`.
+  - **Specification** `RequiresSecondApprovalSpecification` (TrafficLight != Green).
+- **Ergebnis**: Risikominimierung bei kritischen Anträgen.
+
+**Schulungsbewertung**:
+- ✅ Zeigt Domain Policy perfekt (transaktional, vor Save)
+- ✅ Zeigt Specification Pattern
+- ✅ Fachlich anspruchsvoll und realistisch
+- ❌ **Hohe Komplexität** — Status-Maschine wird deutlich komplexer
+- ❌ Braucht mindestens 2 Processor-Accounts zum Testen
+- ❌ Frontend-Aufwand hoch (neue Buttons, Status-Anzeige, Berechtigung)
+- ❌ Für 4h-Schulung vermutlich **zu umfangreich**
+
+**Fazit**: Fachlich und didaktisch sehr gut, aber **Aufwand zu hoch** für eine Schulung. Besser als Folge-Use-Case nach #51.
+
+---
+
+### 55) Alternative D: Externe Bonitätsabfrage (Anti-Corruption Layer)
+
+**Fachliche Regel**: *"Nach Einreichung wird automatisch eine externe Bonitätsauskunft abgefragt. Der externe Score fließt in die Gesamtbewertung ein."*
+
+- **Ziel**: ACL-Pattern für externe Systemintegration demonstrieren.
+- **Umsetzungsidee**:
+  - Interface `ICreditCheckService` in der Domain.
+  - **Domain Event Handler** für `ApplicationSubmittedEvent` triggert die Abfrage.
+  - **ACL-Adapter** in Infrastructure übersetzt externes Modell → Value Object `ExternalCreditScore`.
+  - Fake-Implementation für die Schulung (simuliert API-Call).
+- **Ergebnis**: Clean Architecture Schichttrennung wird sichtbar.
+
+**Schulungsbewertung**:
+- ✅ Zeigt Anti-Corruption Layer (ACL) — wichtiges strategisches DDD-Pattern
+- ✅ Zeigt Domain Event Handler als Prozess-Trigger
+- ✅ Interface in Domain, Implementation in Infrastructure = Dependency Inversion
+- ❌ **Keine Domain Policy** — nur Event Handler + ACL
+- ❌ Braucht Fake-Service → Teilnehmer sehen keinen "echten" Effekt
+- ❌ Asynchrone Abfrage passt schlecht zu After-Save Events (eigentlich Outbox Pattern nötig)
+- ❌ Kann zu Diskussionen über Eventual Consistency führen, die den Rahmen sprengen
+
+**Fazit**: Zeigt ein wichtiges strategisches Pattern, aber **lenkt von taktischem DDD ab** (Events/Policies). Besser als separates Modul.
+
+---
+
+### Vergleichsmatrix für die Schulung
+
+| Use Case | Domain Policy | Event Handler | Specification | ACL | Neue Aggregate | Komplexität | Empfehlung |
+|---|:---:|:---:|:---:|:---:|:---:|---|---|
+| **#51 Auto-Decision + Notification** | ✅ | ✅ | ✅ | — | ✅ Notification | Mittel | ⭐ **Top-Empfehlung** |
+| #52 Audit Trail | — | ✅ | — | — | ✅ AuditEntry | Niedrig | Guter Einstieg, zeigt aber nur Events |
+| #53 Withdraw | — | ✅ | — | — | — | Niedrig | Aufwärmübung, kein neues Pattern |
+| #54 Vier-Augen-Prinzip | ✅ | ✅ | ✅ | — | — | Hoch | Zu komplex für 4h Schulung |
+| #55 Externe Bonitätsabfrage | — | ✅ | — | ✅ | — | Mittel-Hoch | Strategisches DDD, anderer Fokus |
+
+**Empfohlene Reihenfolge für Schulung:**
+1. **#53 Withdraw** als Aufwärmübung (30 min) — neuer Status, Guard Clause, Event
+2. **#51 Auto-Decision + Notification** als Hauptübung (2–3h) — Policy, Event Handler, Specification, Dispatcher-Erweiterung
+3. **#52 Audit Trail** als Bonus wenn Zeit bleibt (30 min) — alle Events bekommen Handler
+
+---
+
 ## Priorisierungsempfehlung
 
 | Prio | Use Cases | Begründung |
