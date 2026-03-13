@@ -11,8 +11,8 @@ data.db
 .wrangler
 .svelte-kit
 /build
-frontend/.svelte-kit
-frontend/build
+src/frontend/.svelte-kit
+src/frontend/build
 
 # OS
 .DS_Store
@@ -31,8 +31,8 @@ playwright-report
 test-results
 
 # .NET
-backend/**/bin/
-backend/**/obj/
-backend/**/*.user
-backend/**/*.suo
+src/backend/**/bin/
+src/backend/**/obj/
+src/backend/**/*.user
+src/backend/**/*.suo
 *.nupkg
