@@ -1,6 +1,7 @@
 using RiskManagement.Application.Common;
 using RiskManagement.Application.DTOs;
 using RiskManagement.Domain.Aggregates.ApplicationAggregate;
+using RiskManagement.Domain.Aggregates.ScoringConfigAggregate;
 using RiskManagement.Domain.Services;
 using RiskManagement.Domain.ValueObjects;
 using AppId = RiskManagement.Domain.Aggregates.ApplicationAggregate.ApplicationId;
@@ -12,13 +13,15 @@ public record SubmitApplicationCommand(int ApplicationId, string UserEmail) : IC
 public class SubmitApplicationHandler : ICommandHandler<SubmitApplicationCommand, ApplicationResponse>
 {
     private readonly IApplicationRepository _repository;
+    private readonly IScoringConfigRepository _configRepository;
     private readonly IScoringService _scoringService;
     private readonly IDispatcher _dispatcher;
 
-    public SubmitApplicationHandler(IApplicationRepository repository, IScoringService scoringService,
-        IDispatcher dispatcher)
+    public SubmitApplicationHandler(IApplicationRepository repository, IScoringConfigRepository configRepository,
+        IScoringService scoringService, IDispatcher dispatcher)
     {
         _repository = repository;
+        _configRepository = configRepository;
         _scoringService = scoringService;
         _dispatcher = dispatcher;
     }
@@ -33,7 +36,11 @@ public class SubmitApplicationHandler : ICommandHandler<SubmitApplicationCommand
         if (application.CreatedBy != EmailAddress.Create(command.UserEmail))
             return Result<ApplicationResponse>.Forbidden("Zugriff verweigert");
 
-        application.Submit(_scoringService);
+        var configVersion = await _configRepository.GetCurrentAsync(ct);
+        if (configVersion is null)
+            return Result<ApplicationResponse>.Failure("Keine Scoring-Konfiguration gefunden");
+
+        application.Submit(_scoringService, configVersion.Config, configVersion.Id);
         await _repository.SaveChangesAsync(ct);
 
         await _dispatcher.PublishDomainEventsAsync(application, ct);

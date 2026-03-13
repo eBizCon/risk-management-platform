@@ -1,6 +1,6 @@
 import type { BrowserContext, Page } from '@playwright/test';
 
-export type TestUserRole = 'applicant' | 'processor';
+export type TestUserRole = 'applicant' | 'processor' | 'risk_manager';
 
 interface TestUser {
 	id: string;
@@ -64,7 +64,8 @@ const parseCookie = (setCookie: string, origin: URL): Cookie => {
 
 const defaultEmails: Record<TestUserRole, string> = {
 	applicant: 'applicant@example.com',
-	processor: 'processor@example.com'
+	processor: 'processor@example.com',
+	risk_manager: 'riskmanager@example.com'
 };
 
 const buildUser = (role: TestUserRole, userData?: Partial<TestUser>): TestUser => ({

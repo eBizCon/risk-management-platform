@@ -1,13 +1,14 @@
 <script lang="ts">
 	import '../app.css';
 	import MobileMenu from '$lib/components/MobileMenu.svelte';
-	import { ClipboardList, FileText, Home, LogIn, LogOut, Menu } from 'lucide-svelte';
+	import { ClipboardList, FileText, Home, LogIn, LogOut, Menu, Settings } from 'lucide-svelte';
 
 	let { data, children } = $props();
 
 	const user = $derived(data.user ?? null);
 	const isApplicant = $derived(user?.role === 'applicant');
 	const isProcessor = $derived(user?.role === 'processor');
+	const isRiskManager = $derived(user?.role === 'risk_manager');
 
 	let mobileMenuOpen = $state(false);
 
@@ -72,13 +73,23 @@
 								Anträge bearbeiten
 							</a>
 						{/if}
+						{#if isRiskManager}
+							<a
+								href="/risk-manager/scoring-config"
+								class="nav-link inline-flex items-center px-3 py-2 text-sm font-medium rounded-md"
+								data-testid="nav-scoring-config"
+							>
+								<Settings class="w-4 h-4 mr-2" />
+								Scoring-Konfiguration
+							</a>
+						{/if}
 					</div>
 				</div>
 				<div class="flex items-center gap-4">
 					{#if user}
 						<div class="text-sm text-secondary text-right">
 							<div class="font-medium text-primary">{user.name}</div>
-							<div>{isApplicant ? 'Antragsteller' : 'Antragsbearbeiter'}</div>
+							<div>{isApplicant ? 'Antragsteller' : isProcessor ? 'Antragsbearbeiter' : 'Risikomanager'}</div>
 						</div>
 						<a href="/logout" class="btn-secondary inline-flex items-center px-3 py-2" data-testid="nav-logout">
 							<LogOut class="w-4 h-4 mr-2" />
@@ -101,6 +112,7 @@
 		{user}
 		{isApplicant}
 		{isProcessor}
+		{isRiskManager}
 	/>
 
 	<main class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">

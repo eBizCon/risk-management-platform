@@ -6,6 +6,7 @@ using RiskManagement.Application.Common;
 using RiskManagement.Application.DTOs;
 using RiskManagement.Application.Validation;
 using RiskManagement.Domain.Aggregates.ApplicationAggregate;
+using RiskManagement.Domain.Aggregates.ScoringConfigAggregate;
 using RiskManagement.Domain.Services;
 using RiskManagement.Infrastructure.Dispatching;
 using RiskManagement.Infrastructure.Persistence;
@@ -21,6 +22,7 @@ public static class DependencyInjection
             options.UseNpgsql(connectionString));
 
         services.AddScoped<IApplicationRepository, ApplicationRepository>();
+        services.AddScoped<IScoringConfigRepository, ScoringConfigRepository>();
         services.AddScoped<DatabaseSeeder>();
 
         return services;

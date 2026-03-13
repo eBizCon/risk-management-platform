@@ -1,3 +1,4 @@
+using RiskManagement.Domain.Aggregates.ScoringConfigAggregate;
 using RiskManagement.Domain.ValueObjects;
 
 namespace RiskManagement.Domain.Services;
@@ -9,5 +10,6 @@ public interface IScoringService
         Money fixedCosts,
         Money desiredRate,
         EmploymentStatus employmentStatus,
-        bool hasPaymentDefault);
+        bool hasPaymentDefault,
+        ScoringConfig config);
 }

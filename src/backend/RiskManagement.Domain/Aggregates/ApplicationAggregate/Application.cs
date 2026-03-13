@@ -1,4 +1,5 @@
 using System.Text.Json;
+using RiskManagement.Domain.Aggregates.ScoringConfigAggregate;
 using RiskManagement.Domain.Common;
 using RiskManagement.Domain.Events;
 using RiskManagement.Domain.Exceptions;
@@ -19,6 +20,7 @@ public class Application : AggregateRoot<ApplicationId>
     public int? Score { get; private set; }
     public TrafficLight? TrafficLight { get; private set; }
     public string? ScoringReasons { get; private set; }
+    public ScoringConfigVersionId? ScoringConfigVersionId { get; private set; }
     public string? ProcessorComment { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime? SubmittedAt { get; private set; }
@@ -40,7 +42,9 @@ public class Application : AggregateRoot<ApplicationId>
         EmploymentStatus employmentStatus,
         bool hasPaymentDefault,
         EmailAddress createdBy,
-        IScoringService scoringService)
+        IScoringService scoringService,
+        ScoringConfig scoringConfig,
+        ScoringConfigVersionId scoringConfigVersionId)
     {
         if (string.IsNullOrWhiteSpace(name))
             throw new DomainException("Name darf nicht leer sein");
@@ -70,16 +74,16 @@ public class Application : AggregateRoot<ApplicationId>
             CreatedBy = createdBy
         };
 
-        app.ApplyScoring(scoringService);
+        app.ApplyScoring(scoringService, scoringConfig, scoringConfigVersionId);
         return app;
     }
 
-    public void Submit(IScoringService scoringService)
+    public void Submit(IScoringService scoringService, ScoringConfig scoringConfig, ScoringConfigVersionId scoringConfigVersionId)
     {
         if (Status != ApplicationStatus.Draft)
             throw new InvalidStatusTransitionException(Status, ApplicationStatus.Submitted);
 
-        ApplyScoring(scoringService);
+        ApplyScoring(scoringService, scoringConfig, scoringConfigVersionId);
         Status = ApplicationStatus.Submitted;
         SubmittedAt = DateTime.UtcNow;
 
@@ -117,7 +121,9 @@ public class Application : AggregateRoot<ApplicationId>
         Money desiredRate,
         EmploymentStatus employmentStatus,
         bool hasPaymentDefault,
-        IScoringService scoringService)
+        IScoringService scoringService,
+        ScoringConfig scoringConfig,
+        ScoringConfigVersionId scoringConfigVersionId)
     {
         if (Status != ApplicationStatus.Draft)
             throw new DomainException("Nur Entwürfe können bearbeitet werden");
@@ -144,7 +150,12 @@ public class Application : AggregateRoot<ApplicationId>
         EmploymentStatus = employmentStatus;
         HasPaymentDefault = hasPaymentDefault;
 
-        ApplyScoring(scoringService);
+        ApplyScoring(scoringService, scoringConfig, scoringConfigVersionId);
+    }
+
+    public void Rescore(IScoringService scoringService, ScoringConfig scoringConfig, ScoringConfigVersionId scoringConfigVersionId)
+    {
+        ApplyScoring(scoringService, scoringConfig, scoringConfigVersionId);
     }
 
     public void Delete()
@@ -183,12 +194,13 @@ public class Application : AggregateRoot<ApplicationId>
         Status = ApplicationStatus.Resubmitted;
     }
 
-    private void ApplyScoring(IScoringService scoringService)
+    private void ApplyScoring(IScoringService scoringService, ScoringConfig scoringConfig, ScoringConfigVersionId scoringConfigVersionId)
     {
         var result =
-            scoringService.CalculateScore(Income, FixedCosts, DesiredRate, EmploymentStatus, HasPaymentDefault);
+            scoringService.CalculateScore(Income, FixedCosts, DesiredRate, EmploymentStatus, HasPaymentDefault, scoringConfig);
         Score = result.Score;
         TrafficLight = result.TrafficLight;
         ScoringReasons = JsonSerializer.Serialize(result.Reasons);
+        ScoringConfigVersionId = scoringConfigVersionId;
     }
 }

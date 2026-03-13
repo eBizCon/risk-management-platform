@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using RiskManagement.Domain.Aggregates.ApplicationAggregate;
+using RiskManagement.Domain.Aggregates.ScoringConfigAggregate;
 using RiskManagement.Domain.Services;
 using RiskManagement.Domain.ValueObjects;
 using RiskManagement.Infrastructure.Persistence;
@@ -56,8 +57,32 @@ public class DatabaseSeeder
 
     public async Task SeedAsync()
     {
+        await SeedScoringConfigAsync();
+        await SeedApplicationsAsync();
+    }
+
+    private async Task SeedScoringConfigAsync()
+    {
+        var hasConfig = await _context.ScoringConfigVersions.AnyAsync();
+        if (hasConfig) return;
+
+        var defaultConfig = ScoringConfigVersion.Create(
+            version: 1,
+            config: ScoringConfig.Default,
+            createdBy: EmailAddress.Create("system@risk-management.local"));
+
+        _context.ScoringConfigVersions.Add(defaultConfig);
+        await _context.SaveChangesAsync();
+    }
+
+    private async Task SeedApplicationsAsync()
+    {
         var existingCount = await _context.Applications.CountAsync();
         if (existingCount > 0) return;
+
+        var configVersion = await _context.ScoringConfigVersions
+            .OrderByDescending(c => c.Version)
+            .FirstAsync();
 
         const int totalRows = 32;
         var createdBy = EmailAddress.Create(SeedCreatedBy);
@@ -75,11 +100,13 @@ public class DatabaseSeeder
                 EmploymentStatus.From(template.EmploymentStatus),
                 template.HasPaymentDefault,
                 createdBy,
-                _scoringService);
+                _scoringService,
+                configVersion.Config,
+                configVersion.Id);
 
             if (targetStatus != SeedStatus.Draft)
             {
-                application.Submit(_scoringService);
+                application.Submit(_scoringService, configVersion.Config, configVersion.Id);
 
                 if (targetStatus == SeedStatus.Approved)
                     application.Approve(ApprovedComments[index % ApprovedComments.Length]);

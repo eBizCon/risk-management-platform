@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using RiskManagement.Domain.Aggregates.ApplicationAggregate;
+using RiskManagement.Domain.Aggregates.ScoringConfigAggregate;
 using ApplicationEntity = RiskManagement.Domain.Aggregates.ApplicationAggregate.Application;
 
 namespace RiskManagement.Infrastructure.Persistence;
@@ -12,6 +13,7 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<ApplicationEntity> Applications { get; set; } = null!;
     public DbSet<ApplicationInquiry> ApplicationInquiries { get; set; } = null!;
+    public DbSet<ScoringConfigVersion> ScoringConfigVersions { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

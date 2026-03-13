@@ -126,6 +126,7 @@ public static class AuthenticationExtensions
             options.AddPolicy(
                 AuthPolicies.ApplicantOrProcessor,
                 policy => policy.RequireRole(AppRoles.Applicant, AppRoles.Processor));
+            options.AddPolicy(AuthPolicies.RiskManager, policy => policy.RequireRole(AppRoles.RiskManager));
         });
 
         return services;

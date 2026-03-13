@@ -130,6 +130,15 @@ public class ApplicationRepository : IApplicationRepository
         await _context.ApplicationInquiries.AddAsync(inquiry, ct);
     }
 
+    public async Task<List<ApplicationEntity>> GetOpenApplicationsAsync(CancellationToken ct = default)
+    {
+        return await _context.Applications
+            .Where(a => a.Status == ApplicationStatus.Submitted
+                        || a.Status == ApplicationStatus.Resubmitted
+                        || a.Status == ApplicationStatus.NeedsInformation)
+            .ToListAsync(ct);
+    }
+
     public async Task<List<ApplicationEntity>> GetApplicationsForExportAsync(ApplicationStatus? status = null,
         CancellationToken ct = default)
     {

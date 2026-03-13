@@ -2,6 +2,7 @@ using FluentValidation;
 using RiskManagement.Application.Common;
 using RiskManagement.Application.DTOs;
 using RiskManagement.Domain.Aggregates.ApplicationAggregate;
+using RiskManagement.Domain.Aggregates.ScoringConfigAggregate;
 using RiskManagement.Domain.Services;
 using RiskManagement.Domain.ValueObjects;
 using AppId = RiskManagement.Domain.Aggregates.ApplicationAggregate.ApplicationId;
@@ -18,17 +19,20 @@ public class
     UpdateAndSubmitApplicationResult>
 {
     private readonly IApplicationRepository _repository;
+    private readonly IScoringConfigRepository _configRepository;
     private readonly IScoringService _scoringService;
     private readonly IValidator<ApplicationUpdateDto> _validator;
     private readonly IDispatcher _dispatcher;
 
     public UpdateAndSubmitApplicationHandler(
         IApplicationRepository repository,
+        IScoringConfigRepository configRepository,
         IScoringService scoringService,
         IValidator<ApplicationUpdateDto> validator,
         IDispatcher dispatcher)
     {
         _repository = repository;
+        _configRepository = configRepository;
         _scoringService = scoringService;
         _validator = validator;
         _dispatcher = dispatcher;
@@ -51,6 +55,10 @@ public class
             return Result<UpdateAndSubmitApplicationResult>.ValidationFailure(errors, command.Dto);
         }
 
+        var configVersion = await _configRepository.GetCurrentAsync(ct);
+        if (configVersion is null)
+            return Result<UpdateAndSubmitApplicationResult>.Failure("Keine Scoring-Konfiguration gefunden");
+
         application.UpdateDetails(
             command.Dto.Name,
             Money.Create((decimal)command.Dto.Income),
@@ -58,9 +66,11 @@ public class
             Money.CreatePositive((decimal)command.Dto.DesiredRate),
             EmploymentStatus.From(command.Dto.EmploymentStatus),
             command.Dto.HasPaymentDefault,
-            _scoringService);
+            _scoringService,
+            configVersion.Config,
+            configVersion.Id);
 
-        application.Submit(_scoringService);
+        application.Submit(_scoringService, configVersion.Config, configVersion.Id);
         await _repository.SaveChangesAsync(ct);
 
         await _dispatcher.PublishDomainEventsAsync(application, ct);

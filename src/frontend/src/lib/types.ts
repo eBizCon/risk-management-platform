@@ -7,7 +7,7 @@ export type ApplicationStatus =
 	| 'rejected';
 export type EmploymentStatus = 'employed' | 'self_employed' | 'unemployed' | 'retired';
 export type TrafficLight = 'red' | 'yellow' | 'green';
-export type UserRole = 'applicant' | 'processor';
+export type UserRole = 'applicant' | 'processor' | 'risk_manager';
 
 export interface Application {
 	id: number;

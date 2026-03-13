@@ -4,7 +4,7 @@ namespace RiskManagement.Api.Extensions;
 
 public static class RoleClaimHelper
 {
-    public static readonly string[] AllowedRoles = { "applicant", "processor" };
+    public static readonly string[] AllowedRoles = { "applicant", "processor", "risk_manager" };
 
     public static List<string> ExtractRolesFromClaims(
         JsonElement claims, string claimPath, string[] allowedRoles)

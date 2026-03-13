@@ -78,6 +78,10 @@ namespace RiskManagement.Infrastructure.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("score");
 
+                    b.Property<int?>("ScoringConfigVersionId")
+                        .HasColumnType("integer")
+                        .HasColumnName("scoring_config_version_id");
+
                     b.Property<string>("ScoringReasons")
                         .HasColumnType("text")
                         .HasColumnName("scoring_reasons");
@@ -98,6 +102,8 @@ namespace RiskManagement.Infrastructure.Migrations
                         .HasColumnName("traffic_light");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ScoringConfigVersionId");
 
                     b.ToTable("applications", (string)null);
                 });
@@ -151,12 +157,140 @@ namespace RiskManagement.Infrastructure.Migrations
                     b.ToTable("application_inquiries", (string)null);
                 });
 
+            modelBuilder.Entity("RiskManagement.Domain.Aggregates.ScoringConfigAggregate.ScoringConfigVersion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<int>("Version")
+                        .HasColumnType("integer")
+                        .HasColumnName("version");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Version")
+                        .IsUnique();
+
+                    b.ToTable("scoring_config_versions", (string)null);
+                });
+
+            modelBuilder.Entity("RiskManagement.Domain.Aggregates.ApplicationAggregate.Application", b =>
+                {
+                    b.HasOne("RiskManagement.Domain.Aggregates.ScoringConfigAggregate.ScoringConfigVersion", null)
+                        .WithMany()
+                        .HasForeignKey("ScoringConfigVersionId");
+                });
+
             modelBuilder.Entity("RiskManagement.Domain.Aggregates.ApplicationAggregate.ApplicationInquiry", b =>
                 {
                     b.HasOne("RiskManagement.Domain.Aggregates.ApplicationAggregate.Application", null)
                         .WithMany("Inquiries")
                         .HasForeignKey("ApplicationId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("RiskManagement.Domain.Aggregates.ScoringConfigAggregate.ScoringConfigVersion", b =>
+                {
+                    b.OwnsOne("RiskManagement.Domain.Aggregates.ScoringConfigAggregate.ScoringConfig", "Config", b1 =>
+                        {
+                            b1.Property<int>("ScoringConfigVersionId")
+                                .HasColumnType("integer");
+
+                            b1.Property<int>("GreenThreshold")
+                                .HasColumnType("integer")
+                                .HasColumnName("green_threshold");
+
+                            b1.Property<decimal>("IncomeRatioGood")
+                                .HasColumnType("numeric(4,2)")
+                                .HasColumnName("income_ratio_good");
+
+                            b1.Property<decimal>("IncomeRatioLimited")
+                                .HasColumnType("numeric(4,2)")
+                                .HasColumnName("income_ratio_limited");
+
+                            b1.Property<decimal>("IncomeRatioModerate")
+                                .HasColumnType("numeric(4,2)")
+                                .HasColumnName("income_ratio_moderate");
+
+                            b1.Property<int>("PenaltyCriticalRatio")
+                                .HasColumnType("integer")
+                                .HasColumnName("penalty_critical_ratio");
+
+                            b1.Property<int>("PenaltyExcessiveRate")
+                                .HasColumnType("integer")
+                                .HasColumnName("penalty_excessive_rate");
+
+                            b1.Property<int>("PenaltyHeavyRate")
+                                .HasColumnType("integer")
+                                .HasColumnName("penalty_heavy_rate");
+
+                            b1.Property<int>("PenaltyLimitedRatio")
+                                .HasColumnType("integer")
+                                .HasColumnName("penalty_limited_ratio");
+
+                            b1.Property<int>("PenaltyModerateRate")
+                                .HasColumnType("integer")
+                                .HasColumnName("penalty_moderate_rate");
+
+                            b1.Property<int>("PenaltyModerateRatio")
+                                .HasColumnType("integer")
+                                .HasColumnName("penalty_moderate_ratio");
+
+                            b1.Property<int>("PenaltyPaymentDefault")
+                                .HasColumnType("integer")
+                                .HasColumnName("penalty_payment_default");
+
+                            b1.Property<int>("PenaltyRetired")
+                                .HasColumnType("integer")
+                                .HasColumnName("penalty_retired");
+
+                            b1.Property<int>("PenaltySelfEmployed")
+                                .HasColumnType("integer")
+                                .HasColumnName("penalty_self_employed");
+
+                            b1.Property<int>("PenaltyUnemployed")
+                                .HasColumnType("integer")
+                                .HasColumnName("penalty_unemployed");
+
+                            b1.Property<decimal>("RateGood")
+                                .HasColumnType("numeric(4,2)")
+                                .HasColumnName("rate_good");
+
+                            b1.Property<decimal>("RateHeavy")
+                                .HasColumnType("numeric(4,2)")
+                                .HasColumnName("rate_heavy");
+
+                            b1.Property<decimal>("RateModerate")
+                                .HasColumnType("numeric(4,2)")
+                                .HasColumnName("rate_moderate");
+
+                            b1.Property<int>("YellowThreshold")
+                                .HasColumnType("integer")
+                                .HasColumnName("yellow_threshold");
+
+                            b1.HasKey("ScoringConfigVersionId");
+
+                            b1.ToTable("scoring_config_versions");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ScoringConfigVersionId");
+                        });
+
+                    b.Navigation("Config")
                         .IsRequired();
                 });
 

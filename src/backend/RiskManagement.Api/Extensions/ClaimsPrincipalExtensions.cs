@@ -40,6 +40,11 @@ public static class ClaimsPrincipalExtensions
         return principal.IsInRole(AppRoles.Processor);
     }
 
+    public static bool IsRiskManager(this ClaimsPrincipal principal)
+    {
+        return principal.IsInRole(AppRoles.RiskManager);
+    }
+
     public static UserDto ToUserDto(this ClaimsPrincipal principal)
     {
         return new UserDto

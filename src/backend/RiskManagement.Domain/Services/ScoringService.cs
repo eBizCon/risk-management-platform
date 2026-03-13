@@ -1,3 +1,4 @@
+using RiskManagement.Domain.Aggregates.ScoringConfigAggregate;
 using RiskManagement.Domain.ValueObjects;
 
 namespace RiskManagement.Domain.Services;
@@ -9,7 +10,8 @@ public class ScoringService : IScoringService
         Money fixedCosts,
         Money desiredRate,
         EmploymentStatus employmentStatus,
-        bool hasPaymentDefault)
+        bool hasPaymentDefault,
+        ScoringConfig config)
     {
         var reasons = new List<string>();
         var score = 100;
@@ -21,45 +23,45 @@ public class ScoringService : IScoringService
         var availableIncome = incomeAmount - fixedCostsAmount;
         var incomeRatio = availableIncome / incomeAmount;
 
-        if (incomeRatio >= 0.5)
+        if (incomeRatio >= (double)config.IncomeRatioGood)
         {
             reasons.Add("Gutes Verhältnis zwischen Einkommen und Fixkosten (mehr als 50% verfügbar)");
         }
-        else if (incomeRatio >= 0.3)
+        else if (incomeRatio >= (double)config.IncomeRatioModerate)
         {
-            score -= 15;
+            score -= config.PenaltyModerateRatio;
             reasons.Add("Moderates Verhältnis zwischen Einkommen und Fixkosten (30-50% verfügbar)");
         }
-        else if (incomeRatio >= 0.1)
+        else if (incomeRatio >= (double)config.IncomeRatioLimited)
         {
-            score -= 30;
+            score -= config.PenaltyLimitedRatio;
             reasons.Add("Eingeschränktes Verhältnis zwischen Einkommen und Fixkosten (10-30% verfügbar)");
         }
         else
         {
-            score -= 50;
+            score -= config.PenaltyCriticalRatio;
             reasons.Add("Kritisches Verhältnis zwischen Einkommen und Fixkosten (weniger als 10% verfügbar)");
         }
 
         var rateToAvailableRatio = desiredRateAmount / availableIncome;
 
-        if (rateToAvailableRatio <= 0.3)
+        if (rateToAvailableRatio <= (double)config.RateGood)
         {
             reasons.Add("Gewünschte Rate ist gut tragbar (maximal 30% des verfügbaren Einkommens)");
         }
-        else if (rateToAvailableRatio <= 0.5)
+        else if (rateToAvailableRatio <= (double)config.RateModerate)
         {
-            score -= 10;
+            score -= config.PenaltyModerateRate;
             reasons.Add("Gewünschte Rate ist moderat tragbar (30-50% des verfügbaren Einkommens)");
         }
-        else if (rateToAvailableRatio <= 0.7)
+        else if (rateToAvailableRatio <= (double)config.RateHeavy)
         {
-            score -= 25;
+            score -= config.PenaltyHeavyRate;
             reasons.Add("Gewünschte Rate belastet das Budget erheblich (50-70% des verfügbaren Einkommens)");
         }
         else
         {
-            score -= 40;
+            score -= config.PenaltyExcessiveRate;
             reasons.Add("Gewünschte Rate übersteigt das tragbare Maß (mehr als 70% des verfügbaren Einkommens)");
         }
 
@@ -69,23 +71,23 @@ public class ScoringService : IScoringService
         }
         else if (employmentStatus == EmploymentStatus.SelfEmployed)
         {
-            score -= 10;
+            score -= config.PenaltySelfEmployed;
             reasons.Add("Selbstständigkeit birgt gewisses Einkommensrisiko");
         }
         else if (employmentStatus == EmploymentStatus.Retired)
         {
-            score -= 5;
+            score -= config.PenaltyRetired;
             reasons.Add("Ruhestand bietet stabile, aber begrenzte Einkommenssituation");
         }
         else if (employmentStatus == EmploymentStatus.Unemployed)
         {
-            score -= 35;
+            score -= config.PenaltyUnemployed;
             reasons.Add("Arbeitslosigkeit stellt erhebliches Risiko für Kreditrückzahlung dar");
         }
 
         if (hasPaymentDefault)
         {
-            score -= 25;
+            score -= config.PenaltyPaymentDefault;
             reasons.Add("Frühere Zahlungsverzüge beeinträchtigen die Kreditwürdigkeit");
         }
         else
@@ -96,12 +98,12 @@ public class ScoringService : IScoringService
         score = Math.Max(0, Math.Min(100, score));
 
         TrafficLight trafficLight;
-        if (score >= 75)
+        if (score >= config.GreenThreshold)
         {
             trafficLight = TrafficLight.Green;
             reasons.Insert(0, "Gesamtbewertung: Positiv - Kreditantrag empfohlen");
         }
-        else if (score >= 50)
+        else if (score >= config.YellowThreshold)
         {
             trafficLight = TrafficLight.Yellow;
             reasons.Insert(0, "Gesamtbewertung: Prüfung erforderlich - manuelle Bewertung empfohlen");

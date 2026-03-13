@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using RiskManagement.Domain.Aggregates.ApplicationAggregate;
+using RiskManagement.Domain.Aggregates.ScoringConfigAggregate;
 using RiskManagement.Domain.ValueObjects;
 using ApplicationEntity = RiskManagement.Domain.Aggregates.ApplicationAggregate.Application;
 using AppId = RiskManagement.Domain.Aggregates.ApplicationAggregate.ApplicationId;
@@ -70,6 +71,18 @@ public class ApplicationConfiguration : IEntityTypeConfiguration<ApplicationEnti
                 v => v != null ? TrafficLight.From(v) : null);
 
         entity.Property(e => e.ScoringReasons).HasColumnName("scoring_reasons");
+
+        entity.Property(e => e.ScoringConfigVersionId)
+            .HasColumnName("scoring_config_version_id")
+            .HasConversion(
+                v => v != null ? v.Value.Value : (int?)null,
+                v => v != null ? new ScoringConfigVersionId(v.Value) : null);
+
+        entity.HasOne<ScoringConfigVersion>()
+            .WithMany()
+            .HasForeignKey(e => e.ScoringConfigVersionId)
+            .IsRequired(false);
+
         entity.Property(e => e.ProcessorComment).HasColumnName("processor_comment");
         entity.Property(e => e.CreatedAt).HasColumnName("created_at").IsRequired();
         entity.Property(e => e.SubmittedAt).HasColumnName("submitted_at");

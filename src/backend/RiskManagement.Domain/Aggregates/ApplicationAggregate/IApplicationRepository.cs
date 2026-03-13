@@ -29,4 +29,6 @@ public interface IApplicationRepository
     Task<bool> HasOpenInquiryAsync(ApplicationId applicationId, CancellationToken ct = default);
 
     Task AddInquiryAsync(ApplicationInquiry inquiry, CancellationToken ct = default);
+
+    Task<List<Application>> GetOpenApplicationsAsync(CancellationToken ct = default);
 }

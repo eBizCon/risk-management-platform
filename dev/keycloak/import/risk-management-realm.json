@@ -8,6 +8,9 @@
 			},
 			{
 				"name": "processor"
+			},
+			{
+				"name": "risk_manager"
 			}
 		]
 	},
@@ -60,6 +63,22 @@
 				}
 			],
 			"realmRoles": ["processor"]
+		},
+		{
+			"username": "riskmanager",
+			"enabled": true,
+			"email": "riskmanager@example.com",
+			"emailVerified": true,
+			"firstName": "Risk",
+			"lastName": "Manager",
+			"credentials": [
+				{
+					"type": "password",
+					"value": "riskmanager",
+					"temporary": false
+				}
+			],
+			"realmRoles": ["risk_manager"]
 		}
 	]
 }

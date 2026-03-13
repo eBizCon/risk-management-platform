@@ -1,7 +1,7 @@
 import { writable, derived } from 'svelte/store';
 import { browser } from '$app/environment';
 
-export type UserRole = 'applicant' | 'processor';
+export type UserRole = 'applicant' | 'processor' | 'risk_manager';
 
 export interface User {
 	id: string;
@@ -24,6 +24,13 @@ const defaultProcessor: User = {
 	email: 'processor@example.com',
 	name: 'Anna Bearbeiter',
 	role: 'processor'
+};
+
+const defaultRiskManager: User = {
+	id: 'riskmanager-1',
+	email: 'riskmanager@example.com',
+	name: 'Risk Manager',
+	role: 'risk_manager'
 };
 
 function getCookie(name: string): string | null {
@@ -52,6 +59,9 @@ function getInitialUser(): User {
 		if (savedRole === 'processor') {
 			return defaultProcessor;
 		}
+		if (savedRole === 'risk_manager') {
+			return defaultRiskManager;
+		}
 	}
 	return defaultApplicant;
 }
@@ -65,8 +75,10 @@ function createUserStore() {
 			setCookie(ROLE_COOKIE_NAME, role);
 			if (role === 'applicant') {
 				set(defaultApplicant);
-			} else {
+			} else if (role === 'processor') {
 				set(defaultProcessor);
+			} else {
+				set(defaultRiskManager);
 			}
 		},
 		switchRole: () => {
@@ -86,5 +98,6 @@ export const currentUser = createUserStore();
 
 export const isApplicant = derived(currentUser, ($user) => $user.role === 'applicant');
 export const isProcessor = derived(currentUser, ($user) => $user.role === 'processor');
+export const isRiskManager = derived(currentUser, ($user) => $user.role === 'risk_manager');
 
 export const debugMode = writable(false);

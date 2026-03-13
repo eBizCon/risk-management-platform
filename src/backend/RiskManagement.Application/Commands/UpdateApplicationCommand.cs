@@ -2,6 +2,7 @@ using FluentValidation;
 using RiskManagement.Application.Common;
 using RiskManagement.Application.DTOs;
 using RiskManagement.Domain.Aggregates.ApplicationAggregate;
+using RiskManagement.Domain.Aggregates.ScoringConfigAggregate;
 using RiskManagement.Domain.Services;
 using RiskManagement.Domain.ValueObjects;
 using AppId = RiskManagement.Domain.Aggregates.ApplicationAggregate.ApplicationId;
@@ -16,15 +17,18 @@ public record UpdateApplicationResult(ApplicationResponse Application);
 public class UpdateApplicationHandler : ICommandHandler<UpdateApplicationCommand, UpdateApplicationResult>
 {
     private readonly IApplicationRepository _repository;
+    private readonly IScoringConfigRepository _configRepository;
     private readonly IScoringService _scoringService;
     private readonly IValidator<ApplicationUpdateDto> _validator;
 
     public UpdateApplicationHandler(
         IApplicationRepository repository,
+        IScoringConfigRepository configRepository,
         IScoringService scoringService,
         IValidator<ApplicationUpdateDto> validator)
     {
         _repository = repository;
+        _configRepository = configRepository;
         _scoringService = scoringService;
         _validator = validator;
     }
@@ -46,6 +50,10 @@ public class UpdateApplicationHandler : ICommandHandler<UpdateApplicationCommand
             return Result<UpdateApplicationResult>.ValidationFailure(errors, command.Dto);
         }
 
+        var configVersion = await _configRepository.GetCurrentAsync(ct);
+        if (configVersion is null)
+            return Result<UpdateApplicationResult>.Failure("Keine Scoring-Konfiguration gefunden");
+
         application.UpdateDetails(
             command.Dto.Name,
             Money.Create((decimal)command.Dto.Income),
@@ -53,7 +61,9 @@ public class UpdateApplicationHandler : ICommandHandler<UpdateApplicationCommand
             Money.CreatePositive((decimal)command.Dto.DesiredRate),
             EmploymentStatus.From(command.Dto.EmploymentStatus),
             command.Dto.HasPaymentDefault,
-            _scoringService);
+            _scoringService,
+            configVersion.Config,
+            configVersion.Id);
 
         await _repository.SaveChangesAsync(ct);
 
