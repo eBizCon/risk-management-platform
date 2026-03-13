@@ -32,10 +32,8 @@ public class GetApplicationsByUserHandler : IQueryHandler<GetApplicationsByUserQ
         var customerIds = responses.Select(r => r.CustomerId).Distinct();
         var names = await _customerNameService.GetCustomerNamesAsync(customerIds, ct);
         foreach (var response in responses)
-        {
             if (names.TryGetValue(response.CustomerId, out var name))
                 response.CustomerName = name;
-        }
 
         return Result<ApplicationResponse[]>.Success(responses);
     }

@@ -6,5 +6,6 @@ export const load: PageLoad = async ({ fetch }) => {
 	if (!res.ok) {
 		throw error(res.status, 'Fehler beim Laden der Kunden');
 	}
-	return { customers: await res.json() };
+	const body = await res.json();
+	return { customers: body.customers ?? body };
 };

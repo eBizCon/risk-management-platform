@@ -44,7 +44,7 @@ public static class DependencyInjection
             client.DefaultRequestHeaders.Add("X-Api-Key", serviceApiKey);
         });
 
-        services.AddScoped<IDispatcher, SharedKernel.Dispatching.Dispatcher>();
+        services.AddScoped<IDispatcher, Dispatcher>();
 
         var applicationAssembly = typeof(ApplicationCreateDto).Assembly;
         RegisterHandlers(services, typeof(ICommandHandler<,>), applicationAssembly);
@@ -56,7 +56,6 @@ public static class DependencyInjection
 
     private static void RegisterHandlers(IServiceCollection services, Type openGenericInterface, Assembly assembly)
     {
-
         foreach (var type in assembly.GetTypes())
         {
             if (type.IsAbstract || type.IsInterface)

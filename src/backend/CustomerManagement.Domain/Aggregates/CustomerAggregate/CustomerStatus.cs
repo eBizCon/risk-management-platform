@@ -16,5 +16,8 @@ public sealed class CustomerStatus : Enumeration<CustomerStatus>
     {
     }
 
-    public static CustomerStatus From(string value) => From(value, All);
+    public static CustomerStatus From(string value)
+    {
+        return From(value, All);
+    }
 }

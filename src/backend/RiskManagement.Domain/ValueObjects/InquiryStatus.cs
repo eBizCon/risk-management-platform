@@ -17,5 +17,8 @@ public sealed class InquiryStatus : Enumeration<InquiryStatus>
     {
     }
 
-    public static InquiryStatus From(string value) => From(value, All);
+    public static InquiryStatus From(string value)
+    {
+        return From(value, All);
+    }
 }

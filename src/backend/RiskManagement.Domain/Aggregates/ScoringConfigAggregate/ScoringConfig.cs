@@ -129,24 +129,24 @@ public sealed class ScoringConfig : ValueObject
     }
 
     public static ScoringConfig Default => Create(
-        greenThreshold: 75,
-        yellowThreshold: 50,
-        incomeRatioGood: 0.5m,
-        incomeRatioModerate: 0.3m,
-        incomeRatioLimited: 0.1m,
-        penaltyModerateRatio: 15,
-        penaltyLimitedRatio: 30,
-        penaltyCriticalRatio: 50,
-        rateGood: 0.3m,
-        rateModerate: 0.5m,
-        rateHeavy: 0.7m,
-        penaltyModerateRate: 10,
-        penaltyHeavyRate: 25,
-        penaltyExcessiveRate: 40,
-        penaltySelfEmployed: 10,
-        penaltyRetired: 5,
-        penaltyUnemployed: 35,
-        penaltyPaymentDefault: 25);
+        75,
+        50,
+        0.5m,
+        0.3m,
+        0.1m,
+        15,
+        30,
+        50,
+        0.3m,
+        0.5m,
+        0.7m,
+        10,
+        25,
+        40,
+        10,
+        5,
+        35,
+        25);
 
     private static void ValidateThreshold(int value, string name)
     {

@@ -21,6 +21,7 @@
 
 	let showConfirmDialog = $state(false);
 	let pendingAction = $state<'submit' | null>(null);
+	let generalError = $state('');
 	let formRef: HTMLFormElement | null = null;
 	let customers = $state<Customer[]>([]);
 	let customersLoading = $state(true);
@@ -33,7 +34,8 @@
 		try {
 			const res = await fetch('/api/customers/active');
 			if (res.ok) {
-				customers = await res.json();
+				const body = await res.json();
+				customers = body.customers ?? body;
 			}
 		} finally {
 			customersLoading = false;
@@ -59,6 +61,7 @@
 
 		isSubmitting = true;
 		errors = {};
+		generalError = '';
 
 		const data = getFormData();
 
@@ -78,6 +81,10 @@
 				const result = await res.json();
 				if (result.errors) {
 					errors = result.errors;
+				} else if (result.error) {
+					generalError = result.error;
+				} else {
+					generalError = 'Ein unerwarteter Fehler ist aufgetreten.';
 				}
 				return;
 			}
@@ -122,6 +129,23 @@
 		<input type="hidden" name="id" value={application.id} />
 	{/if}
 
+	{#if generalError}
+		<div class="rounded-md bg-danger/10 p-4" data-testid="application-general-error">
+			<p class="text-sm text-danger">{generalError}</p>
+		</div>
+	{/if}
+
+	{#if Object.keys(errors).length > 0}
+		<div class="rounded-md bg-danger/10 p-4" data-testid="application-validation-summary">
+			<p class="text-sm font-medium text-danger">Bitte korrigieren Sie die folgenden Fehler:</p>
+			<ul class="mt-2 list-disc list-inside text-sm text-danger">
+				{#each Object.values(errors).flat() as msg}
+					<li>{msg}</li>
+				{/each}
+			</ul>
+		</div>
+	{/if}
+
 	<div>
 		<label for="customerId" class="form-label block">Kunde</label>
 		{#if customersLoading}
@@ -148,8 +172,8 @@
 				<a href="/customers/new" class="text-brand-primary hover:text-brand-primary-hover">Neuen Kunden anlegen</a>
 			</p>
 		{/if}
-		{#if errors.CustomerId}
-			<p class="mt-1 error-text" data-testid="customer-error">{errors.CustomerId[0]}</p>
+		{#if errors.customerId}
+			<p class="mt-1 error-text" data-testid="customer-error">{errors.customerId[0]}</p>
 		{/if}
 	</div>
 

@@ -37,5 +37,8 @@ public sealed class Address : ValueObject
         yield return Country;
     }
 
-    public override string ToString() => $"{Street}, {ZipCode} {City}, {Country}";
+    public override string ToString()
+    {
+        return $"{Street}, {ZipCode} {City}, {Country}";
+    }
 }

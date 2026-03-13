@@ -78,7 +78,8 @@ public class Application : AggregateRoot<ApplicationId>
         return app;
     }
 
-    public void Submit(IScoringService scoringService, ScoringConfig scoringConfig, ScoringConfigVersionId scoringConfigVersionId)
+    public void Submit(IScoringService scoringService, ScoringConfig scoringConfig,
+        ScoringConfigVersionId scoringConfigVersionId)
     {
         if (Status != ApplicationStatus.Draft)
             throw new InvalidStatusTransitionException(Status, ApplicationStatus.Submitted);
@@ -153,7 +154,8 @@ public class Application : AggregateRoot<ApplicationId>
         ApplyScoring(scoringService, scoringConfig, scoringConfigVersionId);
     }
 
-    public void Rescore(IScoringService scoringService, ScoringConfig scoringConfig, ScoringConfigVersionId scoringConfigVersionId)
+    public void Rescore(IScoringService scoringService, ScoringConfig scoringConfig,
+        ScoringConfigVersionId scoringConfigVersionId)
     {
         ApplyScoring(scoringService, scoringConfig, scoringConfigVersionId);
     }
@@ -194,10 +196,12 @@ public class Application : AggregateRoot<ApplicationId>
         Status = ApplicationStatus.Resubmitted;
     }
 
-    private void ApplyScoring(IScoringService scoringService, ScoringConfig scoringConfig, ScoringConfigVersionId scoringConfigVersionId)
+    private void ApplyScoring(IScoringService scoringService, ScoringConfig scoringConfig,
+        ScoringConfigVersionId scoringConfigVersionId)
     {
         var result =
-            scoringService.CalculateScore(Income, FixedCosts, DesiredRate, EmploymentStatus, HasPaymentDefault, scoringConfig);
+            scoringService.CalculateScore(Income, FixedCosts, DesiredRate, EmploymentStatus, HasPaymentDefault,
+                scoringConfig);
         Score = result.Score;
         TrafficLight = result.TrafficLight;
         ScoringReasons = JsonSerializer.Serialize(result.Reasons);

@@ -25,5 +25,8 @@ public sealed class ApplicationStatus : Enumeration<ApplicationStatus>
     {
     }
 
-    public static ApplicationStatus From(string value) => From(value, All);
+    public static ApplicationStatus From(string value)
+    {
+        return From(value, All);
+    }
 }

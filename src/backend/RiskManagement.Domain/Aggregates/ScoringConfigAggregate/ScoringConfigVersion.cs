@@ -11,7 +11,9 @@ public class ScoringConfigVersion : Entity<ScoringConfigVersionId>
     public EmailAddress CreatedBy { get; private set; } = null!;
     public DateTime CreatedAt { get; private set; }
 
-    private ScoringConfigVersion() { }
+    private ScoringConfigVersion()
+    {
+    }
 
     public static ScoringConfigVersion Create(
         int version,

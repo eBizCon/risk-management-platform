@@ -1,4 +1,5 @@
 using CustomerManagement.Application.DTOs;
+using CustomerManagement.Domain.ValueObjects;
 using FluentValidation;
 
 namespace CustomerManagement.Application.Validation;
@@ -19,7 +20,9 @@ public class CustomerUpdateValidator : AbstractValidator<CustomerUpdateDto>
             .EmailAddress().When(x => !string.IsNullOrWhiteSpace(x.Email))
             .WithMessage("Ungültige E-Mail-Adresse");
 
-        RuleFor(x => x.Phone).NotEmpty().WithMessage("Telefonnummer ist erforderlich");
+        RuleFor(x => x.Phone).NotEmpty().WithMessage("Telefonnummer ist erforderlich")
+            .Must(PhoneNumber.IsValid).When(x => !string.IsNullOrWhiteSpace(x.Phone))
+            .WithMessage("Ungültige Telefonnummer (z.B. +49 123 456789)");
 
         RuleFor(x => x.DateOfBirth).NotEmpty().WithMessage("Geburtsdatum ist erforderlich")
             .Must(BeAValidDate).WithMessage("Ungültiges Datumsformat (erwartet: YYYY-MM-DD)");

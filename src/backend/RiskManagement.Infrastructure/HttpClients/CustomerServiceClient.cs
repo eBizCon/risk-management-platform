@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using System.Text.Json;
 using RiskManagement.Application.Services;
 
 namespace RiskManagement.Infrastructure.HttpClients;
@@ -6,6 +7,11 @@ namespace RiskManagement.Infrastructure.HttpClients;
 public class CustomerServiceClient : ICustomerNameService
 {
     private readonly HttpClient _httpClient;
+
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true
+    };
 
     public CustomerServiceClient(HttpClient httpClient)
     {
@@ -20,7 +26,7 @@ public class CustomerServiceClient : ICustomerNameService
             if (!response.IsSuccessStatusCode)
                 return null;
 
-            var result = await response.Content.ReadFromJsonAsync<CustomerInternalResult>(cancellationToken: ct);
+            var result = await response.Content.ReadFromJsonAsync<CustomerInternalResult>(JsonOptions, ct);
             if (result?.Customer is null)
                 return null;
 
@@ -32,7 +38,8 @@ public class CustomerServiceClient : ICustomerNameService
         }
     }
 
-    public async Task<Dictionary<int, string>> GetCustomerNamesAsync(IEnumerable<int> customerIds, CancellationToken ct = default)
+    public async Task<Dictionary<int, string>> GetCustomerNamesAsync(IEnumerable<int> customerIds,
+        CancellationToken ct = default)
     {
         var names = new Dictionary<int, string>();
         foreach (var id in customerIds.Distinct())
@@ -41,9 +48,11 @@ public class CustomerServiceClient : ICustomerNameService
             if (name is not null)
                 names[id] = name;
         }
+
         return names;
     }
 
     private record CustomerInternalDto(int Id, string FirstName, string LastName, string Status);
+
     private record CustomerInternalResult(CustomerInternalDto Customer);
 }

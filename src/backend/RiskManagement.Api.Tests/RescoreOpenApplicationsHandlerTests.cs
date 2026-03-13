@@ -32,7 +32,8 @@ public class RescoreOpenApplicationsHandlerTests
     [Fact]
     public async Task HandleAsync_NoOpenApplications_ShouldReturnZeroCount()
     {
-        var configVersion = ScoringConfigVersion.Create(1, ScoringConfig.Default, EmailAddress.Create("admin@test.com"));
+        var configVersion =
+            ScoringConfigVersion.Create(1, ScoringConfig.Default, EmailAddress.Create("admin@test.com"));
         _configRepoMock.Setup(r => r.GetCurrentAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(configVersion);
         _appRepoMock.Setup(r => r.GetOpenApplicationsAsync(It.IsAny<CancellationToken>()))
@@ -50,7 +51,8 @@ public class RescoreOpenApplicationsHandlerTests
     [Fact]
     public async Task HandleAsync_WithOpenApplications_ShouldRescoreAndReturnCount()
     {
-        var configVersion = ScoringConfigVersion.Create(1, ScoringConfig.Default, EmailAddress.Create("admin@test.com"));
+        var configVersion =
+            ScoringConfigVersion.Create(1, ScoringConfig.Default, EmailAddress.Create("admin@test.com"));
         _configRepoMock.Setup(r => r.GetCurrentAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(configVersion);
 

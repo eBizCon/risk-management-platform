@@ -21,7 +21,10 @@ public sealed class EmploymentStatus : Enumeration<EmploymentStatus>
     {
     }
 
-    public static EmploymentStatus From(string value) => From(value, All);
+    public static EmploymentStatus From(string value)
+    {
+        return From(value, All);
+    }
 
     public static string[] AllValues => All.Keys.ToArray();
 }

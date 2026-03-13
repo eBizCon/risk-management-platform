@@ -19,5 +19,8 @@ public sealed class TrafficLight : Enumeration<TrafficLight>
     {
     }
 
-    public static TrafficLight From(string value) => From(value, All);
+    public static TrafficLight From(string value)
+    {
+        return From(value, All);
+    }
 }

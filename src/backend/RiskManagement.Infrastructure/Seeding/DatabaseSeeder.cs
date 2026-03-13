@@ -44,7 +44,13 @@ public class DatabaseSeeder
             ("Lea Hartmann", 2700, 2200, 300, "unemployed", false)
         };
 
-    private enum SeedStatus { Draft, Submitted, Approved, Rejected }
+    private enum SeedStatus
+    {
+        Draft,
+        Submitted,
+        Approved,
+        Rejected
+    }
 
     private static readonly SeedStatus[] StatusCycle =
         { SeedStatus.Draft, SeedStatus.Submitted, SeedStatus.Approved, SeedStatus.Rejected };
@@ -67,9 +73,9 @@ public class DatabaseSeeder
         if (hasConfig) return;
 
         var defaultConfig = ScoringConfigVersion.Create(
-            version: 1,
-            config: ScoringConfig.Default,
-            createdBy: EmailAddress.Create("system@risk-management.local"));
+            1,
+            ScoringConfig.Default,
+            EmailAddress.Create("system@risk-management.local"));
 
         _context.ScoringConfigVersions.Add(defaultConfig);
         await _context.SaveChangesAsync();

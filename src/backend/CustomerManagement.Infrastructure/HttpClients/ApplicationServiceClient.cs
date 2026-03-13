@@ -16,7 +16,7 @@ public class ApplicationServiceClient : IApplicationServiceClient
     {
         var response = await _httpClient.GetAsync($"/api/internal/applications/exists?customerId={customerId}", ct);
         response.EnsureSuccessStatusCode();
-        var result = await response.Content.ReadFromJsonAsync<ApplicationExistsResponse>(cancellationToken: ct);
+        var result = await response.Content.ReadFromJsonAsync<ApplicationExistsResponse>(ct);
         return result?.Exists ?? false;
     }
 

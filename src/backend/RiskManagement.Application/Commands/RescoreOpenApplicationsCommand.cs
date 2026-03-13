@@ -34,9 +34,7 @@ public class RescoreOpenApplicationsHandler : ICommandHandler<RescoreOpenApplica
         var openApplications = await _applicationRepository.GetOpenApplicationsAsync(ct);
 
         foreach (var application in openApplications)
-        {
             application.Rescore(_scoringService, configVersion.Config, configVersion.Id);
-        }
 
         await _applicationRepository.SaveChangesAsync(ct);
 

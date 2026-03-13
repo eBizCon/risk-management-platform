@@ -41,10 +41,10 @@ public class TestAggregate : AggregateRoot
 
 public class DispatcherTests
 {
-    private static SharedKernel.Dispatching.Dispatcher CreateDispatcher(IServiceCollection services)
+    private static Dispatcher CreateDispatcher(IServiceCollection services)
     {
         var provider = services.BuildServiceProvider();
-        return new SharedKernel.Dispatching.Dispatcher(provider);
+        return new Dispatcher(provider);
     }
 
     [Fact]

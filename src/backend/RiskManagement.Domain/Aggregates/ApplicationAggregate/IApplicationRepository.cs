@@ -6,6 +6,7 @@ public interface IApplicationRepository
 {
     Task<Application?> GetByIdAsync(ApplicationId id, CancellationToken ct = default);
     Task<Application?> GetByIdWithInquiriesAsync(ApplicationId id, CancellationToken ct = default);
+
     Task<List<Application>> GetByUserAsync(EmailAddress userEmail, ApplicationStatus? status = null,
         CancellationToken ct = default);
 

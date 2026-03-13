@@ -12,24 +12,24 @@ public class UpdateScoringConfigHandlerTests
     private readonly Mock<IScoringConfigRepository> _repoMock = new();
 
     private static ScoringConfigUpdateDto ValidDto => new(
-        GreenThreshold: 75,
-        YellowThreshold: 50,
-        IncomeRatioGood: 0.5m,
-        IncomeRatioModerate: 0.3m,
-        IncomeRatioLimited: 0.1m,
-        PenaltyModerateRatio: 15,
-        PenaltyLimitedRatio: 30,
-        PenaltyCriticalRatio: 50,
-        RateGood: 0.3m,
-        RateModerate: 0.5m,
-        RateHeavy: 0.7m,
-        PenaltyModerateRate: 10,
-        PenaltyHeavyRate: 25,
-        PenaltyExcessiveRate: 40,
-        PenaltySelfEmployed: 10,
-        PenaltyRetired: 5,
-        PenaltyUnemployed: 35,
-        PenaltyPaymentDefault: 25);
+        75,
+        50,
+        0.5m,
+        0.3m,
+        0.1m,
+        15,
+        30,
+        50,
+        0.3m,
+        0.5m,
+        0.7m,
+        10,
+        25,
+        40,
+        10,
+        5,
+        35,
+        25);
 
     [Fact]
     public async Task HandleAsync_NoExistingConfig_ShouldCreateVersion1()
@@ -72,13 +72,13 @@ public class UpdateScoringConfigHandlerTests
             .ReturnsAsync((ScoringConfigVersion?)null);
 
         var customDto = new ScoringConfigUpdateDto(
-            GreenThreshold: 80, YellowThreshold: 40,
-            IncomeRatioGood: 0.6m, IncomeRatioModerate: 0.4m, IncomeRatioLimited: 0.2m,
-            PenaltyModerateRatio: 10, PenaltyLimitedRatio: 20, PenaltyCriticalRatio: 40,
-            RateGood: 0.2m, RateModerate: 0.4m, RateHeavy: 0.6m,
-            PenaltyModerateRate: 5, PenaltyHeavyRate: 15, PenaltyExcessiveRate: 30,
-            PenaltySelfEmployed: 8, PenaltyRetired: 3, PenaltyUnemployed: 30,
-            PenaltyPaymentDefault: 20);
+            80, 40,
+            0.6m, 0.4m, 0.2m,
+            10, 20, 40,
+            0.2m, 0.4m, 0.6m,
+            5, 15, 30,
+            8, 3, 30,
+            20);
 
         var handler = new UpdateScoringConfigHandler(_repoMock.Object);
         var command = new UpdateScoringConfigCommand(customDto, "admin@test.com");

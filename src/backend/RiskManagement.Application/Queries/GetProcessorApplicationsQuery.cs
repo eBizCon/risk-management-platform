@@ -36,10 +36,8 @@ public class
         var customerIds = applications.Select(a => a.CustomerId).Distinct();
         var names = await _customerNameService.GetCustomerNamesAsync(customerIds, ct);
         foreach (var app in applications)
-        {
             if (names.TryGetValue(app.CustomerId, out var name))
                 app.CustomerName = name;
-        }
 
         var response = new ProcessorApplicationsResponse
         {

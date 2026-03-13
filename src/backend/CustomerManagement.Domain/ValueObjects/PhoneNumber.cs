@@ -28,7 +28,16 @@ public sealed partial class PhoneNumber : ValueObject
         yield return Value;
     }
 
-    public override string ToString() => Value;
+    public static bool IsValid(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return false;
+        return PhoneRegex().IsMatch(value.Trim());
+    }
+
+    public override string ToString()
+    {
+        return Value;
+    }
 
     [GeneratedRegex(@"^\+?[\d\s\-/()]{5,20}$")]
     private static partial Regex PhoneRegex();

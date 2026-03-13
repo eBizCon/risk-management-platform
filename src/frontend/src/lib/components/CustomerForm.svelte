@@ -10,6 +10,7 @@
 
 	let isSubmitting = $state(false);
 	let errors = $state<Record<string, string[]>>({});
+	let generalError = $state('');
 	let formRef = $state<HTMLFormElement | null>(null);
 
 	function getFormData(): Record<string, unknown> {
@@ -34,6 +35,7 @@
 
 		isSubmitting = true;
 		errors = {};
+		generalError = '';
 
 		const data = getFormData();
 
@@ -52,15 +54,18 @@
 				const result = await res.json();
 				if (result.errors) {
 					errors = result.errors;
+				} else if (result.error) {
+					generalError = result.error;
+				} else {
+					generalError = 'Ein unerwarteter Fehler ist aufgetreten.';
 				}
 				return;
 			}
 
 			const result = await res.json();
-			if (result.id) {
-				await goto(`/customers/${result.id}`);
-			} else if (customer?.id) {
-				await goto(`/customers/${customer.id}`);
+			const customerId = result.customer?.id ?? result.id;
+			if (customerId) {
+				await goto(`/customers/${customerId}`);
 			} else {
 				await goto('/customers');
 			}
@@ -76,6 +81,23 @@
 	class="space-y-6"
 	data-testid="customer-form"
 >
+	{#if generalError}
+		<div class="rounded-md bg-danger/10 p-4" data-testid="customer-general-error">
+			<p class="text-sm text-danger">{generalError}</p>
+		</div>
+	{/if}
+
+	{#if Object.keys(errors).length > 0}
+		<div class="rounded-md bg-danger/10 p-4" data-testid="customer-validation-summary">
+			<p class="text-sm font-medium text-danger">Bitte korrigieren Sie die folgenden Fehler:</p>
+			<ul class="mt-2 list-disc list-inside text-sm text-danger">
+				{#each Object.values(errors).flat() as msg}
+					<li>{msg}</li>
+				{/each}
+			</ul>
+		</div>
+	{/if}
+
 	<div class="card p-6">
 		<h2 class="text-lg font-semibold text-primary mb-4">Persönliche Daten</h2>
 		<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -90,8 +112,8 @@
 					class="mt-1 block w-full rounded-md border-default shadow-sm sm:text-sm"
 					data-testid="customer-firstName"
 				/>
-				{#if errors.FirstName}
-					<p class="mt-1 error-text" data-testid="customer-firstName-error">{errors.FirstName[0]}</p>
+				{#if errors.firstName}
+					<p class="mt-1 error-text" data-testid="customer-firstName-error">{errors.firstName[0]}</p>
 				{/if}
 			</div>
 			<div>
@@ -105,8 +127,8 @@
 					class="mt-1 block w-full rounded-md border-default shadow-sm sm:text-sm"
 					data-testid="customer-lastName"
 				/>
-				{#if errors.LastName}
-					<p class="mt-1 error-text" data-testid="customer-lastName-error">{errors.LastName[0]}</p>
+				{#if errors.lastName}
+					<p class="mt-1 error-text" data-testid="customer-lastName-error">{errors.lastName[0]}</p>
 				{/if}
 			</div>
 			<div>
@@ -119,8 +141,8 @@
 					class="mt-1 block w-full rounded-md border-default shadow-sm sm:text-sm"
 					data-testid="customer-email"
 				/>
-				{#if errors.Email}
-					<p class="mt-1 error-text" data-testid="customer-email-error">{errors.Email[0]}</p>
+				{#if errors.email}
+					<p class="mt-1 error-text" data-testid="customer-email-error">{errors.email[0]}</p>
 				{/if}
 			</div>
 			<div>
@@ -134,8 +156,8 @@
 					class="mt-1 block w-full rounded-md border-default shadow-sm sm:text-sm"
 					data-testid="customer-phone"
 				/>
-				{#if errors.Phone}
-					<p class="mt-1 error-text" data-testid="customer-phone-error">{errors.Phone[0]}</p>
+				{#if errors.phone}
+					<p class="mt-1 error-text" data-testid="customer-phone-error">{errors.phone[0]}</p>
 				{/if}
 			</div>
 			<div>
@@ -149,8 +171,8 @@
 					class="mt-1 block w-full rounded-md border-default shadow-sm sm:text-sm"
 					data-testid="customer-dateOfBirth"
 				/>
-				{#if errors.DateOfBirth}
-					<p class="mt-1 error-text" data-testid="customer-dateOfBirth-error">{errors.DateOfBirth[0]}</p>
+				{#if errors.dateOfBirth}
+					<p class="mt-1 error-text" data-testid="customer-dateOfBirth-error">{errors.dateOfBirth[0]}</p>
 				{/if}
 			</div>
 		</div>
@@ -170,8 +192,8 @@
 					class="mt-1 block w-full rounded-md border-default shadow-sm sm:text-sm"
 					data-testid="customer-street"
 				/>
-				{#if errors.Street}
-					<p class="mt-1 error-text" data-testid="customer-street-error">{errors.Street[0]}</p>
+				{#if errors.street}
+					<p class="mt-1 error-text" data-testid="customer-street-error">{errors.street[0]}</p>
 				{/if}
 			</div>
 			<div>
@@ -185,8 +207,8 @@
 					class="mt-1 block w-full rounded-md border-default shadow-sm sm:text-sm"
 					data-testid="customer-zipCode"
 				/>
-				{#if errors.ZipCode}
-					<p class="mt-1 error-text" data-testid="customer-zipCode-error">{errors.ZipCode[0]}</p>
+				{#if errors.zipCode}
+					<p class="mt-1 error-text" data-testid="customer-zipCode-error">{errors.zipCode[0]}</p>
 				{/if}
 			</div>
 			<div>
@@ -200,8 +222,8 @@
 					class="mt-1 block w-full rounded-md border-default shadow-sm sm:text-sm"
 					data-testid="customer-city"
 				/>
-				{#if errors.City}
-					<p class="mt-1 error-text" data-testid="customer-city-error">{errors.City[0]}</p>
+				{#if errors.city}
+					<p class="mt-1 error-text" data-testid="customer-city-error">{errors.city[0]}</p>
 				{/if}
 			</div>
 			<div>
@@ -215,8 +237,8 @@
 					class="mt-1 block w-full rounded-md border-default shadow-sm sm:text-sm"
 					data-testid="customer-country"
 				/>
-				{#if errors.Country}
-					<p class="mt-1 error-text" data-testid="customer-country-error">{errors.Country[0]}</p>
+				{#if errors.country}
+					<p class="mt-1 error-text" data-testid="customer-country-error">{errors.country[0]}</p>
 				{/if}
 			</div>
 		</div>

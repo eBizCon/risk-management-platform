@@ -27,15 +27,19 @@ public class ScoringConfigVersionConfiguration : IEntityTypeConfiguration<Scorin
             config.Property(c => c.GreenThreshold).HasColumnName("green_threshold").IsRequired();
             config.Property(c => c.YellowThreshold).HasColumnName("yellow_threshold").IsRequired();
 
-            config.Property(c => c.IncomeRatioGood).HasColumnName("income_ratio_good").HasColumnType("numeric(4,2)").IsRequired();
-            config.Property(c => c.IncomeRatioModerate).HasColumnName("income_ratio_moderate").HasColumnType("numeric(4,2)").IsRequired();
-            config.Property(c => c.IncomeRatioLimited).HasColumnName("income_ratio_limited").HasColumnType("numeric(4,2)").IsRequired();
+            config.Property(c => c.IncomeRatioGood).HasColumnName("income_ratio_good").HasColumnType("numeric(4,2)")
+                .IsRequired();
+            config.Property(c => c.IncomeRatioModerate).HasColumnName("income_ratio_moderate")
+                .HasColumnType("numeric(4,2)").IsRequired();
+            config.Property(c => c.IncomeRatioLimited).HasColumnName("income_ratio_limited")
+                .HasColumnType("numeric(4,2)").IsRequired();
             config.Property(c => c.PenaltyModerateRatio).HasColumnName("penalty_moderate_ratio").IsRequired();
             config.Property(c => c.PenaltyLimitedRatio).HasColumnName("penalty_limited_ratio").IsRequired();
             config.Property(c => c.PenaltyCriticalRatio).HasColumnName("penalty_critical_ratio").IsRequired();
 
             config.Property(c => c.RateGood).HasColumnName("rate_good").HasColumnType("numeric(4,2)").IsRequired();
-            config.Property(c => c.RateModerate).HasColumnName("rate_moderate").HasColumnType("numeric(4,2)").IsRequired();
+            config.Property(c => c.RateModerate).HasColumnName("rate_moderate").HasColumnType("numeric(4,2)")
+                .IsRequired();
             config.Property(c => c.RateHeavy).HasColumnName("rate_heavy").HasColumnType("numeric(4,2)").IsRequired();
             config.Property(c => c.PenaltyModerateRate).HasColumnName("penalty_moderate_rate").IsRequired();
             config.Property(c => c.PenaltyHeavyRate).HasColumnName("penalty_heavy_rate").IsRequired();

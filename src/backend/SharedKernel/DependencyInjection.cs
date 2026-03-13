@@ -6,7 +6,8 @@ namespace SharedKernel;
 
 public static class SharedKernelDependencyInjection
 {
-    public static IServiceCollection AddSharedKernel(this IServiceCollection services, params Assembly[] handlerAssemblies)
+    public static IServiceCollection AddSharedKernel(this IServiceCollection services,
+        params Assembly[] handlerAssemblies)
     {
         services.AddScoped<IDispatcher, Dispatcher>();
 
