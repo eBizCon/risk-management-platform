@@ -1,10 +1,13 @@
-using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using RiskManagement.Api.Data;
 using RiskManagement.Api.Extensions;
 using RiskManagement.Api.Models;
-using RiskManagement.Api.Validation;
+using RiskManagement.Application.Commands;
+using RiskManagement.Application.Common;
+using RiskManagement.Application.DTOs;
+using RiskManagement.Application.Queries;
+using ApplicationCreateDto = RiskManagement.Application.DTOs.ApplicationCreateDto;
+using ApplicationUpdateDto = RiskManagement.Application.DTOs.ApplicationUpdateDto;
 
 namespace RiskManagement.Api.Controllers;
 
@@ -13,155 +16,71 @@ namespace RiskManagement.Api.Controllers;
 [Authorize(Policy = AuthPolicies.Applicant)]
 public class ApplicationsController : ControllerBase
 {
-    private readonly ApplicationRepository _repository;
-    private readonly ApplicationValidator _createValidator;
-    private readonly ApplicationUpdateValidator _updateValidator;
+    private readonly ICommandHandler<CreateApplicationCommand, CreateApplicationResult> _createHandler;
+    private readonly ICommandHandler<UpdateApplicationCommand, UpdateApplicationResult> _updateHandler;
+    private readonly ICommandHandler<DeleteApplicationCommand, bool> _deleteHandler;
+    private readonly ICommandHandler<SubmitApplicationCommand, ApplicationResponse> _submitHandler;
+    private readonly IQueryHandler<GetApplicationQuery, ApplicationResponse> _getHandler;
+    private readonly IQueryHandler<GetApplicationsByUserQuery, ApplicationResponse[]> _listHandler;
 
     public ApplicationsController(
-        ApplicationRepository repository,
-        ApplicationValidator createValidator,
-        ApplicationUpdateValidator updateValidator)
+        ICommandHandler<CreateApplicationCommand, CreateApplicationResult> createHandler,
+        ICommandHandler<UpdateApplicationCommand, UpdateApplicationResult> updateHandler,
+        ICommandHandler<DeleteApplicationCommand, bool> deleteHandler,
+        ICommandHandler<SubmitApplicationCommand, ApplicationResponse> submitHandler,
+        IQueryHandler<GetApplicationQuery, ApplicationResponse> getHandler,
+        IQueryHandler<GetApplicationsByUserQuery, ApplicationResponse[]> listHandler)
     {
-        _repository = repository;
-        _createValidator = createValidator;
-        _updateValidator = updateValidator;
+        _createHandler = createHandler;
+        _updateHandler = updateHandler;
+        _deleteHandler = deleteHandler;
+        _submitHandler = submitHandler;
+        _getHandler = getHandler;
+        _listHandler = listHandler;
     }
 
     [HttpGet]
     public async Task<IActionResult> GetApplications([FromQuery] string? status)
     {
-        var applications = await _repository.GetApplicationsByUser(User.GetEmail(), status);
-        return Ok(applications);
+        var result = await _listHandler.HandleAsync(new GetApplicationsByUserQuery(User.GetEmail(), status));
+        return result.ToActionResult();
     }
 
     [HttpPost]
     public async Task<IActionResult> CreateApplication([FromBody] ApplicationCreateDto dto)
     {
-        var validationResult = await _createValidator.ValidateAsync(dto);
-        if (!validationResult.IsValid)
-        {
-            var errors = new Dictionary<string, string[]>();
-            foreach (var failure in validationResult.Errors)
-            {
-                var key = ToCamelCase(failure.PropertyName);
-                if (!errors.ContainsKey(key))
-                {
-                    errors[key] = Array.Empty<string>();
-                }
-                errors[key] = errors[key].Append(failure.ErrorMessage).ToArray();
-            }
-            return BadRequest(new ValidationErrorResponse { Errors = errors, Values = dto });
-        }
+        var result = await _createHandler.HandleAsync(new CreateApplicationCommand(dto, User.GetEmail()));
+        if (!result.IsSuccess)
+            return result.ToActionResult();
 
-        var application = await _repository.CreateApplication(new Application
-        {
-            Name = dto.Name,
-            Income = dto.Income,
-            FixedCosts = dto.FixedCosts,
-            DesiredRate = dto.DesiredRate,
-            EmploymentStatus = dto.EmploymentStatus,
-            HasPaymentDefault = dto.HasPaymentDefault,
-            Status = "draft",
-            CreatedBy = User.GetEmail()
-        });
-
-        if (dto.Action == "submit" && application != null)
-        {
-            var submitted = await _repository.SubmitApplication(application.Id);
-            if (submitted != null)
-            {
-                return Ok(new { application = submitted, redirect = $"/applications/{submitted.Id}?submitted=true" });
-            }
-        }
-
-        return Ok(new { application, redirect = $"/applications/{application!.Id}" });
+        return Ok(new { application = result.Value!.Application, redirect = result.Value.Redirect });
     }
 
     [HttpGet("{id:int}")]
     [Authorize(Policy = AuthPolicies.ApplicantOrProcessor)]
     public async Task<IActionResult> GetApplication(int id)
     {
-        var application = await _repository.GetApplicationById(id);
-        if (application == null)
-        {
-            return NotFound(new { error = "Antrag nicht gefunden" });
-        }
-
-        if (User.IsApplicant() && application.CreatedBy != User.GetEmail())
-        {
-            return StatusCode(403, new { error = "Keine Berechtigung" });
-        }
-
-        return Ok(application);
+        var role = User.IsProcessor() ? "processor" : "applicant";
+        var result = await _getHandler.HandleAsync(new GetApplicationQuery(id, User.GetEmail(), role));
+        return result.ToActionResult();
     }
 
     [HttpPut("{id:int}")]
     public async Task<IActionResult> UpdateApplication(int id, [FromBody] ApplicationUpdateDto dto)
     {
-        var existing = await _repository.GetApplicationById(id);
-        if (existing == null)
-        {
-            return NotFound(new { error = "Antrag nicht gefunden" });
-        }
+        var result = await _updateHandler.HandleAsync(new UpdateApplicationCommand(id, dto, User.GetEmail()));
+        if (!result.IsSuccess)
+            return result.ToActionResult();
 
-        if (existing.CreatedBy != User.GetEmail())
-        {
-            return StatusCode(403, new { error = "Keine Berechtigung" });
-        }
-
-        var validationResult = await _updateValidator.ValidateAsync(dto);
-        if (!validationResult.IsValid)
-        {
-            var errors = new Dictionary<string, string[]>();
-            foreach (var failure in validationResult.Errors)
-            {
-                var key = ToCamelCase(failure.PropertyName);
-                if (!errors.ContainsKey(key))
-                {
-                    errors[key] = Array.Empty<string>();
-                }
-                errors[key] = errors[key].Append(failure.ErrorMessage).ToArray();
-            }
-            return BadRequest(new ValidationErrorResponse { Errors = errors, Values = dto });
-        }
-
-        var application = await _repository.UpdateApplication(id, dto);
-        if (application == null)
-        {
-            return NotFound(new { error = "Antrag nicht gefunden oder kann nicht bearbeitet werden" });
-        }
-
-        if (dto.Action == "submit")
-        {
-            var submitted = await _repository.SubmitApplication(id);
-            if (submitted != null)
-            {
-                return Ok(new { application = submitted, redirect = $"/applications/{id}?submitted=true" });
-            }
-        }
-
-        return Ok(new { application, redirect = $"/applications/{id}" });
+        return Ok(new { application = result.Value!.Application, redirect = result.Value.Redirect });
     }
 
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteApplication(int id)
     {
-        var existing = await _repository.GetApplicationById(id);
-        if (existing == null)
-        {
-            return NotFound(new { error = "Antrag nicht gefunden" });
-        }
-
-        if (existing.CreatedBy != User.GetEmail())
-        {
-            return StatusCode(403, new { error = "Keine Berechtigung" });
-        }
-
-        var success = await _repository.DeleteApplication(id);
-        if (!success)
-        {
-            return BadRequest(new { error = "Antrag konnte nicht gelöscht werden (nur Entwürfe können gelöscht werden)" });
-        }
+        var result = await _deleteHandler.HandleAsync(new DeleteApplicationCommand(id, User.GetEmail()));
+        if (!result.IsSuccess)
+            return result.ToActionResult();
 
         return Ok(new { success = true });
     }
@@ -169,29 +88,7 @@ public class ApplicationsController : ControllerBase
     [HttpPost("{id:int}/submit")]
     public async Task<IActionResult> SubmitApplication(int id)
     {
-        var existing = await _repository.GetApplicationById(id);
-        if (existing == null)
-        {
-            return NotFound(new { error = "Antrag nicht gefunden" });
-        }
-
-        if (existing.CreatedBy != User.GetEmail())
-        {
-            return StatusCode(403, new { error = "Keine Berechtigung" });
-        }
-
-        var application = await _repository.SubmitApplication(id);
-        if (application == null)
-        {
-            return BadRequest(new { error = "Antrag konnte nicht eingereicht werden (nur Entwürfe können eingereicht werden)" });
-        }
-
-        return Ok(application);
-    }
-
-    private static string ToCamelCase(string str)
-    {
-        if (string.IsNullOrEmpty(str)) return str;
-        return char.ToLowerInvariant(str[0]) + str[1..];
+        var result = await _submitHandler.HandleAsync(new SubmitApplicationCommand(id, User.GetEmail()));
+        return result.ToActionResult();
     }
 }

@@ -3,22 +3,26 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using RiskManagement.Api.Data;
 using RiskManagement.Api.Extensions;
 using RiskManagement.Api.Models;
+using RiskManagement.Application.Common;
+using RiskManagement.Application.DTOs;
+using RiskManagement.Application.Queries;
 
 namespace RiskManagement.Api.Controllers;
 
 [ApiController]
 public class AuthController : ControllerBase
 {
-    private readonly ApplicationRepository _repository;
     private readonly OidcOptions _oidcOptions;
+    private readonly IQueryHandler<GetDashboardStatsQuery, DashboardStatsDto> _dashboardHandler;
 
-    public AuthController(ApplicationRepository repository, IOptions<OidcOptions> oidcOptions)
+    public AuthController(
+        IOptions<OidcOptions> oidcOptions,
+        IQueryHandler<GetDashboardStatsQuery, DashboardStatsDto> dashboardHandler)
     {
-        _repository = repository;
         _oidcOptions = oidcOptions.Value;
+        _dashboardHandler = dashboardHandler;
     }
 
     [HttpGet("login")]
@@ -71,8 +75,7 @@ public class AuthController : ControllerBase
             return Ok(new { });
         }
 
-        var userEmail = role == AppRoles.Applicant ? User.GetEmail() : null;
-        var stats = await _repository.GetDashboardStats(userEmail);
-        return Ok(stats);
+        var result = await _dashboardHandler.HandleAsync(new GetDashboardStatsQuery(User.GetEmail(), role));
+        return result.ToActionResult();
     }
 }

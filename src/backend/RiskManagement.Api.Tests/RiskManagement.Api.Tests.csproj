@@ -25,6 +25,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\RiskManagement.Api\RiskManagement.Api.csproj" />
+    <ProjectReference Include="..\RiskManagement.Domain\RiskManagement.Domain.csproj" />
+    <ProjectReference Include="..\RiskManagement.Application\RiskManagement.Application.csproj" />
+    <ProjectReference Include="..\RiskManagement.Infrastructure\RiskManagement.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

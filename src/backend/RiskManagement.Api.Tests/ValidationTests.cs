@@ -1,5 +1,5 @@
-using RiskManagement.Api.Models;
-using RiskManagement.Api.Validation;
+using RiskManagement.Application.DTOs;
+using RiskManagement.Application.Validation;
 
 namespace RiskManagement.Api.Tests;
 

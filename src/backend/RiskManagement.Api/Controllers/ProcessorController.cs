@@ -1,9 +1,12 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using RiskManagement.Api.Data;
 using RiskManagement.Api.Extensions;
 using RiskManagement.Api.Models;
-using RiskManagement.Api.Validation;
+using RiskManagement.Application.Commands;
+using RiskManagement.Application.Common;
+using RiskManagement.Application.DTOs;
+using RiskManagement.Application.Queries;
+using ProcessorDecisionDto = RiskManagement.Application.DTOs.ProcessorDecisionDto;
 
 namespace RiskManagement.Api.Controllers;
 
@@ -12,92 +15,42 @@ namespace RiskManagement.Api.Controllers;
 [Authorize(Policy = AuthPolicies.Processor)]
 public class ProcessorController : ControllerBase
 {
-    private readonly ApplicationRepository _repository;
-    private readonly ProcessorDecisionValidator _decisionValidator;
+    private readonly ICommandHandler<ProcessDecisionCommand, ProcessDecisionResult> _decisionHandler;
+    private readonly IQueryHandler<GetApplicationQuery, ApplicationResponse> _getHandler;
+    private readonly IQueryHandler<GetProcessorApplicationsQuery, ProcessorApplicationsResponse> _listHandler;
 
-    public ProcessorController(ApplicationRepository repository, ProcessorDecisionValidator decisionValidator)
+    public ProcessorController(
+        ICommandHandler<ProcessDecisionCommand, ProcessDecisionResult> decisionHandler,
+        IQueryHandler<GetApplicationQuery, ApplicationResponse> getHandler,
+        IQueryHandler<GetProcessorApplicationsQuery, ProcessorApplicationsResponse> listHandler)
     {
-        _repository = repository;
-        _decisionValidator = decisionValidator;
+        _decisionHandler = decisionHandler;
+        _getHandler = getHandler;
+        _listHandler = listHandler;
     }
-
-    private static readonly string[] AllowedStatuses = ApplicationStatuses.All;
 
     [HttpGet("applications")]
     public async Task<IActionResult> GetApplications([FromQuery] string? status, [FromQuery] int? page)
     {
-        var statusFilter = status != null && AllowedStatuses.Contains(status) ? status : null;
-        var rawPage = page ?? 1;
-        var safePage = rawPage > 0 ? rawPage : 1;
-
-        var initialResult = await _repository.GetProcessorApplicationsPaginated(statusFilter, safePage, ApplicationRepository.PageSize);
-        var totalPages = Math.Max(1, (int)Math.Ceiling((double)initialResult.TotalCount / ApplicationRepository.PageSize));
-        var currentPage = Math.Min(Math.Max(safePage, 1), totalPages);
-
-        var result = currentPage == safePage
-            ? initialResult
-            : await _repository.GetProcessorApplicationsPaginated(statusFilter, currentPage, ApplicationRepository.PageSize);
-
-        var stats = await _repository.GetProcessorApplicationStats();
-
-        return Ok(new ProcessorApplicationsResponse
-        {
-            Applications = result.Items.ToArray(),
-            StatusFilter = statusFilter,
-            Stats = stats,
-            Pagination = new PaginationInfo
-            {
-                Page = currentPage,
-                PageSize = ApplicationRepository.PageSize,
-                TotalItems = result.TotalCount,
-                TotalPages = totalPages
-            }
-        });
+        var safePage = Math.Max(page ?? 1, 1);
+        var result = await _listHandler.HandleAsync(new GetProcessorApplicationsQuery(status, safePage));
+        return result.ToActionResult();
     }
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetApplication(int id)
     {
-        var application = await _repository.GetApplicationById(id);
-        if (application == null)
-        {
-            return NotFound(new { error = "Antrag nicht gefunden" });
-        }
-
-        return Ok(application);
+        var result = await _getHandler.HandleAsync(new GetApplicationQuery(id, User.GetEmail(), "processor"));
+        return result.ToActionResult();
     }
 
     [HttpPost("{id:int}/decide")]
     public async Task<IActionResult> ProcessDecision(int id, [FromBody] ProcessorDecisionDto dto)
     {
-        var validationResult = await _decisionValidator.ValidateAsync(dto);
-        if (!validationResult.IsValid)
-        {
-            var errors = new Dictionary<string, string[]>();
-            foreach (var failure in validationResult.Errors)
-            {
-                var key = ToCamelCase(failure.PropertyName);
-                if (!errors.ContainsKey(key))
-                {
-                    errors[key] = Array.Empty<string>();
-                }
-                errors[key] = errors[key].Append(failure.ErrorMessage).ToArray();
-            }
-            return BadRequest(new ValidationErrorResponse { Errors = errors, Values = dto });
-        }
+        var result = await _decisionHandler.HandleAsync(new ProcessDecisionCommand(id, dto));
+        if (!result.IsSuccess)
+            return result.ToActionResult();
 
-        var application = await _repository.ProcessApplication(id, dto.Decision, dto.Comment);
-        if (application == null)
-        {
-            return BadRequest(new { error = "Antrag kann nicht bearbeitet werden (möglicherweise nicht im Status \"Eingereicht\" oder \"Erneut eingereicht\")" });
-        }
-
-        return Ok(new { application, redirect = $"/processor/{id}?processed=true" });
-    }
-
-    private static string ToCamelCase(string str)
-    {
-        if (string.IsNullOrEmpty(str)) return str;
-        return char.ToLowerInvariant(str[0]) + str[1..];
+        return Ok(new { application = result.Value!.Application, redirect = result.Value.Redirect });
     }
 }

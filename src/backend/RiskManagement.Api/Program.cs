@@ -1,9 +1,9 @@
-using System.Text;
 using Microsoft.EntityFrameworkCore;
-using RiskManagement.Api.Data;
 using RiskManagement.Api.Extensions;
-using RiskManagement.Api.Services;
-using RiskManagement.Api.Validation;
+using RiskManagement.Api.Middleware;
+using RiskManagement.Infrastructure;
+using RiskManagement.Infrastructure.Persistence;
+using RiskManagement.Infrastructure.Seeding;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,17 +14,10 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
     });
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")!;
 
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(connectionString));
-
-builder.Services.AddSingleton<ScoringService>();
-builder.Services.AddScoped<ApplicationRepository>();
-builder.Services.AddSingleton<ApplicationValidator>();
-builder.Services.AddSingleton<ApplicationUpdateValidator>();
-builder.Services.AddSingleton<ProcessorDecisionValidator>();
-builder.Services.AddScoped<DatabaseSeeder>();
+builder.Services.AddInfrastructure(connectionString);
+builder.Services.AddApplicationServices();
 builder.Services.AddHttpClient();
 
 builder.Services.AddOidcAuthentication(builder.Configuration, builder.Environment);
@@ -58,6 +51,7 @@ if (app.Environment.IsDevelopment())
     app.UseCors();
 }
 
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseStaticFiles();
