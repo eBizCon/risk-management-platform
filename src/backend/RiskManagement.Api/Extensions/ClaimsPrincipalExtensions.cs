@@ -30,6 +30,16 @@ public static class ClaimsPrincipalExtensions
         return principal.HasClaim(ClaimTypes.Role, role);
     }
 
+    public static bool IsApplicant(this ClaimsPrincipal principal)
+    {
+        return principal.IsInRole(AppRoles.Applicant);
+    }
+
+    public static bool IsProcessor(this ClaimsPrincipal principal)
+    {
+        return principal.IsInRole(AppRoles.Processor);
+    }
+
     public static UserDto ToUserDto(this ClaimsPrincipal principal)
     {
         return new UserDto

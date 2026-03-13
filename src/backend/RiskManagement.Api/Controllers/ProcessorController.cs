@@ -9,7 +9,7 @@ namespace RiskManagement.Api.Controllers;
 
 [ApiController]
 [Route("api/processor")]
-[Authorize]
+[Authorize(Policy = AuthPolicies.Processor)]
 public class ProcessorController : ControllerBase
 {
     private readonly ApplicationRepository _repository;
@@ -21,17 +21,11 @@ public class ProcessorController : ControllerBase
         _decisionValidator = decisionValidator;
     }
 
-    private static readonly string[] AllowedStatuses =
-        { "submitted", "needs_information", "resubmitted", "approved", "rejected", "draft" };
+    private static readonly string[] AllowedStatuses = ApplicationStatuses.All;
 
     [HttpGet("applications")]
     public async Task<IActionResult> GetApplications([FromQuery] string? status, [FromQuery] int? page)
     {
-        if (User.GetRole() != "processor")
-        {
-            return StatusCode(403, new { error = "Keine Berechtigung" });
-        }
-
         var statusFilter = status != null && AllowedStatuses.Contains(status) ? status : null;
         var rawPage = page ?? 1;
         var safePage = rawPage > 0 ? rawPage : 1;
@@ -64,11 +58,6 @@ public class ProcessorController : ControllerBase
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetApplication(int id)
     {
-        if (User.GetRole() != "processor")
-        {
-            return StatusCode(403, new { error = "Keine Berechtigung" });
-        }
-
         var application = await _repository.GetApplicationById(id);
         if (application == null)
         {
@@ -81,11 +70,6 @@ public class ProcessorController : ControllerBase
     [HttpPost("{id:int}/decide")]
     public async Task<IActionResult> ProcessDecision(int id, [FromBody] ProcessorDecisionDto dto)
     {
-        if (User.GetRole() != "processor")
-        {
-            return StatusCode(403, new { error = "Keine Berechtigung" });
-        }
-
         var validationResult = await _decisionValidator.ValidateAsync(dto);
         if (!validationResult.IsValid)
         {

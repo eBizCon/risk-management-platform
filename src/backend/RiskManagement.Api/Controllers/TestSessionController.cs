@@ -25,7 +25,7 @@ public class TestSessionController : ControllerBase
             return NotFound(new { error = "Not found" });
         }
 
-        if (string.IsNullOrEmpty(dto.Role) || (dto.Role != "applicant" && dto.Role != "processor"))
+        if (string.IsNullOrEmpty(dto.Role) || !AppRoles.All.Contains(dto.Role))
         {
             return BadRequest(new { error = "Invalid role" });
         }
@@ -42,8 +42,8 @@ public class TestSessionController : ControllerBase
 
         var defaultEmails = new Dictionary<string, string>
         {
-            ["applicant"] = "applicant@example.com",
-            ["processor"] = "processor@example.com"
+            [AppRoles.Applicant] = "applicant@example.com",
+            [AppRoles.Processor] = "processor@example.com"
         };
 
         var email = dto.Email ?? (defaultEmails.ContainsKey(dto.Role) ? defaultEmails[dto.Role] : $"{dto.Role}@example.com");

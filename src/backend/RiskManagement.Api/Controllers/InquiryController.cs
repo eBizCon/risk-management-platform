@@ -18,21 +18,16 @@ public class InquiryController : ControllerBase
     }
 
     [HttpGet("api/applications/{id:int}/inquiries")]
+    [Authorize(Policy = AuthPolicies.ApplicantOrProcessor)]
     public async Task<IActionResult> GetInquiries(int id)
     {
-        var role = User.GetRole();
-        if (role != "applicant" && role != "processor")
-        {
-            return StatusCode(403, new { error = "Keine Berechtigung" });
-        }
-
         var application = await _repository.GetApplicationById(id);
         if (application == null)
         {
             return NotFound(new { error = "Antrag nicht gefunden" });
         }
 
-        if (role == "applicant" && application.CreatedBy != User.GetEmail())
+        if (User.IsApplicant() && application.CreatedBy != User.GetEmail())
         {
             return StatusCode(403, new { error = "Keine Berechtigung" });
         }
@@ -42,13 +37,9 @@ public class InquiryController : ControllerBase
     }
 
     [HttpPost("api/applications/{id:int}/inquiry")]
+    [Authorize(Policy = AuthPolicies.Processor)]
     public async Task<IActionResult> CreateInquiry(int id, [FromBody] InquiryCreateDto dto)
     {
-        if (User.GetRole() != "processor")
-        {
-            return StatusCode(403, new { error = "Keine Berechtigung" });
-        }
-
         if (string.IsNullOrWhiteSpace(dto.InquiryText))
         {
             return BadRequest(new { errors = new { inquiryText = new[] { "Rückfragetext darf nicht leer sein" } } });
@@ -78,13 +69,9 @@ public class InquiryController : ControllerBase
     }
 
     [HttpPost("api/applications/{id:int}/inquiry/response")]
+    [Authorize(Policy = AuthPolicies.Applicant)]
     public async Task<IActionResult> RespondToInquiry(int id, [FromBody] InquiryResponseDto dto)
     {
-        if (User.GetRole() != "applicant")
-        {
-            return StatusCode(403, new { error = "Keine Berechtigung" });
-        }
-
         if (string.IsNullOrWhiteSpace(dto.ResponseText))
         {
             return BadRequest(new { errors = new { responseText = new[] { "Antworttext darf nicht leer sein" } } });
@@ -125,6 +112,7 @@ public class InquiryController : ControllerBase
 
     // Alternative endpoint used by frontend component
     [HttpPost("api/applications/{id:int}/answer-inquiry")]
+    [Authorize(Policy = AuthPolicies.Applicant)]
     public async Task<IActionResult> AnswerInquiry(int id, [FromBody] InquiryResponseDto dto)
     {
         return await RespondToInquiry(id, dto);
@@ -132,6 +120,7 @@ public class InquiryController : ControllerBase
 
     // Processor inquiry endpoint (used by processor detail page)
     [HttpPost("api/processor/{id:int}/inquire")]
+    [Authorize(Policy = AuthPolicies.Processor)]
     public async Task<IActionResult> ProcessorInquire(int id, [FromBody] InquiryCreateDto dto)
     {
         return await CreateInquiry(id, dto);

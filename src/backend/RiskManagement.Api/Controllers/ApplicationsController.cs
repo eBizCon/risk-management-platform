@@ -10,7 +10,7 @@ namespace RiskManagement.Api.Controllers;
 
 [ApiController]
 [Route("api/applications")]
-[Authorize]
+[Authorize(Policy = AuthPolicies.Applicant)]
 public class ApplicationsController : ControllerBase
 {
     private readonly ApplicationRepository _repository;
@@ -30,11 +30,6 @@ public class ApplicationsController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetApplications([FromQuery] string? status)
     {
-        if (User.GetRole() != "applicant")
-        {
-            return StatusCode(403, new { error = "Keine Berechtigung" });
-        }
-
         var applications = await _repository.GetApplicationsByUser(User.GetEmail(), status);
         return Ok(applications);
     }
@@ -42,11 +37,6 @@ public class ApplicationsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateApplication([FromBody] ApplicationCreateDto dto)
     {
-        if (User.GetRole() != "applicant")
-        {
-            return StatusCode(403, new { error = "Keine Berechtigung" });
-        }
-
         var validationResult = await _createValidator.ValidateAsync(dto);
         if (!validationResult.IsValid)
         {
@@ -88,6 +78,7 @@ public class ApplicationsController : ControllerBase
     }
 
     [HttpGet("{id:int}")]
+    [Authorize(Policy = AuthPolicies.ApplicantOrProcessor)]
     public async Task<IActionResult> GetApplication(int id)
     {
         var application = await _repository.GetApplicationById(id);
@@ -96,13 +87,7 @@ public class ApplicationsController : ControllerBase
             return NotFound(new { error = "Antrag nicht gefunden" });
         }
 
-        var role = User.GetRole();
-        if (role == "applicant" && application.CreatedBy != User.GetEmail())
-        {
-            return StatusCode(403, new { error = "Keine Berechtigung" });
-        }
-
-        if (role != "applicant" && role != "processor")
+        if (User.IsApplicant() && application.CreatedBy != User.GetEmail())
         {
             return StatusCode(403, new { error = "Keine Berechtigung" });
         }
@@ -113,11 +98,6 @@ public class ApplicationsController : ControllerBase
     [HttpPut("{id:int}")]
     public async Task<IActionResult> UpdateApplication(int id, [FromBody] ApplicationUpdateDto dto)
     {
-        if (User.GetRole() != "applicant")
-        {
-            return StatusCode(403, new { error = "Keine Berechtigung" });
-        }
-
         var existing = await _repository.GetApplicationById(id);
         if (existing == null)
         {
@@ -166,11 +146,6 @@ public class ApplicationsController : ControllerBase
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteApplication(int id)
     {
-        if (User.GetRole() != "applicant")
-        {
-            return StatusCode(403, new { error = "Keine Berechtigung" });
-        }
-
         var existing = await _repository.GetApplicationById(id);
         if (existing == null)
         {
@@ -194,11 +169,6 @@ public class ApplicationsController : ControllerBase
     [HttpPost("{id:int}/submit")]
     public async Task<IActionResult> SubmitApplication(int id)
     {
-        if (User.GetRole() != "applicant")
-        {
-            return StatusCode(403, new { error = "Keine Berechtigung" });
-        }
-
         var existing = await _repository.GetApplicationById(id);
         if (existing == null)
         {

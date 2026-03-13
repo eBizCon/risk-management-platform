@@ -1,11 +1,12 @@
 using System.Text.Json;
 using RiskManagement.Api.Extensions;
+using RiskManagement.Api.Models;
 
 namespace RiskManagement.Api.Tests;
 
 public class RoleClaimHelperTests
 {
-    private static readonly string[] AllowedRoles = { "applicant", "processor" };
+    private static readonly string[] AllowedRoles = AppRoles.All;
 
     [Fact]
     public void ExtractRolesFromClaims_Returns_Matching_Roles_From_Array_Path()

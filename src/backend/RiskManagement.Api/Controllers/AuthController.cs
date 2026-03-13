@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using RiskManagement.Api.Data;
 using RiskManagement.Api.Extensions;
 using RiskManagement.Api.Models;
@@ -13,20 +13,23 @@ namespace RiskManagement.Api.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly ApplicationRepository _repository;
+    private readonly OidcOptions _oidcOptions;
 
-    public AuthController(ApplicationRepository repository)
+    public AuthController(ApplicationRepository repository, IOptions<OidcOptions> oidcOptions)
     {
         _repository = repository;
+        _oidcOptions = oidcOptions.Value;
     }
 
     [HttpGet("login")]
     [HttpPost("login")]
     public IActionResult Login([FromQuery] string? returnTo)
     {
-        var redirectUri = "/";
+        var frontendBase = _oidcOptions.RedirectUri.TrimEnd('/');
+        var redirectUri = $"{frontendBase}/";
         if (!string.IsNullOrEmpty(returnTo) && returnTo.StartsWith("/"))
         {
-            redirectUri = returnTo;
+            redirectUri = $"{frontendBase}{returnTo}";
         }
 
         return Challenge(new AuthenticationProperties { RedirectUri = redirectUri },
@@ -36,8 +39,9 @@ public class AuthController : ControllerBase
     [HttpGet("logout")]
     public IActionResult Logout()
     {
+        var frontendBase = _oidcOptions.PostLogoutRedirectUri.TrimEnd('/');
         return SignOut(
-            new AuthenticationProperties { RedirectUri = "/" },
+            new AuthenticationProperties { RedirectUri = $"{frontendBase}/" },
             CookieAuthenticationDefaults.AuthenticationScheme,
             OpenIdConnectDefaults.AuthenticationScheme);
     }
@@ -62,12 +66,12 @@ public class AuthController : ControllerBase
         }
 
         var role = User.GetRole();
-        if (role != "applicant" && role != "processor")
+        if (!User.IsApplicant() && !User.IsProcessor())
         {
             return Ok(new { });
         }
 
-        var userEmail = role == "applicant" ? User.GetEmail() : null;
+        var userEmail = role == AppRoles.Applicant ? User.GetEmail() : null;
         var stats = await _repository.GetDashboardStats(userEmail);
         return Ok(stats);
     }
