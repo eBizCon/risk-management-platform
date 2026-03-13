@@ -13,8 +13,8 @@ Each rule file contains a YAML frontmatter with a `trigger` field that determine
 
 ### Backend Rules (glob: src/backend/**)
 
-- **`.windsurf/rules/backend-ddd.md`** — DDD, Clean Architecture, CQRS Dispatcher, Result Pattern, Domain Events. Apply to all backend code changes.
-- **`.windsurf/rules/backend-code-style.md`** — C# naming conventions, SOLID, async/await, strong typing. Apply to all backend code changes.
+- **`.windsurf/rules/backend-ddd.md`** — DDD, Clean Architecture, CQRS Dispatcher, Result Pattern, Domain Events, Guard Clauses, Value Objects, Primitive Obsession, Strongly Typed IDs, Specifications, Domain Policies, Pipeline Behaviors, Bounded Contexts, ACL. Apply to all backend code changes.
+- **`.windsurf/rules/backend-code-style.md`** — C# naming conventions, SOLID, async/await, strong typing, Primitive Obsession, Strongly Typed IDs. Apply to all backend code changes.
 
 ### Frontend Rules (glob: src/frontend/**)
 
@@ -24,6 +24,6 @@ Each rule file contains a YAML frontmatter with a `trigger` field that determine
 
 ### Conditional Rules (apply when task matches description)
 
-- **`.windsurf/rules/backend-database.md`** — EF Core, PostgreSQL, Repository Pattern, Migrations. Apply when changing or adding database access logic in the C# backend.
-- **`.windsurf/rules/backend-testing.md`** — xUnit, Moq, FluentAssertions, test structure. Apply when writing or modifying C# backend tests.
+- **`.windsurf/rules/backend-database.md`** — EF Core, PostgreSQL, Repository Pattern, Migrations, Value Object Conversions, Read Models, Unit of Work. Apply when changing or adding database access logic in the C# backend.
+- **`.windsurf/rules/backend-testing.md`** — xUnit, Moq, FluentAssertions, test structure, Value Object Tests, Guard Clause Tests, Event Handler Tests, Specification Tests. Apply when writing or modifying C# backend tests.
 - **`.windsurf/rules/frontend-testing.md`** — Playwright E2E, Vitest for components. Apply when writing or modifying frontend tests.
