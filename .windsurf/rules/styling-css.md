@@ -1,6 +1,6 @@
 ---
-trigger: model_decision
-description: When you have to change or add styling
+trigger: glob
+globs: src/frontend/**
 ---
 # Styling & CSS Rule
 

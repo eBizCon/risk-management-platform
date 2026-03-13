@@ -1,6 +1,6 @@
 ---
-trigger: model_decision
-description: When you work within an Svelte 5 frontend
+trigger: glob
+globs: src/frontend/**/*.svelte
 ---
 # Svelte 5 Runes Rule
 
