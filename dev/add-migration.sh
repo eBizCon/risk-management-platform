@@ -11,5 +11,5 @@ if [ -z "$1" ]; then
 fi
 
 echo "Creating migration '$1'..."
-dotnet ef migrations add "$1" --project "$BACKEND_DIR/RiskManagement.Api"
+dotnet ef migrations add "$1" --project "$BACKEND_DIR/RiskManagement.Infrastructure" --startup-project "$BACKEND_DIR/RiskManagement.Api"
 echo "Done. Migration '$1' created."

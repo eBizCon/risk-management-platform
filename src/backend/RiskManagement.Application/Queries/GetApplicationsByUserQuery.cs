@@ -23,7 +23,7 @@ public class GetApplicationsByUserHandler : IQueryHandler<GetApplicationsByUserQ
         if (!string.IsNullOrEmpty(query.Status))
             status = ApplicationStatus.From(query.Status);
 
-        var applications = await _repository.GetByUserAsync(query.UserEmail, status, ct);
+        var applications = await _repository.GetByUserAsync(EmailAddress.Create(query.UserEmail), status, ct);
         return Result<ApplicationResponse[]>.Success(ApplicationMapper.ToResponseArray(applications));
     }
 }

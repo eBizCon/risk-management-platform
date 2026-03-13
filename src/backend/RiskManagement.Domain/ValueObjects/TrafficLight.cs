@@ -1,6 +1,8 @@
+using RiskManagement.Domain.Common;
+
 namespace RiskManagement.Domain.ValueObjects;
 
-public sealed class TrafficLight : IEquatable<TrafficLight>
+public sealed class TrafficLight : Enumeration<TrafficLight>
 {
     public static readonly TrafficLight Red = new("red");
     public static readonly TrafficLight Yellow = new("yellow");
@@ -13,50 +15,9 @@ public sealed class TrafficLight : IEquatable<TrafficLight>
         [Green.Value] = Green
     };
 
-    public string Value { get; }
-
-    private TrafficLight(string value)
+    private TrafficLight(string value) : base(value)
     {
-        Value = value;
     }
 
-    public static TrafficLight From(string value)
-    {
-        if (All.TryGetValue(value, out var light))
-            return light;
-
-        throw new ArgumentException($"Invalid TrafficLight: '{value}'", nameof(value));
-    }
-
-    public override string ToString()
-    {
-        return Value;
-    }
-
-    public bool Equals(TrafficLight? other)
-    {
-        return other is not null && Value == other.Value;
-    }
-
-    public override bool Equals(object? obj)
-    {
-        return obj is TrafficLight other && Equals(other);
-    }
-
-    public override int GetHashCode()
-    {
-        return Value.GetHashCode();
-    }
-
-    public static bool operator ==(TrafficLight? left, TrafficLight? right)
-    {
-        if (left is null && right is null) return true;
-        if (left is null || right is null) return false;
-        return left.Equals(right);
-    }
-
-    public static bool operator !=(TrafficLight? left, TrafficLight? right)
-    {
-        return !(left == right);
-    }
+    public static TrafficLight From(string value) => From(value, All);
 }

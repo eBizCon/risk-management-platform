@@ -5,17 +5,21 @@ namespace RiskManagement.Domain.Services;
 public class ScoringService : IScoringService
 {
     public ScoringResult CalculateScore(
-        double income,
-        double fixedCosts,
-        double desiredRate,
+        Money income,
+        Money fixedCosts,
+        Money desiredRate,
         EmploymentStatus employmentStatus,
         bool hasPaymentDefault)
     {
         var reasons = new List<string>();
         var score = 100;
 
-        var availableIncome = income - fixedCosts;
-        var incomeRatio = availableIncome / income;
+        var incomeAmount = (double)income.Amount;
+        var fixedCostsAmount = (double)fixedCosts.Amount;
+        var desiredRateAmount = (double)desiredRate.Amount;
+
+        var availableIncome = incomeAmount - fixedCostsAmount;
+        var incomeRatio = availableIncome / incomeAmount;
 
         if (incomeRatio >= 0.5)
         {
@@ -37,7 +41,7 @@ public class ScoringService : IScoringService
             reasons.Add("Kritisches Verhältnis zwischen Einkommen und Fixkosten (weniger als 10% verfügbar)");
         }
 
-        var rateToAvailableRatio = desiredRate / availableIncome;
+        var rateToAvailableRatio = desiredRateAmount / availableIncome;
 
         if (rateToAvailableRatio <= 0.3)
         {

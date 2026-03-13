@@ -1,6 +1,6 @@
 namespace RiskManagement.Domain.Common;
 
-public abstract class AggregateRoot : Entity
+public abstract class AggregateRoot<TId> : Entity<TId>, IHasDomainEvents where TId : struct
 {
     private readonly List<IDomainEvent> _domainEvents = new();
 
@@ -15,4 +15,8 @@ public abstract class AggregateRoot : Entity
     {
         _domainEvents.Clear();
     }
+}
+
+public abstract class AggregateRoot : AggregateRoot<int>
+{
 }

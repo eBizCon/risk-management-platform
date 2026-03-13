@@ -1,5 +1,7 @@
 using RiskManagement.Application.Common;
 using RiskManagement.Domain.Aggregates.ApplicationAggregate;
+using RiskManagement.Domain.ValueObjects;
+using AppId = RiskManagement.Domain.Aggregates.ApplicationAggregate.ApplicationId;
 
 namespace RiskManagement.Application.Queries;
 
@@ -18,14 +20,15 @@ public class GetInquiriesHandler : IQueryHandler<GetInquiriesQuery, List<Applica
     public async Task<Result<List<ApplicationInquiry>>> HandleAsync(GetInquiriesQuery query,
         CancellationToken ct = default)
     {
-        var application = await _repository.GetByIdAsync(query.ApplicationId, ct);
+        var appId = new AppId(query.ApplicationId);
+        var application = await _repository.GetByIdAsync(appId, ct);
         if (application is null)
             return Result<List<ApplicationInquiry>>.NotFound("Antrag nicht gefunden");
 
-        if (query.UserRole != "processor" && application.CreatedBy != query.UserEmail)
+        if (query.UserRole != "processor" && application.CreatedBy != EmailAddress.Create(query.UserEmail))
             return Result<List<ApplicationInquiry>>.Forbidden("Zugriff verweigert");
 
-        var inquiries = await _repository.GetInquiriesAsync(query.ApplicationId, ct);
+        var inquiries = await _repository.GetInquiriesAsync(appId, ct);
         return Result<List<ApplicationInquiry>>.Success(inquiries);
     }
 }

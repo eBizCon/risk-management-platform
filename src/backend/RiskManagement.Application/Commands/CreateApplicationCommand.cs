@@ -40,12 +40,12 @@ public class CreateApplicationHandler : ICommandHandler<CreateApplicationCommand
 
         var application = ApplicationEntity.Create(
             command.Dto.Name,
-            command.Dto.Income,
-            command.Dto.FixedCosts,
-            command.Dto.DesiredRate,
+            Money.Create((decimal)command.Dto.Income),
+            Money.Create((decimal)command.Dto.FixedCosts),
+            Money.CreatePositive((decimal)command.Dto.DesiredRate),
             EmploymentStatus.From(command.Dto.EmploymentStatus),
             command.Dto.HasPaymentDefault,
-            command.UserEmail,
+            EmailAddress.Create(command.UserEmail),
             _scoringService);
 
         await _repository.AddAsync(application, ct);

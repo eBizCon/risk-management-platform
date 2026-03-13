@@ -5,9 +5,9 @@ namespace RiskManagement.Domain.Services;
 public interface IScoringService
 {
     ScoringResult CalculateScore(
-        double income,
-        double fixedCosts,
-        double desiredRate,
+        Money income,
+        Money fixedCosts,
+        Money desiredRate,
         EmploymentStatus employmentStatus,
         bool hasPaymentDefault);
 }

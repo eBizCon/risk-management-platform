@@ -7,12 +7,12 @@ using RiskManagement.Domain.ValueObjects;
 
 namespace RiskManagement.Domain.Aggregates.ApplicationAggregate;
 
-public class Application : AggregateRoot
+public class Application : AggregateRoot<ApplicationId>
 {
     public string Name { get; private set; } = string.Empty;
-    public double Income { get; private set; }
-    public double FixedCosts { get; private set; }
-    public double DesiredRate { get; private set; }
+    public Money Income { get; private set; } = Money.Zero;
+    public Money FixedCosts { get; private set; } = Money.Zero;
+    public Money DesiredRate { get; private set; } = Money.Zero;
     public EmploymentStatus EmploymentStatus { get; private set; } = EmploymentStatus.Employed;
     public bool HasPaymentDefault { get; private set; }
     public ApplicationStatus Status { get; private set; } = ApplicationStatus.Draft;
@@ -20,10 +20,10 @@ public class Application : AggregateRoot
     public TrafficLight? TrafficLight { get; private set; }
     public string? ScoringReasons { get; private set; }
     public string? ProcessorComment { get; private set; }
-    public string CreatedAt { get; private set; } = string.Empty;
-    public string? SubmittedAt { get; private set; }
-    public string? ProcessedAt { get; private set; }
-    public string CreatedBy { get; private set; } = string.Empty;
+    public DateTime CreatedAt { get; private set; }
+    public DateTime? SubmittedAt { get; private set; }
+    public DateTime? ProcessedAt { get; private set; }
+    public EmailAddress CreatedBy { get; private set; } = null!;
 
     private readonly List<ApplicationInquiry> _inquiries = new();
     public IReadOnlyList<ApplicationInquiry> Inquiries => _inquiries.AsReadOnly();
@@ -34,14 +34,29 @@ public class Application : AggregateRoot
 
     public static Application Create(
         string name,
-        double income,
-        double fixedCosts,
-        double desiredRate,
+        Money income,
+        Money fixedCosts,
+        Money desiredRate,
         EmploymentStatus employmentStatus,
         bool hasPaymentDefault,
-        string createdBy,
+        EmailAddress createdBy,
         IScoringService scoringService)
     {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new DomainException("Name darf nicht leer sein");
+
+        if (income <= Money.Zero)
+            throw new DomainException("Einkommen muss positiv sein");
+
+        if (desiredRate <= Money.Zero)
+            throw new DomainException("Gewünschte Rate muss positiv sein");
+
+        if (fixedCosts >= income)
+            throw new DomainException("Fixkosten müssen geringer als das Einkommen sein");
+
+        if (desiredRate > income - fixedCosts)
+            throw new DomainException("Gewünschte Rate darf das verfügbare Einkommen nicht übersteigen");
+
         var app = new Application
         {
             Name = name,
@@ -51,7 +66,7 @@ public class Application : AggregateRoot
             EmploymentStatus = employmentStatus,
             HasPaymentDefault = hasPaymentDefault,
             Status = ApplicationStatus.Draft,
-            CreatedAt = DateTime.UtcNow.ToString("o"),
+            CreatedAt = DateTime.UtcNow,
             CreatedBy = createdBy
         };
 
@@ -66,7 +81,7 @@ public class Application : AggregateRoot
 
         ApplyScoring(scoringService);
         Status = ApplicationStatus.Submitted;
-        SubmittedAt = DateTime.UtcNow.ToString("o");
+        SubmittedAt = DateTime.UtcNow;
 
         AddDomainEvent(new ApplicationSubmittedEvent(Id));
     }
@@ -78,7 +93,7 @@ public class Application : AggregateRoot
 
         Status = ApplicationStatus.Approved;
         ProcessorComment = comment;
-        ProcessedAt = DateTime.UtcNow.ToString("o");
+        ProcessedAt = DateTime.UtcNow;
 
         AddDomainEvent(new ApplicationDecidedEvent(Id, "approved"));
     }
@@ -90,22 +105,37 @@ public class Application : AggregateRoot
 
         Status = ApplicationStatus.Rejected;
         ProcessorComment = comment;
-        ProcessedAt = DateTime.UtcNow.ToString("o");
+        ProcessedAt = DateTime.UtcNow;
 
         AddDomainEvent(new ApplicationDecidedEvent(Id, "rejected"));
     }
 
     public void UpdateDetails(
         string name,
-        double income,
-        double fixedCosts,
-        double desiredRate,
+        Money income,
+        Money fixedCosts,
+        Money desiredRate,
         EmploymentStatus employmentStatus,
         bool hasPaymentDefault,
         IScoringService scoringService)
     {
         if (Status != ApplicationStatus.Draft)
             throw new DomainException("Nur Entwürfe können bearbeitet werden");
+
+        if (string.IsNullOrWhiteSpace(name))
+            throw new DomainException("Name darf nicht leer sein");
+
+        if (income <= Money.Zero)
+            throw new DomainException("Einkommen muss positiv sein");
+
+        if (desiredRate <= Money.Zero)
+            throw new DomainException("Gewünschte Rate muss positiv sein");
+
+        if (fixedCosts >= income)
+            throw new DomainException("Fixkosten müssen geringer als das Einkommen sein");
+
+        if (desiredRate > income - fixedCosts)
+            throw new DomainException("Gewünschte Rate darf das verfügbare Einkommen nicht übersteigen");
 
         Name = name;
         Income = income;
@@ -125,7 +155,7 @@ public class Application : AggregateRoot
         AddDomainEvent(new ApplicationDeletedEvent(Id));
     }
 
-    public void RequestInformation(string inquiryText, string processorEmail)
+    public void RequestInformation(string inquiryText, EmailAddress processorEmail)
     {
         if (Status != ApplicationStatus.Submitted && Status != ApplicationStatus.Resubmitted)
             throw new InvalidStatusTransitionException(Status, ApplicationStatus.NeedsInformation);

@@ -8,11 +8,11 @@ public static class ApplicationMapper
     {
         return new ApplicationResponse
         {
-            Id = application.Id,
+            Id = application.Id.Value,
             Name = application.Name,
-            Income = application.Income,
-            FixedCosts = application.FixedCosts,
-            DesiredRate = application.DesiredRate,
+            Income = (double)application.Income.Amount,
+            FixedCosts = (double)application.FixedCosts.Amount,
+            DesiredRate = (double)application.DesiredRate.Amount,
             EmploymentStatus = application.EmploymentStatus.Value,
             HasPaymentDefault = application.HasPaymentDefault,
             Status = application.Status.Value,
@@ -20,10 +20,10 @@ public static class ApplicationMapper
             TrafficLight = application.TrafficLight?.Value,
             ScoringReasons = application.ScoringReasons,
             ProcessorComment = application.ProcessorComment,
-            CreatedAt = application.CreatedAt,
-            SubmittedAt = application.SubmittedAt,
-            ProcessedAt = application.ProcessedAt,
-            CreatedBy = application.CreatedBy
+            CreatedAt = application.CreatedAt.ToString("o"),
+            SubmittedAt = application.SubmittedAt?.ToString("o"),
+            ProcessedAt = application.ProcessedAt?.ToString("o"),
+            CreatedBy = application.CreatedBy.Value
         };
     }
 

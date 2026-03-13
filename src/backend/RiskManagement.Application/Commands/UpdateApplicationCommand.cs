@@ -4,6 +4,7 @@ using RiskManagement.Application.DTOs;
 using RiskManagement.Domain.Aggregates.ApplicationAggregate;
 using RiskManagement.Domain.Services;
 using RiskManagement.Domain.ValueObjects;
+using AppId = RiskManagement.Domain.Aggregates.ApplicationAggregate.ApplicationId;
 
 namespace RiskManagement.Application.Commands;
 
@@ -31,11 +32,11 @@ public class UpdateApplicationHandler : ICommandHandler<UpdateApplicationCommand
     public async Task<Result<UpdateApplicationResult>> HandleAsync(UpdateApplicationCommand command,
         CancellationToken ct = default)
     {
-        var application = await _repository.GetByIdAsync(command.ApplicationId, ct);
+        var application = await _repository.GetByIdAsync(new AppId(command.ApplicationId), ct);
         if (application is null)
             return Result<UpdateApplicationResult>.NotFound("Antrag nicht gefunden");
 
-        if (application.CreatedBy != command.UserEmail)
+        if (application.CreatedBy != EmailAddress.Create(command.UserEmail))
             return Result<UpdateApplicationResult>.Forbidden("Zugriff verweigert");
 
         var validationResult = await _validator.ValidateAsync(command.Dto, ct);
@@ -47,9 +48,9 @@ public class UpdateApplicationHandler : ICommandHandler<UpdateApplicationCommand
 
         application.UpdateDetails(
             command.Dto.Name,
-            command.Dto.Income,
-            command.Dto.FixedCosts,
-            command.Dto.DesiredRate,
+            Money.Create((decimal)command.Dto.Income),
+            Money.Create((decimal)command.Dto.FixedCosts),
+            Money.CreatePositive((decimal)command.Dto.DesiredRate),
             EmploymentStatus.From(command.Dto.EmploymentStatus),
             command.Dto.HasPaymentDefault,
             _scoringService);

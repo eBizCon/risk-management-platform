@@ -2,6 +2,7 @@ using FluentValidation;
 using RiskManagement.Application.Common;
 using RiskManagement.Application.DTOs;
 using RiskManagement.Domain.Aggregates.ApplicationAggregate;
+using AppId = RiskManagement.Domain.Aggregates.ApplicationAggregate.ApplicationId;
 
 namespace RiskManagement.Application.Commands;
 
@@ -33,7 +34,7 @@ public class RejectApplicationHandler : ICommandHandler<RejectApplicationCommand
             return Result<RejectApplicationResult>.ValidationFailure(errors, command.Dto);
         }
 
-        var application = await _repository.GetByIdAsync(command.ApplicationId, ct);
+        var application = await _repository.GetByIdAsync(new AppId(command.ApplicationId), ct);
         if (application is null)
             return Result<RejectApplicationResult>.NotFound("Antrag nicht gefunden");
 

@@ -1,6 +1,7 @@
 using RiskManagement.Application.Common;
 using RiskManagement.Application.DTOs;
 using RiskManagement.Domain.Aggregates.ApplicationAggregate;
+using RiskManagement.Domain.ValueObjects;
 
 namespace RiskManagement.Application.Queries;
 
@@ -18,7 +19,9 @@ public class GetDashboardStatsHandler : IQueryHandler<GetDashboardStatsQuery, Da
     public async Task<Result<DashboardStatsDto>> HandleAsync(GetDashboardStatsQuery query,
         CancellationToken ct = default)
     {
-        var email = query.UserRole == "processor" ? null : query.UserEmail;
+        EmailAddress? email = query.UserRole == "processor" || query.UserEmail is null
+            ? null
+            : EmailAddress.Create(query.UserEmail);
         var stats = await _repository.GetDashboardStatsAsync(email, ct);
 
         return Result<DashboardStatsDto>.Success(new DashboardStatsDto

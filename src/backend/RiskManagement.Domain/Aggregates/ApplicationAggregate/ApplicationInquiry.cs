@@ -1,36 +1,37 @@
 using RiskManagement.Domain.Common;
+using RiskManagement.Domain.ValueObjects;
 
 namespace RiskManagement.Domain.Aggregates.ApplicationAggregate;
 
-public class ApplicationInquiry : Entity
+public class ApplicationInquiry : Entity<InquiryId>
 {
-    public int ApplicationId { get; private set; }
+    public ApplicationId ApplicationId { get; private set; }
     public string InquiryText { get; private set; } = string.Empty;
-    public string Status { get; private set; } = "open";
-    public string ProcessorEmail { get; private set; } = string.Empty;
     public string? ResponseText { get; private set; }
+    public InquiryStatus Status { get; private set; } = InquiryStatus.Open;
+    public EmailAddress ProcessorEmail { get; private set; } = null!;
     public DateTime CreatedAt { get; private set; }
-    public DateTime? RespondedAt { get; private set; }
+    public DateTime? AnsweredAt { get; private set; }
+
+    public bool IsOpen => Status == InquiryStatus.Open;
 
     private ApplicationInquiry()
     {
     }
 
-    internal ApplicationInquiry(int applicationId, string inquiryText, string processorEmail)
+    public ApplicationInquiry(ApplicationId applicationId, string inquiryText, EmailAddress processorEmail)
     {
         ApplicationId = applicationId;
         InquiryText = inquiryText;
         ProcessorEmail = processorEmail;
-        Status = "open";
+        Status = InquiryStatus.Open;
         CreatedAt = DateTime.UtcNow;
     }
 
-    internal void Answer(string responseText)
+    public void Answer(string responseText)
     {
         ResponseText = responseText;
-        RespondedAt = DateTime.UtcNow;
-        Status = "answered";
+        Status = InquiryStatus.Answered;
+        AnsweredAt = DateTime.UtcNow;
     }
-
-    public bool IsOpen => Status == "open";
 }

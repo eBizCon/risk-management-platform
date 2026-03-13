@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using RiskManagement.Domain.Aggregates.ApplicationAggregate;
 using RiskManagement.Domain.Services;
@@ -14,8 +13,6 @@ public class DatabaseSeeder
     private readonly IScoringService _scoringService;
 
     private const string SeedCreatedBy = "applicant@example.com";
-
-    private static readonly string[] Statuses = { "draft", "submitted", "approved", "rejected" };
 
     private static readonly string[] ApprovedComments =
     {
@@ -46,6 +43,11 @@ public class DatabaseSeeder
             ("Lea Hartmann", 2700, 2200, 300, "unemployed", false)
         };
 
+    private enum SeedStatus { Draft, Submitted, Approved, Rejected }
+
+    private static readonly SeedStatus[] StatusCycle =
+        { SeedStatus.Draft, SeedStatus.Submitted, SeedStatus.Approved, SeedStatus.Rejected };
+
     public DatabaseSeeder(ApplicationDbContext context, IScoringService scoringService)
     {
         _context = context;
@@ -58,52 +60,37 @@ public class DatabaseSeeder
         if (existingCount > 0) return;
 
         const int totalRows = 32;
-        var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        var createdBy = EmailAddress.Create(SeedCreatedBy);
 
         for (var index = 0; index < totalRows; index++)
         {
             var template = Templates[index % Templates.Length];
-            var status = Statuses[index % Statuses.Length];
-            var employmentStatus = EmploymentStatus.From(template.EmploymentStatus);
-            var scoring = _scoringService.CalculateScore(
-                template.Income, template.FixedCosts, template.DesiredRate,
-                employmentStatus, template.HasPaymentDefault);
-
-            var createdAtMs = now - (totalRows - index) * 24L * 60 * 60 * 1000;
-            var submittedAtMs = createdAtMs + 2L * 60 * 60 * 1000;
-            var processedAtMs = submittedAtMs + 6L * 60 * 60 * 1000;
-
-            var createdAt = DateTimeOffset.FromUnixTimeMilliseconds(createdAtMs).UtcDateTime.ToString("o");
-            var submittedAt = DateTimeOffset.FromUnixTimeMilliseconds(submittedAtMs).UtcDateTime.ToString("o");
-            var processedAt = DateTimeOffset.FromUnixTimeMilliseconds(processedAtMs).UtcDateTime.ToString("o");
-
-            string? processorComment = null;
-            if (status == "approved")
-                processorComment = ApprovedComments[index % ApprovedComments.Length];
-            else if (status == "rejected") processorComment = RejectedComments[index % RejectedComments.Length];
+            var targetStatus = StatusCycle[index % StatusCycle.Length];
 
             var application = ApplicationEntity.Create(
                 $"{template.Name} {index / Templates.Length + 1}",
-                template.Income,
-                template.FixedCosts,
-                template.DesiredRate,
-                employmentStatus,
+                Money.Create((decimal)template.Income),
+                Money.Create((decimal)template.FixedCosts),
+                Money.CreatePositive((decimal)template.DesiredRate),
+                EmploymentStatus.From(template.EmploymentStatus),
                 template.HasPaymentDefault,
-                SeedCreatedBy,
+                createdBy,
                 _scoringService);
 
-            _context.Applications.Add(application);
-            await _context.SaveChangesAsync();
+            if (targetStatus != SeedStatus.Draft)
+            {
+                application.Submit(_scoringService);
 
-            _context.Database.ExecuteSqlRaw(
-                @"UPDATE applications SET status = {0}, score = {1}, traffic_light = {2}, scoring_reasons = {3},
-                  processor_comment = {4}, created_at = {5}, submitted_at = {6}, processed_at = {7}
-                  WHERE id = {8}",
-                status, scoring.Score, scoring.TrafficLight.Value, JsonSerializer.Serialize(scoring.Reasons),
-                processorComment ?? (object)DBNull.Value, createdAt,
-                status == "draft" ? (object)DBNull.Value : submittedAt,
-                status == "approved" || status == "rejected" ? processedAt : (object)DBNull.Value,
-                application.Id);
+                if (targetStatus == SeedStatus.Approved)
+                    application.Approve(ApprovedComments[index % ApprovedComments.Length]);
+                else if (targetStatus == SeedStatus.Rejected)
+                    application.Reject(RejectedComments[index % RejectedComments.Length]);
+            }
+
+            application.ClearDomainEvents();
+            _context.Applications.Add(application);
         }
+
+        await _context.SaveChangesAsync();
     }
 }

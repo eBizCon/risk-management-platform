@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using RiskManagement.Domain.Aggregates.ApplicationAggregate;
 using RiskManagement.Domain.ValueObjects;
 using ApplicationEntity = RiskManagement.Domain.Aggregates.ApplicationAggregate.Application;
+using AppId = RiskManagement.Domain.Aggregates.ApplicationAggregate.ApplicationId;
 
 namespace RiskManagement.Infrastructure.Persistence.Configurations;
 
@@ -13,11 +14,35 @@ public class ApplicationConfiguration : IEntityTypeConfiguration<ApplicationEnti
         entity.ToTable("applications");
 
         entity.HasKey(e => e.Id);
-        entity.Property(e => e.Id).HasColumnName("id").UseIdentityAlwaysColumn();
+        entity.Property(e => e.Id)
+            .HasColumnName("id")
+            .ValueGeneratedOnAdd()
+            .HasConversion(
+                v => v.Value,
+                v => new AppId(v));
+
         entity.Property(e => e.Name).HasColumnName("name").IsRequired();
-        entity.Property(e => e.Income).HasColumnName("income").IsRequired();
-        entity.Property(e => e.FixedCosts).HasColumnName("fixed_costs").IsRequired();
-        entity.Property(e => e.DesiredRate).HasColumnName("desired_rate").IsRequired();
+
+        entity.Property(e => e.Income)
+            .HasColumnName("income")
+            .IsRequired()
+            .HasConversion(
+                v => (double)v.Amount,
+                v => Money.Create((decimal)v));
+
+        entity.Property(e => e.FixedCosts)
+            .HasColumnName("fixed_costs")
+            .IsRequired()
+            .HasConversion(
+                v => (double)v.Amount,
+                v => Money.Create((decimal)v));
+
+        entity.Property(e => e.DesiredRate)
+            .HasColumnName("desired_rate")
+            .IsRequired()
+            .HasConversion(
+                v => (double)v.Amount,
+                v => Money.Create((decimal)v));
 
         entity.Property(e => e.EmploymentStatus)
             .HasColumnName("employment_status")
@@ -49,7 +74,13 @@ public class ApplicationConfiguration : IEntityTypeConfiguration<ApplicationEnti
         entity.Property(e => e.CreatedAt).HasColumnName("created_at").IsRequired();
         entity.Property(e => e.SubmittedAt).HasColumnName("submitted_at");
         entity.Property(e => e.ProcessedAt).HasColumnName("processed_at");
-        entity.Property(e => e.CreatedBy).HasColumnName("created_by").IsRequired();
+
+        entity.Property(e => e.CreatedBy)
+            .HasColumnName("created_by")
+            .IsRequired()
+            .HasConversion(
+                v => v.Value,
+                v => EmailAddress.Create(v));
 
         entity.HasMany(e => e.Inquiries)
             .WithOne()

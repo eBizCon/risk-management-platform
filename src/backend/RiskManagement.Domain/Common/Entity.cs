@@ -1,6 +1,10 @@
 namespace RiskManagement.Domain.Common;
 
-public abstract class Entity
+public abstract class Entity<TId> where TId : struct
 {
-    public int Id { get; protected set; }
+    public TId Id { get; protected set; }
+}
+
+public abstract class Entity : Entity<int>
+{
 }

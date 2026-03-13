@@ -48,7 +48,7 @@ public class Dispatcher : IDispatcher
         foreach (var handler in handlers) await (Task)method.Invoke(handler, new object[] { domainEvent, ct })!;
     }
 
-    public async Task PublishDomainEventsAsync(AggregateRoot aggregate, CancellationToken ct = default)
+    public async Task PublishDomainEventsAsync(IHasDomainEvents aggregate, CancellationToken ct = default)
     {
         var events = aggregate.DomainEvents.ToList();
         aggregate.ClearDomainEvents();

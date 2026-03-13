@@ -1,6 +1,8 @@
+using RiskManagement.Domain.Common;
+
 namespace RiskManagement.Domain.ValueObjects;
 
-public sealed class ScoringResult
+public sealed class ScoringResult : ValueObject
 {
     public int Score { get; }
     public TrafficLight TrafficLight { get; }
@@ -11,5 +13,13 @@ public sealed class ScoringResult
         Score = score;
         TrafficLight = trafficLight;
         Reasons = reasons;
+    }
+
+    protected override IEnumerable<object?> GetEqualityComponents()
+    {
+        yield return Score;
+        yield return TrafficLight;
+        foreach (var reason in Reasons)
+            yield return reason;
     }
 }

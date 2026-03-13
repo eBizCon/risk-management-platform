@@ -1,14 +1,16 @@
+using RiskManagement.Domain.Aggregates.ApplicationAggregate;
 using RiskManagement.Domain.Common;
+using AppId = RiskManagement.Domain.Aggregates.ApplicationAggregate.ApplicationId;
 
 namespace RiskManagement.Domain.Events;
 
 public sealed class InquiryCreatedEvent : IDomainEvent
 {
-    public int ApplicationId { get; }
-    public int InquiryId { get; }
+    public AppId ApplicationId { get; }
+    public InquiryId InquiryId { get; }
     public DateTime OccurredOn { get; }
 
-    public InquiryCreatedEvent(int applicationId, int inquiryId)
+    public InquiryCreatedEvent(AppId applicationId, InquiryId inquiryId)
     {
         ApplicationId = applicationId;
         InquiryId = inquiryId;

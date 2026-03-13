@@ -1,5 +1,7 @@
 using RiskManagement.Application.Common;
 using RiskManagement.Domain.Aggregates.ApplicationAggregate;
+using RiskManagement.Domain.ValueObjects;
+using AppId = RiskManagement.Domain.Aggregates.ApplicationAggregate.ApplicationId;
 
 namespace RiskManagement.Application.Commands;
 
@@ -18,11 +20,11 @@ public class DeleteApplicationHandler : ICommandHandler<DeleteApplicationCommand
 
     public async Task<Result<bool>> HandleAsync(DeleteApplicationCommand command, CancellationToken ct = default)
     {
-        var application = await _repository.GetByIdAsync(command.ApplicationId, ct);
+        var application = await _repository.GetByIdAsync(new AppId(command.ApplicationId), ct);
         if (application is null)
             return Result<bool>.NotFound("Antrag nicht gefunden");
 
-        if (application.CreatedBy != command.UserEmail)
+        if (application.CreatedBy != EmailAddress.Create(command.UserEmail))
             return Result<bool>.Forbidden("Zugriff verweigert");
 
         application.Delete();
