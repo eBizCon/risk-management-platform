@@ -1,0 +1,22 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/Services/" />
+  <Folder Name="/Services/CustomerManagement/">
+    <Project Path="CustomerManagement.Api/CustomerManagement.Api.csproj" />
+    <Project Path="CustomerManagement.Application/CustomerManagement.Application.csproj" />
+    <Project Path="CustomerManagement.Domain/CustomerManagement.Domain.csproj" />
+    <Project Path="CustomerManagement.Infrastructure/CustomerManagement.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/Services/RiskManagement/">
+    <Project Path="RiskManagement.Api.Tests/RiskManagement.Api.Tests.csproj" />
+    <Project Path="RiskManagement.Api/RiskManagement.Api.csproj" />
+    <Project Path="RiskManagement.Application/RiskManagement.Application.csproj" />
+    <Project Path="RiskManagement.Domain/RiskManagement.Domain.csproj" />
+    <Project Path="RiskManagement.Infrastructure/RiskManagement.Infrastructure.csproj" />
+  </Folder>
+  <Project Path="SharedKernel/SharedKernel.csproj" />
+</Solution>

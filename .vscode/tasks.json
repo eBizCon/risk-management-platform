@@ -31,7 +31,7 @@
       "type": "process",
       "args": [
         "build",
-        "${workspaceFolder}/src/backend/RiskManagementPlatform.sln",
+        "${workspaceFolder}/src/backend/RiskManagementPlatform.slnx",
         "/property:GenerateFullPaths=true",
         "/consoleloggerparameters:NoSummary;ForceNoAlign"
       ],
