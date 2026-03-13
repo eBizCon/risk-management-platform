@@ -1,19 +1,19 @@
 {
-	"editor.formatOnSave": true,
-	"editor.defaultFormatter": "esbenp.prettier-vscode",
-	"editor.codeActionsOnSave": {
-		"source.fixAll.eslint": "explicit"
-	},
-	"eslint.validate": ["javascript", "typescript", "svelte"],
-	"[svelte]": {
-		"editor.defaultFormatter": "svelte.svelte-vscode"
-	},
-	"sqltools.connections": [
-		{
-			"previewLimit": 50,
-			"driver": "SQLite",
-			"name": "riskmanagement",
-			"database": "${workspaceFolder:risk-management-platform}/data.db"
-		}
-	]
+  "editor.formatOnSave": false,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "eslint.validate": ["javascript", "typescript", "svelte"],
+  "[svelte]": {
+    "editor.defaultFormatter": "svelte.svelte-vscode"
+  },
+  "sqltools.connections": [
+    {
+      "previewLimit": 50,
+      "driver": "SQLite",
+      "name": "riskmanagement",
+      "database": "${workspaceFolder:risk-management-platform}/data.db"
+    }
+  ]
 }

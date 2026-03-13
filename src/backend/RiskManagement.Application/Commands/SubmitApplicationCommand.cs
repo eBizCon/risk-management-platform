@@ -1,0 +1,50 @@
+using RiskManagement.Application.Common;
+using RiskManagement.Application.DTOs;
+using RiskManagement.Domain.Aggregates.ApplicationAggregate;
+using RiskManagement.Domain.Aggregates.ScoringConfigAggregate;
+using RiskManagement.Domain.Services;
+using RiskManagement.Domain.ValueObjects;
+using AppId = RiskManagement.Domain.Aggregates.ApplicationAggregate.ApplicationId;
+
+namespace RiskManagement.Application.Commands;
+
+public record SubmitApplicationCommand(int ApplicationId, string UserEmail) : ICommand<ApplicationResponse>;
+
+public class SubmitApplicationHandler : ICommandHandler<SubmitApplicationCommand, ApplicationResponse>
+{
+    private readonly IApplicationRepository _repository;
+    private readonly IScoringConfigRepository _configRepository;
+    private readonly IScoringService _scoringService;
+    private readonly IDispatcher _dispatcher;
+
+    public SubmitApplicationHandler(IApplicationRepository repository, IScoringConfigRepository configRepository,
+        IScoringService scoringService, IDispatcher dispatcher)
+    {
+        _repository = repository;
+        _configRepository = configRepository;
+        _scoringService = scoringService;
+        _dispatcher = dispatcher;
+    }
+
+    public async Task<Result<ApplicationResponse>> HandleAsync(SubmitApplicationCommand command,
+        CancellationToken ct = default)
+    {
+        var application = await _repository.GetByIdAsync(new AppId(command.ApplicationId), ct);
+        if (application is null)
+            return Result<ApplicationResponse>.NotFound("Antrag nicht gefunden");
+
+        if (application.CreatedBy != EmailAddress.Create(command.UserEmail))
+            return Result<ApplicationResponse>.Forbidden("Zugriff verweigert");
+
+        var configVersion = await _configRepository.GetCurrentAsync(ct);
+        if (configVersion is null)
+            return Result<ApplicationResponse>.Failure("Keine Scoring-Konfiguration gefunden");
+
+        application.Submit(_scoringService, configVersion.Config, configVersion.Id);
+        await _repository.SaveChangesAsync(ct);
+
+        await _dispatcher.PublishDomainEventsAsync(application, ct);
+
+        return Result<ApplicationResponse>.Success(ApplicationMapper.ToResponse(application));
+    }
+}
