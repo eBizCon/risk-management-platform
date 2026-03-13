@@ -7,17 +7,17 @@ using RiskManagement.Domain.ValueObjects;
 
 namespace RiskManagement.Application.Commands;
 
-public record UpdateApplicationCommand(int ApplicationId, ApplicationUpdateDto Dto, string UserEmail);
+public record UpdateAndSubmitApplicationCommand(int ApplicationId, ApplicationUpdateDto Dto, string UserEmail);
 
-public record UpdateApplicationResult(ApplicationResponse Application, string Redirect);
+public record UpdateAndSubmitApplicationResult(ApplicationResponse Application, string Redirect);
 
-public class UpdateApplicationHandler : ICommandHandler<UpdateApplicationCommand, UpdateApplicationResult>
+public class UpdateAndSubmitApplicationHandler : ICommandHandler<UpdateAndSubmitApplicationCommand, UpdateAndSubmitApplicationResult>
 {
     private readonly IApplicationRepository _repository;
     private readonly ScoringService _scoringService;
     private readonly IValidator<ApplicationUpdateDto> _validator;
 
-    public UpdateApplicationHandler(
+    public UpdateAndSubmitApplicationHandler(
         IApplicationRepository repository,
         ScoringService scoringService,
         IValidator<ApplicationUpdateDto> validator)
@@ -27,20 +27,20 @@ public class UpdateApplicationHandler : ICommandHandler<UpdateApplicationCommand
         _validator = validator;
     }
 
-    public async Task<Result<UpdateApplicationResult>> HandleAsync(UpdateApplicationCommand command, CancellationToken ct = default)
+    public async Task<Result<UpdateAndSubmitApplicationResult>> HandleAsync(UpdateAndSubmitApplicationCommand command, CancellationToken ct = default)
     {
         var application = await _repository.GetByIdAsync(command.ApplicationId, ct);
         if (application is null)
-            return Result<UpdateApplicationResult>.NotFound("Antrag nicht gefunden");
+            return Result<UpdateAndSubmitApplicationResult>.NotFound("Antrag nicht gefunden");
 
         if (application.CreatedBy != command.UserEmail)
-            return Result<UpdateApplicationResult>.Forbidden("Zugriff verweigert");
+            return Result<UpdateAndSubmitApplicationResult>.Forbidden("Zugriff verweigert");
 
         var validationResult = await _validator.ValidateAsync(command.Dto, ct);
         if (!validationResult.IsValid)
         {
             var errors = ValidationHelper.ToValidationErrors(validationResult);
-            return Result<UpdateApplicationResult>.ValidationFailure(errors, command.Dto);
+            return Result<UpdateAndSubmitApplicationResult>.ValidationFailure(errors, command.Dto);
         }
 
         application.UpdateDetails(
@@ -52,10 +52,11 @@ public class UpdateApplicationHandler : ICommandHandler<UpdateApplicationCommand
             command.Dto.HasPaymentDefault,
             _scoringService);
 
+        application.Submit(_scoringService);
         await _repository.SaveChangesAsync(ct);
 
-        return Result<UpdateApplicationResult>.Success(new UpdateApplicationResult(
+        return Result<UpdateAndSubmitApplicationResult>.Success(new UpdateAndSubmitApplicationResult(
             ApplicationMapper.ToResponse(application),
-            $"/applications/{application.Id}"));
+            $"/applications/{application.Id}?submitted=true"));
     }
 }

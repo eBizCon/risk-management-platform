@@ -6,7 +6,6 @@ using RiskManagement.Application.Commands;
 using RiskManagement.Application.Common;
 using RiskManagement.Application.DTOs;
 using RiskManagement.Application.Queries;
-using ProcessorDecisionDto = RiskManagement.Application.DTOs.ProcessorDecisionDto;
 
 namespace RiskManagement.Api.Controllers;
 
@@ -15,16 +14,19 @@ namespace RiskManagement.Api.Controllers;
 [Authorize(Policy = AuthPolicies.Processor)]
 public class ProcessorController : ControllerBase
 {
-    private readonly ICommandHandler<ProcessDecisionCommand, ProcessDecisionResult> _decisionHandler;
+    private readonly ICommandHandler<ApproveApplicationCommand, ApproveApplicationResult> _approveHandler;
+    private readonly ICommandHandler<RejectApplicationCommand, RejectApplicationResult> _rejectHandler;
     private readonly IQueryHandler<GetApplicationQuery, ApplicationResponse> _getHandler;
     private readonly IQueryHandler<GetProcessorApplicationsQuery, ProcessorApplicationsResponse> _listHandler;
 
     public ProcessorController(
-        ICommandHandler<ProcessDecisionCommand, ProcessDecisionResult> decisionHandler,
+        ICommandHandler<ApproveApplicationCommand, ApproveApplicationResult> approveHandler,
+        ICommandHandler<RejectApplicationCommand, RejectApplicationResult> rejectHandler,
         IQueryHandler<GetApplicationQuery, ApplicationResponse> getHandler,
         IQueryHandler<GetProcessorApplicationsQuery, ProcessorApplicationsResponse> listHandler)
     {
-        _decisionHandler = decisionHandler;
+        _approveHandler = approveHandler;
+        _rejectHandler = rejectHandler;
         _getHandler = getHandler;
         _listHandler = listHandler;
     }
@@ -44,10 +46,20 @@ public class ProcessorController : ControllerBase
         return result.ToActionResult();
     }
 
-    [HttpPost("{id:int}/decide")]
-    public async Task<IActionResult> ProcessDecision(int id, [FromBody] ProcessorDecisionDto dto)
+    [HttpPost("{id:int}/approve")]
+    public async Task<IActionResult> ApproveApplication(int id, [FromBody] ApproveApplicationDto dto)
     {
-        var result = await _decisionHandler.HandleAsync(new ProcessDecisionCommand(id, dto));
+        var result = await _approveHandler.HandleAsync(new ApproveApplicationCommand(id, dto));
+        if (!result.IsSuccess)
+            return result.ToActionResult();
+
+        return Ok(new { application = result.Value!.Application, redirect = result.Value.Redirect });
+    }
+
+    [HttpPost("{id:int}/reject")]
+    public async Task<IActionResult> RejectApplication(int id, [FromBody] RejectApplicationDto dto)
+    {
+        var result = await _rejectHandler.HandleAsync(new RejectApplicationCommand(id, dto));
         if (!result.IsSuccess)
             return result.ToActionResult();
 

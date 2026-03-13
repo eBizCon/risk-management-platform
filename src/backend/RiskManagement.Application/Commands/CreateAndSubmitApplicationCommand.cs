@@ -8,17 +8,17 @@ using ApplicationEntity = RiskManagement.Domain.Aggregates.ApplicationAggregate.
 
 namespace RiskManagement.Application.Commands;
 
-public record CreateApplicationCommand(ApplicationCreateDto Dto, string UserEmail);
+public record CreateAndSubmitApplicationCommand(ApplicationCreateDto Dto, string UserEmail);
 
-public record CreateApplicationResult(ApplicationResponse Application, string Redirect);
+public record CreateAndSubmitApplicationResult(ApplicationResponse Application, string Redirect);
 
-public class CreateApplicationHandler : ICommandHandler<CreateApplicationCommand, CreateApplicationResult>
+public class CreateAndSubmitApplicationHandler : ICommandHandler<CreateAndSubmitApplicationCommand, CreateAndSubmitApplicationResult>
 {
     private readonly IApplicationRepository _repository;
     private readonly ScoringService _scoringService;
     private readonly IValidator<ApplicationCreateDto> _validator;
 
-    public CreateApplicationHandler(
+    public CreateAndSubmitApplicationHandler(
         IApplicationRepository repository,
         ScoringService scoringService,
         IValidator<ApplicationCreateDto> validator)
@@ -28,13 +28,13 @@ public class CreateApplicationHandler : ICommandHandler<CreateApplicationCommand
         _validator = validator;
     }
 
-    public async Task<Result<CreateApplicationResult>> HandleAsync(CreateApplicationCommand command, CancellationToken ct = default)
+    public async Task<Result<CreateAndSubmitApplicationResult>> HandleAsync(CreateAndSubmitApplicationCommand command, CancellationToken ct = default)
     {
         var validationResult = await _validator.ValidateAsync(command.Dto, ct);
         if (!validationResult.IsValid)
         {
             var errors = ValidationHelper.ToValidationErrors(validationResult);
-            return Result<CreateApplicationResult>.ValidationFailure(errors, command.Dto);
+            return Result<CreateAndSubmitApplicationResult>.ValidationFailure(errors, command.Dto);
         }
 
         var application = ApplicationEntity.Create(
@@ -50,8 +50,11 @@ public class CreateApplicationHandler : ICommandHandler<CreateApplicationCommand
         await _repository.AddAsync(application, ct);
         await _repository.SaveChangesAsync(ct);
 
-        return Result<CreateApplicationResult>.Success(new CreateApplicationResult(
+        application.Submit(_scoringService);
+        await _repository.SaveChangesAsync(ct);
+
+        return Result<CreateAndSubmitApplicationResult>.Success(new CreateAndSubmitApplicationResult(
             ApplicationMapper.ToResponse(application),
-            $"/applications/{application.Id}"));
+            $"/applications/{application.Id}?submitted=true"));
     }
 }

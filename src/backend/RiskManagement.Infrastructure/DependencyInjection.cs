@@ -32,13 +32,17 @@ public static class DependencyInjection
 
         services.AddScoped<IValidator<ApplicationCreateDto>, ApplicationValidator>();
         services.AddScoped<IValidator<ApplicationUpdateDto>, ApplicationUpdateValidator>();
-        services.AddScoped<IValidator<ProcessorDecisionDto>, ProcessorDecisionValidator>();
+        services.AddScoped<IValidator<ApproveApplicationDto>, ApproveApplicationValidator>();
+        services.AddScoped<IValidator<RejectApplicationDto>, RejectApplicationValidator>();
 
         services.AddScoped<ICommandHandler<CreateApplicationCommand, CreateApplicationResult>, CreateApplicationHandler>();
+        services.AddScoped<ICommandHandler<CreateAndSubmitApplicationCommand, CreateAndSubmitApplicationResult>, CreateAndSubmitApplicationHandler>();
         services.AddScoped<ICommandHandler<SubmitApplicationCommand, ApplicationResponse>, SubmitApplicationHandler>();
         services.AddScoped<ICommandHandler<UpdateApplicationCommand, UpdateApplicationResult>, UpdateApplicationHandler>();
+        services.AddScoped<ICommandHandler<UpdateAndSubmitApplicationCommand, UpdateAndSubmitApplicationResult>, UpdateAndSubmitApplicationHandler>();
         services.AddScoped<ICommandHandler<DeleteApplicationCommand, bool>, DeleteApplicationHandler>();
-        services.AddScoped<ICommandHandler<ProcessDecisionCommand, ProcessDecisionResult>, ProcessDecisionHandler>();
+        services.AddScoped<ICommandHandler<ApproveApplicationCommand, ApproveApplicationResult>, ApproveApplicationHandler>();
+        services.AddScoped<ICommandHandler<RejectApplicationCommand, RejectApplicationResult>, RejectApplicationHandler>();
         services.AddScoped<ICommandHandler<CreateInquiryCommand, object>, CreateInquiryHandler>();
         services.AddScoped<ICommandHandler<AnswerInquiryCommand, ApplicationResponse>, AnswerInquiryHandler>();
 

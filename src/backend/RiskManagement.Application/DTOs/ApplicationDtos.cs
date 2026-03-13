@@ -8,7 +8,6 @@ public class ApplicationCreateDto
     public double DesiredRate { get; set; }
     public string EmploymentStatus { get; set; } = string.Empty;
     public bool HasPaymentDefault { get; set; }
-    public string? Action { get; set; }
 }
 
 public class ApplicationUpdateDto
@@ -19,13 +18,16 @@ public class ApplicationUpdateDto
     public double DesiredRate { get; set; }
     public string EmploymentStatus { get; set; } = string.Empty;
     public bool HasPaymentDefault { get; set; }
-    public string? Action { get; set; }
 }
 
-public class ProcessorDecisionDto
+public class ApproveApplicationDto
 {
-    public string Decision { get; set; } = string.Empty;
     public string? Comment { get; set; }
+}
+
+public class RejectApplicationDto
+{
+    public string Comment { get; set; } = string.Empty;
 }
 
 public class InquiryCreateDto

@@ -7,7 +7,8 @@ public class ValidationTests
 {
     private readonly ApplicationValidator _applicationValidator = new();
     private readonly ApplicationUpdateValidator _applicationUpdateValidator = new();
-    private readonly ProcessorDecisionValidator _processorDecisionValidator = new();
+    private readonly ApproveApplicationValidator _approveValidator = new();
+    private readonly RejectApplicationValidator _rejectValidator = new();
 
     // applicationSchema Tests
 
@@ -244,84 +245,56 @@ public class ValidationTests
         Assert.True(result.IsValid);
     }
 
-    // processorDecisionSchema Tests
+    // ApproveApplicationValidator Tests
 
     [Fact]
-    public void Should_Accept_Approved_Decision_Without_Comment()
+    public void Should_Accept_Approve_Without_Comment()
     {
-        var model = new ProcessorDecisionDto
+        var model = new ApproveApplicationDto
         {
-            Decision = "approved",
             Comment = null
         };
 
-        var result = _processorDecisionValidator.Validate(model);
+        var result = _approveValidator.Validate(model);
         Assert.True(result.IsValid);
     }
 
     [Fact]
-    public void Should_Accept_Approved_Decision_With_Comment()
+    public void Should_Accept_Approve_With_Comment()
     {
-        var model = new ProcessorDecisionDto
+        var model = new ApproveApplicationDto
         {
-            Decision = "approved",
             Comment = "Genehmigt aufgrund guter Bonität"
         };
 
-        var result = _processorDecisionValidator.Validate(model);
+        var result = _approveValidator.Validate(model);
         Assert.True(result.IsValid);
     }
 
+    // RejectApplicationValidator Tests
+
     [Fact]
-    public void Should_Reject_Rejected_Decision_Without_Comment()
+    public void Should_Reject_Rejection_Without_Comment()
     {
-        var model = new ProcessorDecisionDto
+        var model = new RejectApplicationDto
         {
-            Decision = "rejected",
-            Comment = null
+            Comment = ""
         };
 
-        var result = _processorDecisionValidator.Validate(model);
+        var result = _rejectValidator.Validate(model);
         Assert.False(result.IsValid);
         Assert.Contains(result.Errors, e => e.ErrorMessage.Contains("Begründung"));
     }
 
     [Fact]
-    public void Should_Reject_Rejected_Decision_With_Empty_Comment()
+    public void Should_Accept_Rejection_With_Comment()
     {
-        var model = new ProcessorDecisionDto
+        var model = new RejectApplicationDto
         {
-            Decision = "rejected",
-            Comment = ""
-        };
-
-        var result = _processorDecisionValidator.Validate(model);
-        Assert.False(result.IsValid);
-    }
-
-    [Fact]
-    public void Should_Accept_Rejected_Decision_With_Comment()
-    {
-        var model = new ProcessorDecisionDto
-        {
-            Decision = "rejected",
             Comment = "Abgelehnt wegen unzureichender Bonität"
         };
 
-        var result = _processorDecisionValidator.Validate(model);
+        var result = _rejectValidator.Validate(model);
         Assert.True(result.IsValid);
-    }
-
-    [Fact]
-    public void Should_Reject_Invalid_Decision_Value()
-    {
-        var model = new ProcessorDecisionDto
-        {
-            Decision = "pending",
-            Comment = "Some comment"
-        };
-
-        var result = _processorDecisionValidator.Validate(model);
-        Assert.False(result.IsValid);
     }
 }

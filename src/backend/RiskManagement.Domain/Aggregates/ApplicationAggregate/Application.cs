@@ -115,10 +115,12 @@ public class Application : AggregateRoot
         ApplyScoring(scoringService);
     }
 
-    public void MarkAsDeleted()
+    public void Delete()
     {
         if (Status != ApplicationStatus.Draft)
             throw new DomainException("Nur Entwürfe können gelöscht werden");
+
+        AddDomainEvent(new ApplicationDeletedEvent(Id));
     }
 
     public void RequestInformation(string inquiryText, string processorEmail)

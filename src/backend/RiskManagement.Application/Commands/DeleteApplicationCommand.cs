@@ -23,7 +23,7 @@ public class DeleteApplicationHandler : ICommandHandler<DeleteApplicationCommand
         if (application.CreatedBy != command.UserEmail)
             return Result<bool>.Forbidden("Zugriff verweigert");
 
-        application.MarkAsDeleted();
+        application.Delete();
         await _repository.RemoveAsync(application, ct);
         await _repository.SaveChangesAsync(ct);
 

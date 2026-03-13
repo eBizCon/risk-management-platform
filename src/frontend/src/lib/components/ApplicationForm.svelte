@@ -44,13 +44,11 @@
 		errors = {};
 
 		const data = getFormData();
-		if (action) {
-			(data as Record<string, unknown>).action = action;
-		}
 
 		try {
 			const isEdit = !!application?.id;
-			const url = isEdit ? `/api/applications/${application!.id}` : '/api/applications';
+			const baseUrl = isEdit ? `/api/applications/${application!.id}` : '/api/applications';
+			const url = action === 'submit' ? `${baseUrl}?submit=true` : baseUrl;
 			const method = isEdit ? 'PUT' : 'POST';
 
 			const res = await fetch(url, {

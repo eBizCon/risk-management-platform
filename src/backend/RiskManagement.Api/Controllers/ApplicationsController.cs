@@ -6,8 +6,6 @@ using RiskManagement.Application.Commands;
 using RiskManagement.Application.Common;
 using RiskManagement.Application.DTOs;
 using RiskManagement.Application.Queries;
-using ApplicationCreateDto = RiskManagement.Application.DTOs.ApplicationCreateDto;
-using ApplicationUpdateDto = RiskManagement.Application.DTOs.ApplicationUpdateDto;
 
 namespace RiskManagement.Api.Controllers;
 
@@ -17,7 +15,9 @@ namespace RiskManagement.Api.Controllers;
 public class ApplicationsController : ControllerBase
 {
     private readonly ICommandHandler<CreateApplicationCommand, CreateApplicationResult> _createHandler;
+    private readonly ICommandHandler<CreateAndSubmitApplicationCommand, CreateAndSubmitApplicationResult> _createAndSubmitHandler;
     private readonly ICommandHandler<UpdateApplicationCommand, UpdateApplicationResult> _updateHandler;
+    private readonly ICommandHandler<UpdateAndSubmitApplicationCommand, UpdateAndSubmitApplicationResult> _updateAndSubmitHandler;
     private readonly ICommandHandler<DeleteApplicationCommand, bool> _deleteHandler;
     private readonly ICommandHandler<SubmitApplicationCommand, ApplicationResponse> _submitHandler;
     private readonly IQueryHandler<GetApplicationQuery, ApplicationResponse> _getHandler;
@@ -25,14 +25,18 @@ public class ApplicationsController : ControllerBase
 
     public ApplicationsController(
         ICommandHandler<CreateApplicationCommand, CreateApplicationResult> createHandler,
+        ICommandHandler<CreateAndSubmitApplicationCommand, CreateAndSubmitApplicationResult> createAndSubmitHandler,
         ICommandHandler<UpdateApplicationCommand, UpdateApplicationResult> updateHandler,
+        ICommandHandler<UpdateAndSubmitApplicationCommand, UpdateAndSubmitApplicationResult> updateAndSubmitHandler,
         ICommandHandler<DeleteApplicationCommand, bool> deleteHandler,
         ICommandHandler<SubmitApplicationCommand, ApplicationResponse> submitHandler,
         IQueryHandler<GetApplicationQuery, ApplicationResponse> getHandler,
         IQueryHandler<GetApplicationsByUserQuery, ApplicationResponse[]> listHandler)
     {
         _createHandler = createHandler;
+        _createAndSubmitHandler = createAndSubmitHandler;
         _updateHandler = updateHandler;
+        _updateAndSubmitHandler = updateAndSubmitHandler;
         _deleteHandler = deleteHandler;
         _submitHandler = submitHandler;
         _getHandler = getHandler;
@@ -47,8 +51,17 @@ public class ApplicationsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateApplication([FromBody] ApplicationCreateDto dto)
+    public async Task<IActionResult> CreateApplication([FromBody] ApplicationCreateDto dto, [FromQuery] bool submit = false)
     {
+        if (submit)
+        {
+            var submitResult = await _createAndSubmitHandler.HandleAsync(new CreateAndSubmitApplicationCommand(dto, User.GetEmail()));
+            if (!submitResult.IsSuccess)
+                return submitResult.ToActionResult();
+
+            return Ok(new { application = submitResult.Value!.Application, redirect = submitResult.Value.Redirect });
+        }
+
         var result = await _createHandler.HandleAsync(new CreateApplicationCommand(dto, User.GetEmail()));
         if (!result.IsSuccess)
             return result.ToActionResult();
@@ -66,8 +79,17 @@ public class ApplicationsController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
-    public async Task<IActionResult> UpdateApplication(int id, [FromBody] ApplicationUpdateDto dto)
+    public async Task<IActionResult> UpdateApplication(int id, [FromBody] ApplicationUpdateDto dto, [FromQuery] bool submit = false)
     {
+        if (submit)
+        {
+            var submitResult = await _updateAndSubmitHandler.HandleAsync(new UpdateAndSubmitApplicationCommand(id, dto, User.GetEmail()));
+            if (!submitResult.IsSuccess)
+                return submitResult.ToActionResult();
+
+            return Ok(new { application = submitResult.Value!.Application, redirect = submitResult.Value.Redirect });
+        }
+
         var result = await _updateHandler.HandleAsync(new UpdateApplicationCommand(id, dto, User.GetEmail()));
         if (!result.IsSuccess)
             return result.ToActionResult();

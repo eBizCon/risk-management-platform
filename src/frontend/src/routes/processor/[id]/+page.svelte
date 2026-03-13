@@ -20,7 +20,7 @@
 	const canProcess = $derived(app.status === 'submitted' || app.status === 'resubmitted');
 	const canCreateInquiry = $derived(app.status === 'submitted' || app.status === 'resubmitted');
 
-	let selectedDecision = $state<'approved' | 'rejected' | ''>('');
+	let selectedDecision = $state<'approve' | 'reject' | ''>('');
 	let comment = $state('');
 	let inquiryText = $state('');
 	let decisionErrors = $state<Record<string, string[]>>({});
@@ -30,10 +30,10 @@
 		event.preventDefault();
 		decisionErrors = {};
 
-		const res = await fetch(`/api/processor/${app.id}/decide`, {
+		const res = await fetch(`/api/processor/${app.id}/${selectedDecision}`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ decision: selectedDecision, comment })
+			body: JSON.stringify({ comment })
 		});
 
 		if (!res.ok) {
@@ -274,7 +274,7 @@
 										<input
 											type="radio"
 											name="decision"
-											value="approved"
+											value="approve"
 											bind:group={selectedDecision}
 											class="h-4 w-4 border-default radio-success"
 										/>
@@ -285,7 +285,7 @@
 										<input
 											type="radio"
 											name="decision"
-											value="rejected"
+											value="reject"
 											bind:group={selectedDecision}
 											class="h-4 w-4 border-default radio-danger"
 										/>
@@ -300,9 +300,9 @@
 
 							<div>
 								<label for="comment" class="form-label block">
-									Kommentar {selectedDecision === 'rejected'
-										? '(Pflichtfeld bei Ablehnung)'
-										: '(optional)'}
+									Kommentar {selectedDecision === 'reject'
+									? '(Pflichtfeld bei Ablehnung)'
+									: '(optional)'}
 								</label>
 								<textarea
 									id="comment"
@@ -322,15 +322,15 @@
 									type="submit"
 									disabled={!selectedDecision}
 									class="decision-btn px-4 py-2 text-sm font-medium text-white rounded-md shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-									class:btn-approve={selectedDecision === 'approved'}
-									class:btn-reject={selectedDecision === 'rejected'}
+									class:btn-approve={selectedDecision === 'approve'}
+									class:btn-reject={selectedDecision === 'reject'}
 									class:btn-neutral={!selectedDecision}
 								>
-									{selectedDecision === 'approved'
-										? 'Antrag genehmigen'
-										: selectedDecision === 'rejected'
-											? 'Antrag ablehnen'
-											: 'Entscheidung treffen'}
+									{selectedDecision === 'approve'
+									? 'Antrag genehmigen'
+									: selectedDecision === 'reject'
+										? 'Antrag ablehnen'
+										: 'Entscheidung treffen'}
 								</button>
 							</div>
 						</form>
