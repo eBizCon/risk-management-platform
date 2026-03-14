@@ -119,7 +119,7 @@
 					<div class="text-secondary">{isApplicant ? 'Antragsteller' : isProcessor ? 'Antragsbearbeiter' : 'Risikomanager'}</div>
 				</div>
 				<a
-					href="/logout"
+					href="/auth/logout"
 					class="btn-secondary w-full inline-flex items-center justify-center gap-2"
 					data-testid="mobile-menu-logout"
 				>

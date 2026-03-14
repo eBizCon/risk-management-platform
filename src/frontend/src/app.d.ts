@@ -10,6 +10,11 @@ declare global {
 			name: string;
 			role: UserRole;
 			idToken?: string;
+			accessToken?: string;
+		}
+
+		interface Locals {
+			user: User | null;
 		}
 	}
 }

@@ -16,7 +16,7 @@
       <p class="text-sm text-slate-400">Starte den sicheren Login über unseren Identitätsprovider.</p>
     </div>
 
-    <form method="post" action="/login" class="space-y-4">
+    <form method="get" action="/auth/login" class="space-y-4">
       <button
         type="submit"
         data-testid="auth-login-button"

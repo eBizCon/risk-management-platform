@@ -99,7 +99,7 @@
 							<div class="font-medium text-primary">{user.name}</div>
 							<div>{isApplicant ? 'Antragsteller' : isProcessor ? 'Antragsbearbeiter' : 'Risikomanager'}</div>
 						</div>
-						<a href="/logout" class="btn-secondary inline-flex items-center px-3 py-2" data-testid="nav-logout">
+						<a href="/auth/logout" class="btn-secondary inline-flex items-center px-3 py-2" data-testid="nav-logout">
 							<LogOut class="w-4 h-4 mr-2" />
 							Logout
 						</a>

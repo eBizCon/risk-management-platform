@@ -1,6 +1,7 @@
-using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using CustomerManagement.Api.Extensions;
+using CustomerManagement.Api.Models;
 using CustomerManagement.Infrastructure;
 using CustomerManagement.Infrastructure.Persistence;
 using SharedKernel.Middleware;
@@ -20,22 +21,33 @@ var serviceApiKey = builder.Configuration["SERVICE_API_KEY"] ?? "";
 builder.Services.AddCustomerInfrastructure(connectionString);
 builder.Services.AddCustomerApplicationServices(applicationServiceUrl, serviceApiKey);
 
-var sharedKeysPath = Path.Combine(builder.Environment.ContentRootPath, "..", "shared-keys");
-builder.Services.AddDataProtection()
-    .SetApplicationName("risk-management-platform")
-    .PersistKeysToFileSystem(new DirectoryInfo(sharedKeysPath));
+var oidcIssuer = builder.Configuration["OIDC_ISSUER"] ?? "http://localhost:8081/realms/risk-management";
+var oidcRolesClaimPath = builder.Configuration["OIDC_ROLES_CLAIM_PATH"] ?? "realm_access.roles";
 
-builder.Services.AddOidcAuthentication(builder.Configuration, builder.Environment);
-
-builder.Services.AddCors(options =>
-{
-    options.AddDefaultPolicy(policy =>
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
     {
-        policy.WithOrigins("http://localhost:5173", "http://localhost:4173")
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials();
+        options.Authority = oidcIssuer;
+        options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
+        options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = oidcIssuer,
+            ValidateAudience = false,
+            ValidateLifetime = true
+        };
     });
+
+builder.Services.AddTransient<IClaimsTransformation>(
+    _ => new KeycloakRoleClaimsTransformer(oidcRolesClaimPath));
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(AuthPolicies.Applicant, policy => policy.RequireRole(AppRoles.Applicant));
+    options.AddPolicy(AuthPolicies.Processor, policy => policy.RequireRole(AppRoles.Processor));
+    options.AddPolicy(
+        AuthPolicies.ApplicantOrProcessor,
+        policy => policy.RequireRole(AppRoles.Applicant, AppRoles.Processor));
 });
 
 var app = builder.Build();
@@ -46,10 +58,8 @@ using (var scope = app.Services.CreateScope())
     await dbContext.Database.MigrateAsync();
 }
 
-if (app.Environment.IsDevelopment()) app.UseCors();
-
-app.UseMiddleware<ApiKeyAuthMiddleware>();
 app.UseAuthentication();
+app.UseMiddleware<InternalAuthMiddleware>();
 app.UseAuthorization();
 app.MapControllers();
 app.MapGet("/health", () => Results.Ok(new { status = "healthy" }));
