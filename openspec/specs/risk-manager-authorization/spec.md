@@ -12,11 +12,11 @@ The Keycloak realm import SHALL include a `risk_manager` realm role. A test user
 - **THEN** the realm SHALL contain the roles `applicant`, `processor`, and `risk_manager`
 
 ### Requirement: Backend authorization policy for risk_manager
-The backend SHALL define an `AppRoles.RiskManager` constant with value `"risk_manager"` and an `AuthPolicies.RiskManager` authorization policy requiring this role. The `RoleClaimHelper.AllowedRoles` array SHALL include `"risk_manager"`.
+The backend SHALL define an `AppRoles.RiskManager` constant with value `"risk_manager"` and an `AuthPolicies.RiskManager` authorization policy requiring this role. The `InternalAuthMiddleware` SHALL map the `X-User-Role` header value `"risk_manager"` to a `ClaimTypes.Role` claim, which the authorization policy evaluates.
 
-#### Scenario: Risk Manager role is recognized during login
-- **WHEN** a user with `risk_manager` role in their OIDC token authenticates
-- **THEN** the backend SHALL map the role to a `ClaimTypes.Role` claim
+#### Scenario: Risk Manager role is recognized from internal headers
+- **WHEN** a request arrives with `X-User-Role: risk_manager` header (set by the BFF)
+- **THEN** the backend SHALL map the role to a `ClaimTypes.Role` claim via `InternalAuthMiddleware`
 
 #### Scenario: Risk Manager can access protected endpoints
 - **WHEN** an authenticated Risk Manager calls an endpoint requiring `AuthPolicies.RiskManager`
