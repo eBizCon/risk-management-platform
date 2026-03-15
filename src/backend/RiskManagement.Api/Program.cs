@@ -11,6 +11,8 @@ using SharedKernel.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.AddServiceDefaults();
+
 // Services
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -74,6 +76,8 @@ app.UseAuthentication();
 app.UseMiddleware<InternalAuthMiddleware>();
 app.UseAuthorization();
 app.MapControllers();
+
+app.MapDefaultEndpoints();
 
 app.Run();
 

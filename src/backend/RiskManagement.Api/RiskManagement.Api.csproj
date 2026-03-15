@@ -17,6 +17,7 @@
     <ItemGroup>
         <ProjectReference Include="..\RiskManagement.Application\RiskManagement.Application.csproj"/>
         <ProjectReference Include="..\RiskManagement.Infrastructure\RiskManagement.Infrastructure.csproj"/>
+        <ProjectReference Include="..\ServiceDefaults\ServiceDefaults.csproj"/>
     </ItemGroup>
 
 </Project>

@@ -8,6 +8,8 @@ using SharedKernel.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.AddServiceDefaults();
+
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -62,7 +64,8 @@ app.UseAuthentication();
 app.UseMiddleware<InternalAuthMiddleware>();
 app.UseAuthorization();
 app.MapControllers();
-app.MapGet("/health", () => Results.Ok(new { status = "healthy" }));
+
+app.MapDefaultEndpoints();
 
 app.Run();
 

@@ -17,6 +17,7 @@
     <ItemGroup>
         <ProjectReference Include="..\CustomerManagement.Application\CustomerManagement.Application.csproj"/>
         <ProjectReference Include="..\CustomerManagement.Infrastructure\CustomerManagement.Infrastructure.csproj"/>
+        <ProjectReference Include="..\ServiceDefaults\ServiceDefaults.csproj"/>
     </ItemGroup>
 
 </Project>

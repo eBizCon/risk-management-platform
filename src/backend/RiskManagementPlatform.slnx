@@ -19,4 +19,8 @@
     <Project Path="RiskManagement.Infrastructure/RiskManagement.Infrastructure.csproj" />
   </Folder>
   <Project Path="SharedKernel/SharedKernel.csproj" />
+  <Folder Name="/Aspire/">
+    <Project Path="AppHost/AppHost.csproj" />
+    <Project Path="ServiceDefaults/ServiceDefaults.csproj" />
+  </Folder>
 </Solution>
