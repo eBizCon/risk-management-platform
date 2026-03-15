@@ -1,5 +1,6 @@
 using RiskManagement.Domain.Aggregates.ScoringConfigAggregate;
 using RiskManagement.Domain.ValueObjects;
+using SharedKernel.ValueObjects;
 
 namespace RiskManagement.Domain.Services;
 

@@ -5,6 +5,7 @@ using RiskManagement.Domain.Events;
 using RiskManagement.Domain.Exceptions;
 using RiskManagement.Domain.Services;
 using RiskManagement.Domain.ValueObjects;
+using SharedKernel.ValueObjects;
 
 namespace RiskManagement.Domain.Aggregates.ApplicationAggregate;
 
@@ -16,6 +17,7 @@ public class Application : AggregateRoot<ApplicationId>
     public Money DesiredRate { get; private set; } = Money.Zero;
     public EmploymentStatus EmploymentStatus { get; private set; } = EmploymentStatus.Employed;
     public bool HasPaymentDefault { get; private set; }
+    public int? CreditScore { get; private set; }
     public ApplicationStatus Status { get; private set; } = ApplicationStatus.Draft;
     public int? Score { get; private set; }
     public TrafficLight? TrafficLight { get; private set; }
@@ -41,6 +43,7 @@ public class Application : AggregateRoot<ApplicationId>
         Money desiredRate,
         EmploymentStatus employmentStatus,
         bool hasPaymentDefault,
+        int? creditScore,
         EmailAddress createdBy,
         IScoringService scoringService,
         ScoringConfig scoringConfig,
@@ -69,6 +72,7 @@ public class Application : AggregateRoot<ApplicationId>
             DesiredRate = desiredRate,
             EmploymentStatus = employmentStatus,
             HasPaymentDefault = hasPaymentDefault,
+            CreditScore = creditScore,
             Status = ApplicationStatus.Draft,
             CreatedAt = DateTime.UtcNow,
             CreatedBy = createdBy
@@ -122,6 +126,7 @@ public class Application : AggregateRoot<ApplicationId>
         Money desiredRate,
         EmploymentStatus employmentStatus,
         bool hasPaymentDefault,
+        int? creditScore,
         IScoringService scoringService,
         ScoringConfig scoringConfig,
         ScoringConfigVersionId scoringConfigVersionId)
@@ -150,6 +155,7 @@ public class Application : AggregateRoot<ApplicationId>
         DesiredRate = desiredRate;
         EmploymentStatus = employmentStatus;
         HasPaymentDefault = hasPaymentDefault;
+        CreditScore = creditScore;
 
         ApplyScoring(scoringService, scoringConfig, scoringConfigVersionId);
     }
@@ -200,8 +206,8 @@ public class Application : AggregateRoot<ApplicationId>
         ScoringConfigVersionId scoringConfigVersionId)
     {
         var result =
-            scoringService.CalculateScore(Income, FixedCosts, DesiredRate, EmploymentStatus, HasPaymentDefault,
-                scoringConfig);
+            scoringService.CalculateScore(Income, FixedCosts, DesiredRate, EmploymentStatus,
+                HasPaymentDefault, scoringConfig);
         Score = result.Score;
         TrafficLight = result.TrafficLight;
         ScoringReasons = JsonSerializer.Serialize(result.Reasons);

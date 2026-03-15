@@ -4,6 +4,7 @@ using RiskManagement.Application.Commands;
 using RiskManagement.Domain.Aggregates.ScoringConfigAggregate;
 using RiskManagement.Domain.Services;
 using RiskManagement.Domain.ValueObjects;
+using SharedKernel.ValueObjects;
 using ApplicationEntity = RiskManagement.Domain.Aggregates.ApplicationAggregate.Application;
 using IApplicationRepository = RiskManagement.Domain.Aggregates.ApplicationAggregate.IApplicationRepository;
 
@@ -58,13 +59,15 @@ public class RescoreOpenApplicationsHandlerTests
 
         var app1 = ApplicationEntity.Create(
             1, Money.Create(5000), Money.Create(2000), Money.CreatePositive(500),
-            EmploymentStatus.Employed, false, EmailAddress.Create("user@test.com"),
+            EmploymentStatus.Employed, false, null,
+            EmailAddress.Create("user@test.com"),
             _scoringService, ScoringConfig.Default, configVersion.Id);
         app1.Submit(_scoringService, ScoringConfig.Default, configVersion.Id);
 
         var app2 = ApplicationEntity.Create(
             2, Money.Create(3000), Money.Create(1000), Money.CreatePositive(300),
-            EmploymentStatus.SelfEmployed, false, EmailAddress.Create("user@test.com"),
+            EmploymentStatus.SelfEmployed, false, null,
+            EmailAddress.Create("user@test.com"),
             _scoringService, ScoringConfig.Default, configVersion.Id);
         app2.Submit(_scoringService, ScoringConfig.Default, configVersion.Id);
 

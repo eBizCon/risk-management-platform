@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
-	import type { Application, Customer, EmploymentStatus } from '$lib/types';
-	import { employmentStatusLabels } from '$lib/types';
+	import type { Application, Customer } from '$lib/types';
 
 	interface Props {
 		application?: Application | null;
@@ -11,13 +10,6 @@
 	}
 
 	let { application = null, errors = $bindable({}), isSubmitting = $bindable(false) }: Props = $props();
-
-	const employmentOptions: { value: EmploymentStatus; label: string }[] = [
-		{ value: 'employed', label: employmentStatusLabels.employed },
-		{ value: 'self_employed', label: employmentStatusLabels.self_employed },
-		{ value: 'unemployed', label: employmentStatusLabels.unemployed },
-		{ value: 'retired', label: employmentStatusLabels.retired }
-	];
 
 	let showConfirmDialog = $state(false);
 	let pendingAction = $state<'submit' | null>(null);
@@ -49,9 +41,7 @@
 			customerId: parseInt(fd.get('customerId') as string, 10),
 			income: parseFloat(fd.get('income') as string),
 			fixedCosts: parseFloat(fd.get('fixedCosts') as string),
-			desiredRate: parseFloat(fd.get('desiredRate') as string),
-			employmentStatus: fd.get('employmentStatus') as string,
-			hasPaymentDefault: fd.get('hasPaymentDefault') === 'true'
+			desiredRate: parseFloat(fd.get('desiredRate') as string)
 		};
 	}
 
@@ -234,60 +224,6 @@
 				<p class="mt-1 error-text">{errors.desiredRate[0]}</p>
 			{/if}
 		</div>
-	</div>
-
-	<div>
-		<label for="employmentStatus" class="form-label block">Beschäftigungsstatus</label>
-		<select
-			id="employmentStatus"
-			name="employmentStatus"
-			required
-			class="mt-1 block w-full rounded-md border-default shadow-sm sm:text-sm"
-			data-testid="select-employment-status"
-		>
-			<option value="">Bitte wählen...</option>
-			{#each employmentOptions as option}
-				<option value={option.value} selected={application?.employmentStatus === option.value}>
-					{option.label}
-				</option>
-			{/each}
-		</select>
-		{#if errors.employmentStatus}
-			<p class="mt-1 error-text">{errors.employmentStatus[0]}</p>
-		{/if}
-	</div>
-
-	<div>
-		<fieldset>
-			<legend class="form-label block">Zahlungsverzug in der Vergangenheit?</legend>
-			<div class="mt-2 flex flex-col sm:flex-row gap-4 sm:gap-6">
-				<label class="inline-flex items-center">
-					<input
-						type="radio"
-						name="hasPaymentDefault"
-						value="true"
-						checked={application?.hasPaymentDefault === true}
-						class="h-4 w-4 border-default"
-						data-testid="radio-payment-default-yes"
-					/>
-					<span class="ml-2 text-sm text-primary">Ja</span>
-				</label>
-				<label class="inline-flex items-center">
-					<input
-						type="radio"
-						name="hasPaymentDefault"
-						value="false"
-						checked={application?.hasPaymentDefault === false}
-						class="h-4 w-4 border-default"
-						data-testid="radio-payment-default-no"
-					/>
-					<span class="ml-2 text-sm text-primary">Nein</span>
-				</label>
-			</div>
-		</fieldset>
-		{#if errors.hasPaymentDefault}
-			<p class="mt-1 error-text">{errors.hasPaymentDefault[0]}</p>
-		{/if}
 	</div>
 
 	<div class="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-default">

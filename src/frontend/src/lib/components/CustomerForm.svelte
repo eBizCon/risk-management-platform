@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import type { Customer } from '$lib/types';
+	import { employmentStatusLabels } from '$lib/types';
 
 	interface Props {
 		customer?: Customer;
@@ -25,7 +26,8 @@
 			street: fd.get('street') as string,
 			city: fd.get('city') as string,
 			zipCode: fd.get('zipCode') as string,
-			country: fd.get('country') as string
+			country: fd.get('country') as string,
+			employmentStatus: fd.get('employmentStatus') as string
 		};
 	}
 
@@ -175,6 +177,29 @@
 					<p class="mt-1 error-text" data-testid="customer-dateOfBirth-error">{errors.dateOfBirth[0]}</p>
 				{/if}
 			</div>
+		</div>
+	</div>
+
+	<div class="card p-6">
+		<h2 class="text-lg font-semibold text-primary mb-4">Beschäftigung</h2>
+		<div>
+			<label for="employmentStatus" class="form-label block">Beschäftigungsstatus</label>
+			<select
+				id="employmentStatus"
+				name="employmentStatus"
+				required
+				class="mt-1 block w-full rounded-md border-default shadow-sm sm:text-sm"
+				data-testid="customer-employmentStatus"
+			>
+				<option value="">Bitte wählen...</option>
+				<option value="employed" selected={customer?.employmentStatus === 'employed'}>{employmentStatusLabels.employed}</option>
+				<option value="self_employed" selected={customer?.employmentStatus === 'self_employed'}>{employmentStatusLabels.self_employed}</option>
+				<option value="unemployed" selected={customer?.employmentStatus === 'unemployed'}>{employmentStatusLabels.unemployed}</option>
+				<option value="retired" selected={customer?.employmentStatus === 'retired'}>{employmentStatusLabels.retired}</option>
+			</select>
+			{#if errors.employmentStatus}
+				<p class="mt-1 error-text" data-testid="customer-employmentStatus-error">{errors.employmentStatus[0]}</p>
+			{/if}
 		</div>
 	</div>
 

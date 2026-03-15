@@ -1,6 +1,7 @@
 using CustomerManagement.Domain.Aggregates.CustomerAggregate;
 using CustomerManagement.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
+using SharedKernel.ValueObjects;
 
 namespace CustomerManagement.Infrastructure.Persistence;
 
@@ -50,6 +51,20 @@ public class CustomerDbContext : DbContext
                 address.Property(a => a.City).HasColumnName("city").HasMaxLength(100).IsRequired();
                 address.Property(a => a.ZipCode).HasColumnName("zip_code").HasMaxLength(20).IsRequired();
                 address.Property(a => a.Country).HasColumnName("country").HasMaxLength(100).IsRequired();
+            });
+
+            entity.Property(e => e.EmploymentStatus)
+                .HasColumnName("employment_status")
+                .HasConversion(s => s.Value, v => EmploymentStatus.From(v))
+                .HasMaxLength(30)
+                .IsRequired();
+
+            entity.OwnsOne(e => e.CreditReport, cr =>
+            {
+                cr.Property(c => c.HasPaymentDefault).HasColumnName("credit_report_has_payment_default");
+                cr.Property(c => c.CreditScore).HasColumnName("credit_report_credit_score");
+                cr.Property(c => c.CheckedAt).HasColumnName("credit_report_checked_at");
+                cr.Property(c => c.Provider).HasColumnName("credit_report_provider").HasMaxLength(50);
             });
 
             entity.Property(e => e.Status)

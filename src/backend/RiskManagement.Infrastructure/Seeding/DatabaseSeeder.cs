@@ -4,6 +4,7 @@ using RiskManagement.Domain.Aggregates.ScoringConfigAggregate;
 using RiskManagement.Domain.Services;
 using RiskManagement.Domain.ValueObjects;
 using RiskManagement.Infrastructure.Persistence;
+using SharedKernel.ValueObjects;
 using ApplicationEntity = RiskManagement.Domain.Aggregates.ApplicationAggregate.Application;
 
 namespace RiskManagement.Infrastructure.Seeding;
@@ -31,17 +32,17 @@ public class DatabaseSeeder
         "Antrag aufgrund negativer Gesamtbewertung abgelehnt."
     };
 
-    private static readonly (string Name, double Income, double FixedCosts, double DesiredRate, string EmploymentStatus,
+    private static readonly (string Name, double Income, double FixedCosts, double DesiredRate, EmploymentStatus EmploymentStatus,
         bool HasPaymentDefault)[] Templates =
         {
-            ("Max Mustermann", 5200, 1900, 700, "employed", false),
-            ("Sofia Wagner", 4000, 2200, 700, "self_employed", false),
-            ("Jonas Becker", 3300, 2100, 500, "employed", false),
-            ("Elena Fischer", 2800, 2100, 450, "unemployed", true),
-            ("Noah Klein", 6100, 2400, 850, "employed", false),
-            ("Mila Schmitt", 3900, 1900, 850, "retired", false),
-            ("Paul Neumann", 3100, 2300, 420, "self_employed", true),
-            ("Lea Hartmann", 2700, 2200, 300, "unemployed", false)
+            ("Max Mustermann", 5200, 1900, 700, EmploymentStatus.Employed, false),
+            ("Sofia Wagner", 4000, 2200, 700, EmploymentStatus.SelfEmployed, false),
+            ("Jonas Becker", 3300, 2100, 500, EmploymentStatus.Employed, false),
+            ("Elena Fischer", 2800, 2100, 450, EmploymentStatus.Unemployed, true),
+            ("Noah Klein", 6100, 2400, 850, EmploymentStatus.Employed, false),
+            ("Mila Schmitt", 3900, 1900, 850, EmploymentStatus.Retired, false),
+            ("Paul Neumann", 3100, 2300, 420, EmploymentStatus.SelfEmployed, true),
+            ("Lea Hartmann", 2700, 2200, 300, EmploymentStatus.Unemployed, false)
         };
 
     private enum SeedStatus
@@ -104,8 +105,9 @@ public class DatabaseSeeder
                 Money.Create((decimal)template.Income),
                 Money.Create((decimal)template.FixedCosts),
                 Money.CreatePositive((decimal)template.DesiredRate),
-                EmploymentStatus.From(template.EmploymentStatus),
+                template.EmploymentStatus,
                 template.HasPaymentDefault,
+                null,
                 createdBy,
                 _scoringService,
                 configVersion.Config,

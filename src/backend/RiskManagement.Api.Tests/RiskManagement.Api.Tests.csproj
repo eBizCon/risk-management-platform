@@ -29,6 +29,9 @@
         <ProjectReference Include="..\RiskManagement.Domain\RiskManagement.Domain.csproj"/>
         <ProjectReference Include="..\RiskManagement.Application\RiskManagement.Application.csproj"/>
         <ProjectReference Include="..\RiskManagement.Infrastructure\RiskManagement.Infrastructure.csproj"/>
+        <ProjectReference Include="..\CustomerManagement.Domain\CustomerManagement.Domain.csproj"/>
+        <ProjectReference Include="..\CustomerManagement.Application\CustomerManagement.Application.csproj"/>
+        <ProjectReference Include="..\CustomerManagement.Infrastructure\CustomerManagement.Infrastructure.csproj"/>
     </ItemGroup>
 
 </Project>

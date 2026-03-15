@@ -44,6 +44,12 @@ public static class DependencyInjection
             client.DefaultRequestHeaders.Add("X-Api-Key", serviceApiKey);
         });
 
+        services.AddHttpClient<ICustomerProfileService, CustomerServiceClient>(client =>
+        {
+            client.BaseAddress = new Uri(customerServiceUrl);
+            client.DefaultRequestHeaders.Add("X-Api-Key", serviceApiKey);
+        });
+
         services.AddScoped<IDispatcher, Dispatcher>();
 
         var applicationAssembly = typeof(ApplicationCreateDto).Assembly;

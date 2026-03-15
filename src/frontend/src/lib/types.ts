@@ -9,7 +9,14 @@ export type EmploymentStatus = 'employed' | 'self_employed' | 'unemployed' | 're
 export type TrafficLight = 'red' | 'yellow' | 'green';
 export type UserRole = 'applicant' | 'processor' | 'risk_manager';
 
-export type CustomerStatus = 'Active' | 'Archived';
+export type CustomerStatus = 'active' | 'archived';
+
+export interface CreditReport {
+	hasPaymentDefault: boolean;
+	creditScore: number | null;
+	checkedAt: string;
+	provider: string;
+}
 
 export interface Customer {
 	id: number;
@@ -22,6 +29,8 @@ export interface Customer {
 	city: string;
 	zipCode: string;
 	country: string;
+	employmentStatus: EmploymentStatus;
+	creditReport: CreditReport | null;
 	status: CustomerStatus;
 	createdBy: string;
 	createdAt: string;
@@ -37,6 +46,7 @@ export interface Application {
 	desiredRate: number;
 	employmentStatus: EmploymentStatus;
 	hasPaymentDefault: boolean;
+	creditScore: number | null;
 	status: ApplicationStatus;
 	score: number | null;
 	trafficLight: TrafficLight | null;
@@ -97,6 +107,6 @@ export const trafficLightLabels: Record<string, string> = {
 };
 
 export const customerStatusLabels: Record<string, string> = {
-	Active: 'Aktiv',
-	Archived: 'Archiviert'
+	active: 'Aktiv',
+	archived: 'Archiviert'
 };

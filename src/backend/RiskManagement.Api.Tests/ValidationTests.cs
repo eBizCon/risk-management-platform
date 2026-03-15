@@ -20,9 +20,7 @@ public class ValidationTests
             CustomerId = 1,
             Income = 4000,
             FixedCosts = 1500,
-            DesiredRate = 500,
-            EmploymentStatus = "employed",
-            HasPaymentDefault = false
+            DesiredRate = 500
         };
 
         var result = _applicationValidator.Validate(model);
@@ -37,9 +35,7 @@ public class ValidationTests
             CustomerId = 0,
             Income = 4000,
             FixedCosts = 1500,
-            DesiredRate = 500,
-            EmploymentStatus = "employed",
-            HasPaymentDefault = false
+            DesiredRate = 500
         };
 
         var result = _applicationValidator.Validate(model);
@@ -54,9 +50,7 @@ public class ValidationTests
             CustomerId = -1,
             Income = 4000,
             FixedCosts = 1500,
-            DesiredRate = 500,
-            EmploymentStatus = "employed",
-            HasPaymentDefault = false
+            DesiredRate = 500
         };
 
         var result = _applicationValidator.Validate(model);
@@ -72,9 +66,7 @@ public class ValidationTests
             CustomerId = 1,
             Income = -100,
             FixedCosts = 1500,
-            DesiredRate = 500,
-            EmploymentStatus = "employed",
-            HasPaymentDefault = false
+            DesiredRate = 500
         };
 
         var result = _applicationValidator.Validate(model);
@@ -90,9 +82,7 @@ public class ValidationTests
             CustomerId = 1,
             Income = 0,
             FixedCosts = 1500,
-            DesiredRate = 500,
-            EmploymentStatus = "employed",
-            HasPaymentDefault = false
+            DesiredRate = 500
         };
 
         var result = _applicationValidator.Validate(model);
@@ -107,9 +97,7 @@ public class ValidationTests
             CustomerId = 1,
             Income = 4000,
             FixedCosts = -500,
-            DesiredRate = 500,
-            EmploymentStatus = "employed",
-            HasPaymentDefault = false
+            DesiredRate = 500
         };
 
         var result = _applicationValidator.Validate(model);
@@ -125,9 +113,7 @@ public class ValidationTests
             CustomerId = 1,
             Income = 4000,
             FixedCosts = 0,
-            DesiredRate = 500,
-            EmploymentStatus = "employed",
-            HasPaymentDefault = false
+            DesiredRate = 500
         };
 
         var result = _applicationValidator.Validate(model);
@@ -142,53 +128,12 @@ public class ValidationTests
             CustomerId = 1,
             Income = 4000,
             FixedCosts = 1500,
-            DesiredRate = -100,
-            EmploymentStatus = "employed",
-            HasPaymentDefault = false
+            DesiredRate = -100
         };
 
         var result = _applicationValidator.Validate(model);
         Assert.False(result.IsValid);
         Assert.Contains(result.Errors, e => e.ErrorMessage.Contains("positiv"));
-    }
-
-    [Fact]
-    public void Should_Reject_Invalid_Employment_Status()
-    {
-        var model = new ApplicationCreateDto
-        {
-            CustomerId = 1,
-            Income = 4000,
-            FixedCosts = 1500,
-            DesiredRate = 500,
-            EmploymentStatus = "invalid_status",
-            HasPaymentDefault = false
-        };
-
-        var result = _applicationValidator.Validate(model);
-        Assert.False(result.IsValid);
-    }
-
-    [Fact]
-    public void Should_Accept_All_Valid_Employment_Statuses()
-    {
-        var statuses = new[] { "employed", "self_employed", "unemployed", "retired" };
-
-        foreach (var status in statuses)
-        {
-            var model = new ApplicationCreateDto
-            {
-                CustomerId = 1,
-                Income = 4000,
-                FixedCosts = 1500,
-                DesiredRate = 500,
-                EmploymentStatus = status,
-                HasPaymentDefault = false
-            };
-
-            var result = _applicationValidator.Validate(model);
-            Assert.True(result.IsValid, $"Employment status '{status}' should be valid");
-        }
     }
 
     // applicationWithBusinessRulesSchema Tests
@@ -201,9 +146,7 @@ public class ValidationTests
             CustomerId = 1,
             Income = 3000,
             FixedCosts = 2000,
-            DesiredRate = 1500,
-            EmploymentStatus = "employed",
-            HasPaymentDefault = false
+            DesiredRate = 1500
         };
 
         var result = _applicationUpdateValidator.Validate(model);
@@ -219,9 +162,7 @@ public class ValidationTests
             CustomerId = 1,
             Income = 4000,
             FixedCosts = 1500,
-            DesiredRate = 500,
-            EmploymentStatus = "employed",
-            HasPaymentDefault = false
+            DesiredRate = 500
         };
 
         var result = _applicationUpdateValidator.Validate(model);
@@ -236,9 +177,7 @@ public class ValidationTests
             CustomerId = 1,
             Income = 3000,
             FixedCosts = 2000,
-            DesiredRate = 1000,
-            EmploymentStatus = "employed",
-            HasPaymentDefault = false
+            DesiredRate = 1000
         };
 
         var result = _applicationUpdateValidator.Validate(model);

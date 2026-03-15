@@ -6,8 +6,6 @@ public class ApplicationCreateDto
     public double Income { get; set; }
     public double FixedCosts { get; set; }
     public double DesiredRate { get; set; }
-    public string EmploymentStatus { get; set; } = string.Empty;
-    public bool HasPaymentDefault { get; set; }
 }
 
 public class ApplicationUpdateDto
@@ -16,8 +14,6 @@ public class ApplicationUpdateDto
     public double Income { get; set; }
     public double FixedCosts { get; set; }
     public double DesiredRate { get; set; }
-    public string EmploymentStatus { get; set; } = string.Empty;
-    public bool HasPaymentDefault { get; set; }
 }
 
 public class ApproveApplicationDto
@@ -50,6 +46,7 @@ public class ApplicationResponse
     public double DesiredRate { get; set; }
     public string EmploymentStatus { get; set; } = string.Empty;
     public bool HasPaymentDefault { get; set; }
+    public int? CreditScore { get; set; }
     public string Status { get; set; } = string.Empty;
     public int? Score { get; set; }
     public string? TrafficLight { get; set; }

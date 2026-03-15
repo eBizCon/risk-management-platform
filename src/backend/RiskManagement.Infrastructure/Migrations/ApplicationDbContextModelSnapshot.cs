@@ -17,7 +17,7 @@ namespace RiskManagement.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.25")
+                .HasAnnotation("ProductVersion", "10.0.5")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -40,6 +40,10 @@ namespace RiskManagement.Infrastructure.Migrations
                         .HasColumnType("text")
                         .HasColumnName("created_by");
 
+                    b.Property<int?>("CreditScore")
+                        .HasColumnType("integer")
+                        .HasColumnName("credit_score");
+
                     b.Property<int>("CustomerId")
                         .HasColumnType("integer")
                         .HasColumnName("customer_id");
@@ -50,7 +54,8 @@ namespace RiskManagement.Infrastructure.Migrations
 
                     b.Property<string>("EmploymentStatus")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
                         .HasColumnName("employment_status");
 
                     b.Property<double>("FixedCosts")

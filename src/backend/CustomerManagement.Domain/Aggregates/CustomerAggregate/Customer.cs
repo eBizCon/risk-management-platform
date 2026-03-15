@@ -1,5 +1,6 @@
 using CustomerManagement.Domain.Events;
 using CustomerManagement.Domain.ValueObjects;
+using SharedKernel.ValueObjects;
 
 namespace CustomerManagement.Domain.Aggregates.CustomerAggregate;
 
@@ -11,6 +12,8 @@ public class Customer : AggregateRoot<CustomerId>
     public PhoneNumber Phone { get; private set; } = null!;
     public DateOnly DateOfBirth { get; private set; }
     public Address Address { get; private set; } = null!;
+    public EmploymentStatus EmploymentStatus { get; private set; } = EmploymentStatus.Employed;
+    public CreditReport? CreditReport { get; private set; }
     public CustomerStatus Status { get; private set; } = null!;
     public EmailAddress CreatedBy { get; private set; } = null!;
     public DateTime CreatedAt { get; private set; }
@@ -27,6 +30,7 @@ public class Customer : AggregateRoot<CustomerId>
         PhoneNumber phone,
         DateOnly dateOfBirth,
         Address address,
+        EmploymentStatus employmentStatus,
         EmailAddress createdBy)
     {
         GuardName(firstName, "Vorname");
@@ -40,6 +44,7 @@ public class Customer : AggregateRoot<CustomerId>
             Phone = phone,
             DateOfBirth = dateOfBirth,
             Address = address,
+            EmploymentStatus = employmentStatus,
             Status = CustomerStatus.Active,
             CreatedBy = createdBy,
             CreatedAt = DateTime.UtcNow
@@ -55,7 +60,8 @@ public class Customer : AggregateRoot<CustomerId>
         EmailAddress? email,
         PhoneNumber phone,
         DateOnly dateOfBirth,
-        Address address)
+        Address address,
+        EmploymentStatus employmentStatus)
     {
         GuardActiveStatus();
         GuardName(firstName, "Vorname");
@@ -67,6 +73,7 @@ public class Customer : AggregateRoot<CustomerId>
         Phone = phone;
         DateOfBirth = dateOfBirth;
         Address = address;
+        EmploymentStatus = employmentStatus;
         UpdatedAt = DateTime.UtcNow;
 
         AddDomainEvent(new CustomerUpdatedEvent(Id, FirstName, LastName));
@@ -88,6 +95,14 @@ public class Customer : AggregateRoot<CustomerId>
         Status = CustomerStatus.Active;
         UpdatedAt = DateTime.UtcNow;
         AddDomainEvent(new CustomerActivatedEvent(Id));
+    }
+
+    public void UpdateCreditReport(CreditReport creditReport)
+    {
+        GuardActiveStatus();
+        CreditReport = creditReport;
+        UpdatedAt = DateTime.UtcNow;
+        AddDomainEvent(new CreditReportReceivedEvent(Id, creditReport.HasPaymentDefault, creditReport.CreditScore));
     }
 
     private void GuardActiveStatus()

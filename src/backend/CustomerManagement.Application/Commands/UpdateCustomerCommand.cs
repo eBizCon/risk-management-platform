@@ -2,6 +2,7 @@ using CustomerManagement.Application.DTOs;
 using CustomerManagement.Domain.Aggregates.CustomerAggregate;
 using CustomerManagement.Domain.ValueObjects;
 using FluentValidation;
+using SharedKernel.ValueObjects;
 
 namespace CustomerManagement.Application.Commands;
 
@@ -46,7 +47,8 @@ public class UpdateCustomerHandler : ICommandHandler<UpdateCustomerCommand, Upda
             email,
             PhoneNumber.Create(command.Dto.Phone),
             DateOnly.Parse(command.Dto.DateOfBirth),
-            Address.Create(command.Dto.Street, command.Dto.City, command.Dto.ZipCode, command.Dto.Country));
+            Address.Create(command.Dto.Street, command.Dto.City, command.Dto.ZipCode, command.Dto.Country),
+            EmploymentStatus.From(command.Dto.EmploymentStatus));
 
         await _repository.SaveChangesAsync(ct);
 

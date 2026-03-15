@@ -1,6 +1,7 @@
 using RiskManagement.Domain.Aggregates.ScoringConfigAggregate;
 using RiskManagement.Domain.Services;
 using RiskManagement.Domain.ValueObjects;
+using SharedKernel.ValueObjects;
 
 namespace RiskManagement.Api.Tests;
 

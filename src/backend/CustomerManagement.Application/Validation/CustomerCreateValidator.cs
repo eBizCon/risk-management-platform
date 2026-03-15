@@ -1,6 +1,7 @@
 using CustomerManagement.Application.DTOs;
 using CustomerManagement.Domain.ValueObjects;
 using FluentValidation;
+using SharedKernel.ValueObjects;
 
 namespace CustomerManagement.Application.Validation;
 
@@ -31,6 +32,10 @@ public class CustomerCreateValidator : AbstractValidator<CustomerCreateDto>
         RuleFor(x => x.City).NotEmpty().WithMessage("Stadt ist erforderlich");
         RuleFor(x => x.ZipCode).NotEmpty().WithMessage("PLZ ist erforderlich");
         RuleFor(x => x.Country).NotEmpty().WithMessage("Land ist erforderlich");
+
+        RuleFor(x => x.EmploymentStatus)
+            .Must(x => EmploymentStatus.AllValues.Contains(x))
+            .WithMessage("Bitte wählen Sie einen gültigen Beschäftigungsstatus");
     }
 
     private static bool BeAValidDate(string dateString)

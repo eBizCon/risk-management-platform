@@ -1,10 +1,12 @@
 using FluentValidation;
 using RiskManagement.Application.Common;
 using RiskManagement.Application.DTOs;
+using RiskManagement.Application.Services;
 using RiskManagement.Domain.Aggregates.ApplicationAggregate;
 using RiskManagement.Domain.Aggregates.ScoringConfigAggregate;
 using RiskManagement.Domain.Services;
 using RiskManagement.Domain.ValueObjects;
+using SharedKernel.ValueObjects;
 using AppId = RiskManagement.Domain.Aggregates.ApplicationAggregate.ApplicationId;
 
 namespace RiskManagement.Application.Commands;
@@ -23,19 +25,22 @@ public class
     private readonly IScoringService _scoringService;
     private readonly IValidator<ApplicationUpdateDto> _validator;
     private readonly IDispatcher _dispatcher;
+    private readonly ICustomerProfileService _customerProfileService;
 
     public UpdateAndSubmitApplicationHandler(
         IApplicationRepository repository,
         IScoringConfigRepository configRepository,
         IScoringService scoringService,
         IValidator<ApplicationUpdateDto> validator,
-        IDispatcher dispatcher)
+        IDispatcher dispatcher,
+        ICustomerProfileService customerProfileService)
     {
         _repository = repository;
         _configRepository = configRepository;
         _scoringService = scoringService;
         _validator = validator;
         _dispatcher = dispatcher;
+        _customerProfileService = customerProfileService;
     }
 
     public async Task<Result<UpdateAndSubmitApplicationResult>> HandleAsync(UpdateAndSubmitApplicationCommand command,
@@ -55,6 +60,13 @@ public class
             return Result<UpdateAndSubmitApplicationResult>.ValidationFailure(errors, command.Dto);
         }
 
+        var customerProfile = await _customerProfileService.GetCustomerProfileAsync(command.Dto.CustomerId, ct);
+        if (customerProfile is null)
+            return Result<UpdateAndSubmitApplicationResult>.Failure("Kunde nicht gefunden");
+
+        if (customerProfile.CreditReport is null)
+            return Result<UpdateAndSubmitApplicationResult>.Failure("Bonitätsprüfung fehlt. Bitte zuerst eine Bonitätsprüfung für den Kunden durchführen.");
+
         var configVersion = await _configRepository.GetCurrentAsync(ct);
         if (configVersion is null)
             return Result<UpdateAndSubmitApplicationResult>.Failure("Keine Scoring-Konfiguration gefunden");
@@ -64,8 +76,9 @@ public class
             Money.Create((decimal)command.Dto.Income),
             Money.Create((decimal)command.Dto.FixedCosts),
             Money.CreatePositive((decimal)command.Dto.DesiredRate),
-            EmploymentStatus.From(command.Dto.EmploymentStatus),
-            command.Dto.HasPaymentDefault,
+            EmploymentStatus.From(customerProfile.EmploymentStatus),
+            customerProfile.CreditReport.HasPaymentDefault,
+            customerProfile.CreditReport.CreditScore,
             _scoringService,
             configVersion.Config,
             configVersion.Id);

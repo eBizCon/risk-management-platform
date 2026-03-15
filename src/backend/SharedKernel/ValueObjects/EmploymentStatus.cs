@@ -1,6 +1,6 @@
-using RiskManagement.Domain.Common;
+using SharedKernel.Common;
 
-namespace RiskManagement.Domain.ValueObjects;
+namespace SharedKernel.ValueObjects;
 
 public sealed class EmploymentStatus : Enumeration<EmploymentStatus>
 {

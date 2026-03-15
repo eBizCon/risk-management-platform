@@ -2,7 +2,7 @@
 	import { goto } from '$app/navigation';
 	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
 	import RoleGuard from '$lib/components/RoleGuard.svelte';
-	import { customerStatusLabels } from '$lib/types';
+	import { customerStatusLabels, employmentStatusLabels } from '$lib/types';
 	import { ArrowLeft, Edit, Archive, RotateCcw, Trash2 } from 'lucide-svelte';
 	import type { PageData } from './$types';
 
@@ -12,6 +12,7 @@
 
 	let showDeleteDialog = $state(false);
 	let showArchiveDialog = $state(false);
+	let creditCheckLoading = $state(false);
 
 	function formatDate(dateString: string | null): string {
 		if (!dateString) return '-';
@@ -62,6 +63,19 @@
 			window.location.reload();
 		}
 	}
+
+	async function handleRequestCreditReport() {
+		if (creditCheckLoading) return;
+		creditCheckLoading = true;
+		try {
+			const response = await fetch(`/api/customers/${customer.id}/credit-report`, { method: 'POST' });
+			if (response.ok) {
+				window.location.reload();
+			}
+		} finally {
+			creditCheckLoading = false;
+		}
+	}
 </script>
 
 <svelte:head>
@@ -81,17 +95,17 @@
 				</h1>
 				<span
 					class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
-					class:bg-success={customer.status === 'Active'}
-					class:text-white={customer.status === 'Active'}
-					class:bg-bg-muted={customer.status === 'Archived'}
-					class:text-secondary={customer.status === 'Archived'}
+					class:bg-success={customer.status === 'active'}
+					class:text-white={customer.status === 'active'}
+					class:bg-bg-muted={customer.status === 'archived'}
+					class:text-secondary={customer.status === 'archived'}
 					data-testid="customer-detail-status"
 				>
 					{customerStatusLabels[customer.status] ?? customer.status}
 				</span>
 			</div>
 			<div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-				{#if customer.status === 'Active'}
+				{#if customer.status === 'active'}
 					<a
 						href="/customers/{customer.id}/edit"
 						class="btn-secondary inline-flex items-center px-4 py-2 w-full sm:w-auto"
@@ -153,6 +167,10 @@
 						<dt class="dl-label">Geburtsdatum</dt>
 						<dd class="mt-1 dl-value" data-testid="customer-detail-dateOfBirth">{customer.dateOfBirth}</dd>
 					</div>
+					<div>
+						<dt class="dl-label">Beschäftigungsstatus</dt>
+						<dd class="mt-1 dl-value" data-testid="customer-detail-employmentStatus">{employmentStatusLabels[customer.employmentStatus] ?? customer.employmentStatus}</dd>
+					</div>
 				</dl>
 			</div>
 
@@ -176,6 +194,44 @@
 						<dd class="mt-1 dl-value" data-testid="customer-detail-country">{customer.country}</dd>
 					</div>
 				</dl>
+			</div>
+
+			<div class="card p-6 lg:col-span-2" data-testid="customer-credit-report-section">
+				<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
+					<h2 class="text-lg font-semibold text-primary">Bonität</h2>
+					{#if customer.status === 'active'}
+						<button
+							onclick={handleRequestCreditReport}
+							disabled={creditCheckLoading}
+							class="btn-secondary px-4 py-2 mt-2 sm:mt-0"
+							data-testid="customer-credit-check-btn"
+						>
+							{creditCheckLoading ? 'Prüfung läuft...' : 'Bonität prüfen'}
+						</button>
+					{/if}
+				</div>
+				{#if customer.creditReport}
+					<dl class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+						<div>
+							<dt class="dl-label">Zahlungsverzug</dt>
+							<dd class="mt-1 dl-value" data-testid="customer-detail-hasPaymentDefault">{customer.creditReport.hasPaymentDefault ? 'Ja' : 'Nein'}</dd>
+						</div>
+						<div>
+							<dt class="dl-label">Credit Score</dt>
+							<dd class="mt-1 dl-value" data-testid="customer-detail-creditScore">{customer.creditReport.creditScore ?? '-'}</dd>
+						</div>
+						<div>
+							<dt class="dl-label">Geprüft am</dt>
+							<dd class="mt-1 dl-value" data-testid="customer-detail-creditCheckedAt">{formatDate(customer.creditReport.checkedAt)}</dd>
+						</div>
+						<div>
+							<dt class="dl-label">Anbieter</dt>
+							<dd class="mt-1 dl-value" data-testid="customer-detail-creditProvider">{customer.creditReport.provider}</dd>
+						</div>
+					</dl>
+				{:else}
+					<p class="text-secondary" data-testid="customer-no-credit-report">Keine Bonitätsprüfung vorhanden</p>
+				{/if}
 			</div>
 
 			<div class="card p-6 lg:col-span-2">

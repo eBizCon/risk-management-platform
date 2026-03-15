@@ -15,6 +15,7 @@ public static class ApplicationMapper
             DesiredRate = (double)application.DesiredRate.Amount,
             EmploymentStatus = application.EmploymentStatus.Value,
             HasPaymentDefault = application.HasPaymentDefault,
+            CreditScore = application.CreditScore,
             Status = application.Status.Value,
             Score = application.Score,
             TrafficLight = application.TrafficLight?.Value,

@@ -101,10 +101,10 @@
 					<td class="px-4 py-4 whitespace-nowrap">
 						<span
 							class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
-							class:bg-success={customer.status === 'Active'}
-							class:text-white={customer.status === 'Active'}
-							class:bg-bg-muted={customer.status === 'Archived'}
-							class:text-secondary={customer.status === 'Archived'}
+							class:bg-success={customer.status === 'active'}
+							class:text-white={customer.status === 'active'}
+							class:bg-bg-muted={customer.status === 'archived'}
+							class:text-secondary={customer.status === 'archived'}
 							data-testid="customer-status-{customer.id}"
 						>
 							{customerStatusLabels[customer.status] ?? customer.status}
@@ -124,7 +124,7 @@
 								>
 									<Eye class="w-4 h-4" />
 								</button>
-								{#if customer.status === 'Active'}
+								{#if customer.status === 'active'}
 									<button
 										onclick={() => onEdit?.(customer.id)}
 										class="text-text-muted hover:text-text p-1"

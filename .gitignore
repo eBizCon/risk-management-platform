@@ -31,9 +31,11 @@ playwright-report
 test-results
 
 # .NET
-src/backend/**/bin/
-src/backend/**/obj/
-src/backend/**/*.user
-src/backend/**/*.suo
+**/bin/
+**/obj/
+**/*.dll
+**/*.pdb
+**/*.user
+**/*.suo
 src/backend/shared-keys/
 *.nupkg

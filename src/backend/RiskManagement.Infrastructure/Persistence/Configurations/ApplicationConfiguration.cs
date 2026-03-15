@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using RiskManagement.Domain.Aggregates.ApplicationAggregate;
 using RiskManagement.Domain.Aggregates.ScoringConfigAggregate;
 using RiskManagement.Domain.ValueObjects;
+using SharedKernel.ValueObjects;
 using ApplicationEntity = RiskManagement.Domain.Aggregates.ApplicationAggregate.Application;
 using AppId = RiskManagement.Domain.Aggregates.ApplicationAggregate.ApplicationId;
 
@@ -47,12 +48,15 @@ public class ApplicationConfiguration : IEntityTypeConfiguration<ApplicationEnti
 
         entity.Property(e => e.EmploymentStatus)
             .HasColumnName("employment_status")
+            .HasMaxLength(30)
             .IsRequired()
             .HasConversion(
                 v => v.Value,
                 v => EmploymentStatus.From(v));
 
         entity.Property(e => e.HasPaymentDefault).HasColumnName("has_payment_default").IsRequired();
+
+        entity.Property(e => e.CreditScore).HasColumnName("credit_score");
 
         entity.Property(e => e.Status)
             .HasColumnName("status")

@@ -163,6 +163,10 @@
 							<dt class="dl-label">Zahlungsverzug in der Vergangenheit</dt>
 							<dd class="mt-1 dl-value">{app.hasPaymentDefault ? 'Ja' : 'Nein'}</dd>
 						</div>
+						<div>
+							<dt class="dl-label">Credit Score</dt>
+							<dd class="mt-1 dl-value" data-testid="application-credit-score">{app.creditScore ?? '-'}</dd>
+						</div>
 					</dl>
 				</div>
 

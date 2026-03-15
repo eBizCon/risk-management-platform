@@ -1,6 +1,5 @@
 using FluentValidation;
 using RiskManagement.Application.DTOs;
-using RiskManagement.Domain.ValueObjects;
 
 namespace RiskManagement.Application.Validation;
 
@@ -22,10 +21,6 @@ public class ApplicationValidator : AbstractValidator<ApplicationCreateDto>
         RuleFor(x => x.DesiredRate)
             .GreaterThan(0).WithMessage("Gewünschte Rate muss positiv sein")
             .LessThanOrEqualTo(1000000).WithMessage("Gewünschte Rate scheint unrealistisch hoch");
-
-        RuleFor(x => x.EmploymentStatus)
-            .Must(x => EmploymentStatus.AllValues.Contains(x))
-            .WithMessage("Bitte wählen Sie einen gültigen Beschäftigungsstatus");
 
         RuleFor(x => x.FixedCosts)
             .LessThan(x => x.Income)
@@ -56,10 +51,6 @@ public class ApplicationUpdateValidator : AbstractValidator<ApplicationUpdateDto
         RuleFor(x => x.DesiredRate)
             .GreaterThan(0).WithMessage("Gewünschte Rate muss positiv sein")
             .LessThanOrEqualTo(1000000).WithMessage("Gewünschte Rate scheint unrealistisch hoch");
-
-        RuleFor(x => x.EmploymentStatus)
-            .Must(x => EmploymentStatus.AllValues.Contains(x))
-            .WithMessage("Bitte wählen Sie einen gültigen Beschäftigungsstatus");
 
         RuleFor(x => x.FixedCosts)
             .LessThan(x => x.Income)

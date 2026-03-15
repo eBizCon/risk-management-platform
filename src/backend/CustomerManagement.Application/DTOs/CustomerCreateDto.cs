@@ -11,4 +11,5 @@ public class CustomerCreateDto
     public string City { get; set; } = string.Empty;
     public string ZipCode { get; set; } = string.Empty;
     public string Country { get; set; } = string.Empty;
+    public string EmploymentStatus { get; set; } = string.Empty;
 }

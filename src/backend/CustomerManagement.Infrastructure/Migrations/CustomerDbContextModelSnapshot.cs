@@ -18,7 +18,7 @@ namespace CustomerManagement.Infrastructure.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("customer")
-                .HasAnnotation("ProductVersion", "8.0.25")
+                .HasAnnotation("ProductVersion", "10.0.5")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -50,6 +50,12 @@ namespace CustomerManagement.Infrastructure.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)")
                         .HasColumnName("email");
+
+                    b.Property<string>("EmploymentStatus")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("employment_status");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
@@ -123,8 +129,41 @@ namespace CustomerManagement.Infrastructure.Migrations
                                 .HasForeignKey("CustomerId");
                         });
 
+                    b.OwnsOne("CustomerManagement.Domain.ValueObjects.CreditReport", "CreditReport", b1 =>
+                        {
+                            b1.Property<int>("CustomerId")
+                                .HasColumnType("integer");
+
+                            b1.Property<DateTime>("CheckedAt")
+                                .HasColumnType("timestamp with time zone")
+                                .HasColumnName("credit_report_checked_at");
+
+                            b1.Property<int?>("CreditScore")
+                                .HasColumnType("integer")
+                                .HasColumnName("credit_report_credit_score");
+
+                            b1.Property<bool>("HasPaymentDefault")
+                                .HasColumnType("boolean")
+                                .HasColumnName("credit_report_has_payment_default");
+
+                            b1.Property<string>("Provider")
+                                .IsRequired()
+                                .HasMaxLength(50)
+                                .HasColumnType("character varying(50)")
+                                .HasColumnName("credit_report_provider");
+
+                            b1.HasKey("CustomerId");
+
+                            b1.ToTable("customers", "customer");
+
+                            b1.WithOwner()
+                                .HasForeignKey("CustomerId");
+                        });
+
                     b.Navigation("Address")
                         .IsRequired();
+
+                    b.Navigation("CreditReport");
                 });
 #pragma warning restore 612, 618
         }

@@ -2,6 +2,7 @@ using CustomerManagement.Application.DTOs;
 using CustomerManagement.Domain.Aggregates.CustomerAggregate;
 using CustomerManagement.Domain.ValueObjects;
 using FluentValidation;
+using SharedKernel.ValueObjects;
 
 namespace CustomerManagement.Application.Commands;
 
@@ -39,6 +40,7 @@ public class CreateCustomerHandler : ICommandHandler<CreateCustomerCommand, Crea
             PhoneNumber.Create(command.Dto.Phone),
             DateOnly.Parse(command.Dto.DateOfBirth),
             Address.Create(command.Dto.Street, command.Dto.City, command.Dto.ZipCode, command.Dto.Country),
+            EmploymentStatus.From(command.Dto.EmploymentStatus),
             EmailAddress.Create(command.UserEmail));
 
         await _repository.AddAsync(customer, ct);
