@@ -57,16 +57,18 @@ public class RescoreOpenApplicationsHandlerTests
         _configRepoMock.Setup(r => r.GetCurrentAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(configVersion);
 
+        var creditReport = CreditReport.Create(false, null, DateTime.UtcNow, "schufa_mock");
+
         var app1 = ApplicationEntity.Create(
             1, Money.Create(5000), Money.Create(2000), Money.CreatePositive(500),
-            EmploymentStatus.Employed, false, null,
+            EmploymentStatus.Employed, creditReport,
             EmailAddress.Create("user@test.com"),
             _scoringService, ScoringConfig.Default, configVersion.Id);
         app1.Submit(_scoringService, ScoringConfig.Default, configVersion.Id);
 
         var app2 = ApplicationEntity.Create(
             2, Money.Create(3000), Money.Create(1000), Money.CreatePositive(300),
-            EmploymentStatus.SelfEmployed, false, null,
+            EmploymentStatus.SelfEmployed, creditReport,
             EmailAddress.Create("user@test.com"),
             _scoringService, ScoringConfig.Default, configVersion.Id);
         app2.Submit(_scoringService, ScoringConfig.Default, configVersion.Id);

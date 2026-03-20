@@ -54,9 +54,13 @@ public class ApplicationConfiguration : IEntityTypeConfiguration<ApplicationEnti
                 v => v.Value,
                 v => EmploymentStatus.From(v));
 
-        entity.Property(e => e.HasPaymentDefault).HasColumnName("has_payment_default").IsRequired();
-
-        entity.Property(e => e.CreditScore).HasColumnName("credit_score");
+        entity.OwnsOne(e => e.CreditReport, cr =>
+        {
+            cr.Property(c => c.HasPaymentDefault).HasColumnName("has_payment_default").IsRequired();
+            cr.Property(c => c.CreditScore).HasColumnName("credit_score");
+            cr.Property(c => c.CheckedAt).HasColumnName("credit_checked_at").IsRequired();
+            cr.Property(c => c.Provider).HasColumnName("credit_provider").HasMaxLength(50).IsRequired();
+        });
 
         entity.Property(e => e.Status)
             .HasColumnName("status")

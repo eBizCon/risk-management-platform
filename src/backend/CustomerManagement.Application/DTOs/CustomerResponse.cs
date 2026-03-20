@@ -13,7 +13,6 @@ public class CustomerResponse
     public string ZipCode { get; set; } = string.Empty;
     public string Country { get; set; } = string.Empty;
     public string EmploymentStatus { get; set; } = string.Empty;
-    public CreditReportResponse? CreditReport { get; set; }
     public string Status { get; set; } = string.Empty;
     public string CreatedBy { get; set; } = string.Empty;
     public string CreatedAt { get; set; } = string.Empty;

@@ -11,13 +11,6 @@ export type UserRole = 'applicant' | 'processor' | 'risk_manager';
 
 export type CustomerStatus = 'active' | 'archived';
 
-export interface CreditReport {
-	hasPaymentDefault: boolean;
-	creditScore: number | null;
-	checkedAt: string;
-	provider: string;
-}
-
 export interface Customer {
 	id: number;
 	firstName: string;
@@ -30,7 +23,6 @@ export interface Customer {
 	zipCode: string;
 	country: string;
 	employmentStatus: EmploymentStatus;
-	creditReport: CreditReport | null;
 	status: CustomerStatus;
 	createdBy: string;
 	createdAt: string;

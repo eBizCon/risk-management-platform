@@ -2,8 +2,6 @@ using CustomerManagement.Application.Commands;
 using CustomerManagement.Application.DTOs;
 using CustomerManagement.Application.Validation;
 using CustomerManagement.Domain.Aggregates.CustomerAggregate;
-using CustomerManagement.Domain.Services;
-using CustomerManagement.Infrastructure.ExternalServices;
 using CustomerManagement.Infrastructure.HttpClients;
 using CustomerManagement.Infrastructure.Persistence;
 using FluentValidation;
@@ -22,7 +20,6 @@ public static class DependencyInjection
             options.UseNpgsql(connectionString));
 
         services.AddScoped<ICustomerRepository, CustomerRepository>();
-        services.AddScoped<ICreditReportProvider, MockSchufaProvider>();
 
         return services;
     }

@@ -26,6 +26,7 @@ public class
     private readonly IValidator<ApplicationUpdateDto> _validator;
     private readonly IDispatcher _dispatcher;
     private readonly ICustomerProfileService _customerProfileService;
+    private readonly ICreditCheckService _creditCheckService;
 
     public UpdateAndSubmitApplicationHandler(
         IApplicationRepository repository,
@@ -33,7 +34,8 @@ public class
         IScoringService scoringService,
         IValidator<ApplicationUpdateDto> validator,
         IDispatcher dispatcher,
-        ICustomerProfileService customerProfileService)
+        ICustomerProfileService customerProfileService,
+        ICreditCheckService creditCheckService)
     {
         _repository = repository;
         _configRepository = configRepository;
@@ -41,6 +43,7 @@ public class
         _validator = validator;
         _dispatcher = dispatcher;
         _customerProfileService = customerProfileService;
+        _creditCheckService = creditCheckService;
     }
 
     public async Task<Result<UpdateAndSubmitApplicationResult>> HandleAsync(UpdateAndSubmitApplicationCommand command,
@@ -64,8 +67,15 @@ public class
         if (customerProfile is null)
             return Result<UpdateAndSubmitApplicationResult>.Failure("Kunde nicht gefunden");
 
-        if (customerProfile.CreditReport is null)
-            return Result<UpdateAndSubmitApplicationResult>.Failure("Bonitätsprüfung fehlt. Bitte zuerst eine Bonitätsprüfung für den Kunden durchführen.");
+        var checkResult = await _creditCheckService.CheckAsync(
+            customerProfile.FirstName,
+            customerProfile.LastName,
+            DateOnly.Parse(customerProfile.DateOfBirth),
+            customerProfile.Address.Street,
+            customerProfile.Address.City,
+            customerProfile.Address.ZipCode,
+            customerProfile.Address.Country);
+        var creditReport = CreditReport.FromCheckResult(checkResult);
 
         var configVersion = await _configRepository.GetCurrentAsync(ct);
         if (configVersion is null)
@@ -77,8 +87,7 @@ public class
             Money.Create((decimal)command.Dto.FixedCosts),
             Money.CreatePositive((decimal)command.Dto.DesiredRate),
             EmploymentStatus.From(customerProfile.EmploymentStatus),
-            customerProfile.CreditReport.HasPaymentDefault,
-            customerProfile.CreditReport.CreditScore,
+            creditReport,
             _scoringService,
             configVersion.Config,
             configVersion.Id);

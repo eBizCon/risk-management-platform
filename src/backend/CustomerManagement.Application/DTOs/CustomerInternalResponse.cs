@@ -6,6 +6,10 @@ public class CustomerInternalResponse
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
     public string EmploymentStatus { get; set; } = string.Empty;
-    public CreditReportResponse? CreditReport { get; set; }
+    public string DateOfBirth { get; set; } = string.Empty;
+    public string Street { get; set; } = string.Empty;
+    public string City { get; set; } = string.Empty;
+    public string ZipCode { get; set; } = string.Empty;
+    public string Country { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
 }

@@ -1,4 +1,7 @@
-namespace CustomerManagement.Domain.ValueObjects;
+using SharedKernel.Common;
+using SharedKernel.Exceptions;
+
+namespace RiskManagement.Domain.ValueObjects;
 
 public sealed class CreditReport : ValueObject
 {
@@ -6,6 +9,11 @@ public sealed class CreditReport : ValueObject
     public int? CreditScore { get; }
     public DateTime CheckedAt { get; }
     public string Provider { get; }
+
+    private CreditReport()
+    {
+        Provider = string.Empty;
+    }
 
     private CreditReport(bool hasPaymentDefault, int? creditScore, DateTime checkedAt, string provider)
     {
@@ -24,6 +32,11 @@ public sealed class CreditReport : ValueObject
             throw new DomainException("Provider darf nicht leer sein");
 
         return new CreditReport(hasPaymentDefault, creditScore, checkedAt, provider);
+    }
+
+    public static CreditReport FromCheckResult(CreditCheckResult result)
+    {
+        return new CreditReport(result.HasPaymentDefault, result.CreditScore, result.CheckedAt, result.Provider);
     }
 
     protected override IEnumerable<object?> GetEqualityComponents()

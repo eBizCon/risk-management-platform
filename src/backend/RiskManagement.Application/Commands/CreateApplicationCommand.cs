@@ -22,19 +22,22 @@ public class CreateApplicationHandler : ICommandHandler<CreateApplicationCommand
     private readonly IScoringService _scoringService;
     private readonly IValidator<ApplicationCreateDto> _validator;
     private readonly ICustomerProfileService _customerProfileService;
+    private readonly ICreditCheckService _creditCheckService;
 
     public CreateApplicationHandler(
         IApplicationRepository repository,
         IScoringConfigRepository configRepository,
         IScoringService scoringService,
         IValidator<ApplicationCreateDto> validator,
-        ICustomerProfileService customerProfileService)
+        ICustomerProfileService customerProfileService,
+        ICreditCheckService creditCheckService)
     {
         _repository = repository;
         _configRepository = configRepository;
         _scoringService = scoringService;
         _validator = validator;
         _customerProfileService = customerProfileService;
+        _creditCheckService = creditCheckService;
     }
 
     public async Task<Result<CreateApplicationResult>> HandleAsync(CreateApplicationCommand command,
@@ -51,8 +54,15 @@ public class CreateApplicationHandler : ICommandHandler<CreateApplicationCommand
         if (customerProfile is null)
             return Result<CreateApplicationResult>.Failure("Kunde nicht gefunden");
 
-        if (customerProfile.CreditReport is null)
-            return Result<CreateApplicationResult>.Failure("Bonit\u00e4tspr\u00fcfung fehlt. Bitte zuerst eine Bonit\u00e4tspr\u00fcfung f\u00fcr den Kunden durchf\u00fchren.");
+        var checkResult = await _creditCheckService.CheckAsync(
+            customerProfile.FirstName,
+            customerProfile.LastName,
+            DateOnly.Parse(customerProfile.DateOfBirth),
+            customerProfile.Address.Street,
+            customerProfile.Address.City,
+            customerProfile.Address.ZipCode,
+            customerProfile.Address.Country);
+        var creditReport = CreditReport.FromCheckResult(checkResult);
 
         var configVersion = await _configRepository.GetCurrentAsync(ct);
         if (configVersion is null)
@@ -64,8 +74,7 @@ public class CreateApplicationHandler : ICommandHandler<CreateApplicationCommand
             Money.Create((decimal)command.Dto.FixedCosts),
             Money.CreatePositive((decimal)command.Dto.DesiredRate),
             EmploymentStatus.From(customerProfile.EmploymentStatus),
-            customerProfile.CreditReport.HasPaymentDefault,
-            customerProfile.CreditReport.CreditScore,
+            creditReport,
             EmailAddress.Create(command.UserEmail),
             _scoringService,
             configVersion.Config,

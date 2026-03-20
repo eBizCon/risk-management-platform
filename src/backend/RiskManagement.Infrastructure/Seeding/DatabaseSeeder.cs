@@ -100,14 +100,19 @@ public class DatabaseSeeder
             var targetStatus = StatusCycle[index % StatusCycle.Length];
 
             var customerId = index + 1;
+            var creditReport = CreditReport.Create(
+                template.HasPaymentDefault,
+                420,
+                DateTime.UtcNow,
+                "schufa_mock");
+
             var application = ApplicationEntity.Create(
                 customerId,
                 Money.Create((decimal)template.Income),
                 Money.Create((decimal)template.FixedCosts),
                 Money.CreatePositive((decimal)template.DesiredRate),
                 template.EmploymentStatus,
-                template.HasPaymentDefault,
-                null,
+                creditReport,
                 createdBy,
                 _scoringService,
                 configVersion.Config,

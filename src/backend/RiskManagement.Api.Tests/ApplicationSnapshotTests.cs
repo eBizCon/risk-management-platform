@@ -14,6 +14,9 @@ public class ApplicationSnapshotTests
     private static ScoringConfigVersion CreateConfigVersion() =>
         ScoringConfigVersion.Create(1, ScoringConfig.Default, EmailAddress.Create("admin@test.com"));
 
+    private static CreditReport CreateCreditReport(bool hasPaymentDefault = false, int? creditScore = 420) =>
+        CreditReport.Create(hasPaymentDefault, creditScore, DateTime.UtcNow, "schufa_mock");
+
     [Fact]
     public void Create_WithSnapshotValues_ShouldStoreEmploymentStatus()
     {
@@ -21,13 +24,13 @@ public class ApplicationSnapshotTests
 
         var app = ApplicationEntity.Create(
             1, Money.Create(5000), Money.Create(2000), Money.CreatePositive(500),
-            EmploymentStatus.SelfEmployed, false, 420,
+            EmploymentStatus.SelfEmployed, CreateCreditReport(),
             EmailAddress.Create("user@test.com"),
             _scoringService, ScoringConfig.Default, configVersion.Id);
 
         app.EmploymentStatus.Should().Be(EmploymentStatus.SelfEmployed);
-        app.HasPaymentDefault.Should().BeFalse();
-        app.CreditScore.Should().Be(420);
+        app.CreditReport.HasPaymentDefault.Should().BeFalse();
+        app.CreditReport.CreditScore.Should().Be(420);
     }
 
     [Fact]
@@ -37,12 +40,12 @@ public class ApplicationSnapshotTests
 
         var app = ApplicationEntity.Create(
             1, Money.Create(5000), Money.Create(2000), Money.CreatePositive(500),
-            EmploymentStatus.Unemployed, true, 250,
+            EmploymentStatus.Unemployed, CreateCreditReport(true, 250),
             EmailAddress.Create("user@test.com"),
             _scoringService, ScoringConfig.Default, configVersion.Id);
 
-        app.HasPaymentDefault.Should().BeTrue();
-        app.CreditScore.Should().Be(250);
+        app.CreditReport.HasPaymentDefault.Should().BeTrue();
+        app.CreditReport.CreditScore.Should().Be(250);
         app.EmploymentStatus.Should().Be(EmploymentStatus.Unemployed);
     }
 
@@ -53,11 +56,11 @@ public class ApplicationSnapshotTests
 
         var app = ApplicationEntity.Create(
             1, Money.Create(5000), Money.Create(2000), Money.CreatePositive(500),
-            EmploymentStatus.Employed, false, null,
+            EmploymentStatus.Employed, CreateCreditReport(creditScore: null),
             EmailAddress.Create("user@test.com"),
             _scoringService, ScoringConfig.Default, configVersion.Id);
 
-        app.CreditScore.Should().BeNull();
+        app.CreditReport.CreditScore.Should().BeNull();
     }
 
     [Fact]
@@ -67,7 +70,7 @@ public class ApplicationSnapshotTests
 
         var app = ApplicationEntity.Create(
             1, Money.Create(5000), Money.Create(2000), Money.CreatePositive(500),
-            EmploymentStatus.Employed, false, 420,
+            EmploymentStatus.Employed, CreateCreditReport(),
             EmailAddress.Create("user@test.com"),
             _scoringService, ScoringConfig.Default, configVersion.Id);
 
@@ -83,19 +86,19 @@ public class ApplicationSnapshotTests
 
         var app = ApplicationEntity.Create(
             1, Money.Create(5000), Money.Create(2000), Money.CreatePositive(500),
-            EmploymentStatus.Employed, false, 420,
+            EmploymentStatus.Employed, CreateCreditReport(),
             EmailAddress.Create("user@test.com"),
             _scoringService, ScoringConfig.Default, configVersion.Id);
 
         app.UpdateDetails(
             2, Money.Create(6000), Money.Create(2500), Money.CreatePositive(600),
-            EmploymentStatus.Retired, true, 300,
+            EmploymentStatus.Retired, CreateCreditReport(true, 300),
             _scoringService, ScoringConfig.Default, configVersion.Id);
 
         app.CustomerId.Should().Be(2);
         app.EmploymentStatus.Should().Be(EmploymentStatus.Retired);
-        app.HasPaymentDefault.Should().BeTrue();
-        app.CreditScore.Should().Be(300);
+        app.CreditReport.HasPaymentDefault.Should().BeTrue();
+        app.CreditReport.CreditScore.Should().Be(300);
         app.Income.Should().Be(Money.Create(6000));
     }
 
@@ -106,14 +109,14 @@ public class ApplicationSnapshotTests
 
         var app = ApplicationEntity.Create(
             1, Money.Create(5000), Money.Create(2000), Money.CreatePositive(500),
-            EmploymentStatus.Employed, false, 420,
+            EmploymentStatus.Employed, CreateCreditReport(),
             EmailAddress.Create("user@test.com"),
             _scoringService, ScoringConfig.Default, configVersion.Id);
         app.Submit(_scoringService, ScoringConfig.Default, configVersion.Id);
 
         var act = () => app.UpdateDetails(
             1, Money.Create(5000), Money.Create(2000), Money.CreatePositive(500),
-            EmploymentStatus.Employed, false, 420,
+            EmploymentStatus.Employed, CreateCreditReport(),
             _scoringService, ScoringConfig.Default, configVersion.Id);
 
         act.Should().Throw<DomainException>().WithMessage("*Entwürfe*");
@@ -126,7 +129,7 @@ public class ApplicationSnapshotTests
 
         var app = ApplicationEntity.Create(
             1, Money.Create(5000), Money.Create(2000), Money.CreatePositive(500),
-            EmploymentStatus.Employed, false, 420,
+            EmploymentStatus.Employed, CreateCreditReport(),
             EmailAddress.Create("user@test.com"),
             _scoringService, ScoringConfig.Default, configVersion.Id);
 
@@ -134,7 +137,7 @@ public class ApplicationSnapshotTests
 
         app.UpdateDetails(
             1, Money.Create(5000), Money.Create(2000), Money.CreatePositive(500),
-            EmploymentStatus.Unemployed, true, 200,
+            EmploymentStatus.Unemployed, CreateCreditReport(true, 200),
             _scoringService, ScoringConfig.Default, configVersion.Id);
 
         app.Score.Should().NotBe(scoreBefore);

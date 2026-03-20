@@ -1,11 +1,18 @@
-using CustomerManagement.Domain.Services;
-using CustomerManagement.Domain.ValueObjects;
+using RiskManagement.Domain.Services;
+using RiskManagement.Domain.ValueObjects;
 
-namespace CustomerManagement.Infrastructure.ExternalServices;
+namespace RiskManagement.Infrastructure.ExternalServices;
 
-public class MockSchufaProvider : ICreditReportProvider
+public class MockSchufaProvider : ICreditCheckService
 {
-    public Task<CreditReport> CheckAsync(string firstName, string lastName, DateOnly dateOfBirth, Address address)
+    public Task<CreditCheckResult> CheckAsync(
+        string firstName,
+        string lastName,
+        DateOnly dateOfBirth,
+        string street,
+        string city,
+        string zipCode,
+        string country)
     {
         var hasPaymentDefault = false;
         var creditScore = 420;
@@ -25,8 +32,8 @@ public class MockSchufaProvider : ICreditReportProvider
                 creditScore = 350;
         }
 
-        var report = CreditReport.Create(hasPaymentDefault, creditScore, DateTime.UtcNow, "schufa_mock");
-        return Task.FromResult(report);
+        var result = CreditCheckResult.Create(hasPaymentDefault, creditScore, DateTime.UtcNow, "schufa_mock");
+        return Task.FromResult(result);
     }
 
     private static int CalculateAge(DateOnly dateOfBirth)

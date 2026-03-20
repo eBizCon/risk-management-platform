@@ -1,5 +1,5 @@
-using CustomerManagement.Domain.ValueObjects;
 using FluentAssertions;
+using RiskManagement.Domain.ValueObjects;
 
 namespace RiskManagement.Api.Tests;
 

@@ -20,6 +20,7 @@ public class CreateApplicationHandlerTests
     private readonly Mock<IApplicationRepository> _repositoryMock = new();
     private readonly Mock<IScoringConfigRepository> _configRepoMock = new();
     private readonly Mock<ICustomerProfileService> _profileServiceMock = new();
+    private readonly Mock<ICreditCheckService> _creditCheckServiceMock = new();
     private readonly Mock<IValidator<ApplicationCreateDto>> _validatorMock = new();
     private readonly ScoringService _scoringService = new();
     private readonly CreateApplicationHandler _handler;
@@ -33,7 +34,8 @@ public class CreateApplicationHandlerTests
             _configRepoMock.Object,
             _scoringService,
             _validatorMock.Object,
-            _profileServiceMock.Object);
+            _profileServiceMock.Object,
+            _creditCheckServiceMock.Object);
 
         _validatorMock.Setup(v => v.ValidateAsync(It.IsAny<ApplicationCreateDto>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ValidationResult());
@@ -44,8 +46,17 @@ public class CreateApplicationHandlerTests
         _profileServiceMock.Setup(p => p.GetCustomerProfileAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new CustomerProfile(
                 1, "Max", "Mustermann", "employed",
-                new CustomerCreditReport(false, 420, DateTime.UtcNow.ToString("o"), "schufa_mock"),
+                "1990-01-01",
+                new CustomerAddress("Musterstraße 1", "Berlin", "10115", "Deutschland"),
                 "Active"));
+    }
+
+    private void SetupCreditCheck(bool hasPaymentDefault = false, int creditScore = 420)
+    {
+        _creditCheckServiceMock.Setup(c => c.CheckAsync(
+                It.IsAny<string>(), It.IsAny<string>(), It.IsAny<DateOnly>(),
+                It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(CreditCheckResult.Create(hasPaymentDefault, creditScore, DateTime.UtcNow, "schufa_mock"));
     }
 
     private void SetupScoringConfig()
@@ -67,6 +78,7 @@ public class CreateApplicationHandlerTests
     public async Task HandleAsync_ValidRequest_ShouldReturnSuccess()
     {
         SetupValidCustomerProfile();
+        SetupCreditCheck();
         SetupScoringConfig();
 
         var command = new CreateApplicationCommand(CreateValidDto(), UserEmail);
@@ -93,26 +105,10 @@ public class CreateApplicationHandlerTests
     }
 
     [Fact]
-    public async Task HandleAsync_NoCreditReport_ShouldReturnFailure()
-    {
-        SetupScoringConfig();
-        _profileServiceMock.Setup(p => p.GetCustomerProfileAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new CustomerProfile(
-                1, "Max", "Mustermann", "employed",
-                null,
-                "Active"));
-
-        var command = new CreateApplicationCommand(CreateValidDto(), UserEmail);
-        var result = await _handler.HandleAsync(command);
-
-        result.IsSuccess.Should().BeFalse();
-        result.Error!.Message.Should().Contain("Bonitätsprüfung");
-    }
-
-    [Fact]
     public async Task HandleAsync_NoScoringConfig_ShouldReturnFailure()
     {
         SetupValidCustomerProfile();
+        SetupCreditCheck();
         _configRepoMock.Setup(r => r.GetCurrentAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync((ScoringConfigVersion?)null);
 
@@ -138,13 +134,15 @@ public class CreateApplicationHandlerTests
     }
 
     [Fact]
-    public async Task HandleAsync_ValidRequest_ShouldPassSnapshotValuesToApplication()
+    public async Task HandleAsync_ValidRequest_ShouldPassCreditReportToApplication()
     {
         _profileServiceMock.Setup(p => p.GetCustomerProfileAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new CustomerProfile(
                 1, "Max", "Mustermann", "self_employed",
-                new CustomerCreditReport(true, 250, DateTime.UtcNow.ToString("o"), "schufa_mock"),
+                "1990-01-01",
+                new CustomerAddress("Musterstraße 1", "Berlin", "10115", "Deutschland"),
                 "Active"));
+        SetupCreditCheck(true, 250);
         SetupScoringConfig();
 
         ApplicationEntity? capturedApp = null;
@@ -157,7 +155,7 @@ public class CreateApplicationHandlerTests
 
         capturedApp.Should().NotBeNull();
         capturedApp!.EmploymentStatus.Should().Be(EmploymentStatus.SelfEmployed);
-        capturedApp.HasPaymentDefault.Should().BeTrue();
-        capturedApp.CreditScore.Should().Be(250);
+        capturedApp.CreditReport.HasPaymentDefault.Should().BeTrue();
+        capturedApp.CreditReport.CreditScore.Should().Be(250);
     }
 }

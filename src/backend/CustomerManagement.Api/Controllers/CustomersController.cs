@@ -69,13 +69,6 @@ public class CustomersController : ControllerBase
         return result.ToActionResult();
     }
 
-    [HttpPost("{id:int}/credit-report")]
-    public async Task<IActionResult> RequestCreditReport(int id)
-    {
-        var result = await _dispatcher.SendAsync(new RequestCreditReportCommand(id, User.GetEmail()));
-        return result.ToActionResult();
-    }
-
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteCustomer(int id)
     {

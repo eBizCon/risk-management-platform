@@ -32,7 +32,7 @@ The system SHALL validate scoring config parameters before saving. Validation ru
 - **THEN** the system SHALL return a validation error indicating penalty values must be non-negative
 
 ### Requirement: ScoringService reads config parameters
-The `IScoringService.CalculateScore()` method SHALL accept a scoring config as an additional parameter. The scoring algorithm SHALL use config values instead of hardcoded constants. The scoring logic (algorithm structure) SHALL remain unchanged — only the parameter source changes.
+The `IScoringService.CalculateScore()` method SHALL accept a scoring config as an additional parameter. The scoring algorithm SHALL use config values instead of hardcoded constants. The scoring logic (algorithm structure) SHALL remain unchanged — only the parameter source changes. The `HasPaymentDefault` and `CreditScore` inputs for scoring SHALL be read from the `Application.CreditReport` value object instead of being passed as separate constructor parameters sourced from the customer profile.
 
 #### Scenario: Score calculated with custom config
 - **WHEN** an application is scored with a config where greenThreshold=80 and yellowThreshold=60
@@ -41,6 +41,11 @@ The `IScoringService.CalculateScore()` method SHALL accept a scoring config as a
 #### Scenario: Score calculated with default config matches current behavior
 - **WHEN** an application is scored with the default config v1
 - **THEN** the result SHALL be identical to the current hardcoded scoring behavior
+
+#### Scenario: Scoring uses credit data from application's own CreditReport
+- **WHEN** an application is created and scored
+- **THEN** the scoring SHALL use `HasPaymentDefault` and `CreditScore` from the application's `CreditReport` value object
+- **THEN** the scoring SHALL NOT depend on customer profile credit report data
 
 ### Requirement: Application records scoring config version
 The `Application` entity SHALL store a nullable `ScoringConfigVersionId` referencing the config version used for scoring. Every new scoring (create, update, submit, resubmit, rescore) SHALL set this field to the current config version ID.

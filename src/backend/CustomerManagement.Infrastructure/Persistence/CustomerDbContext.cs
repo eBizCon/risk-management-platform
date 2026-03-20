@@ -59,14 +59,6 @@ public class CustomerDbContext : DbContext
                 .HasMaxLength(30)
                 .IsRequired();
 
-            entity.OwnsOne(e => e.CreditReport, cr =>
-            {
-                cr.Property(c => c.HasPaymentDefault).HasColumnName("credit_report_has_payment_default");
-                cr.Property(c => c.CreditScore).HasColumnName("credit_report_credit_score");
-                cr.Property(c => c.CheckedAt).HasColumnName("credit_report_checked_at");
-                cr.Property(c => c.Provider).HasColumnName("credit_report_provider").HasMaxLength(50);
-            });
-
             entity.Property(e => e.Status)
                 .HasColumnName("status")
                 .HasConversion(s => s.Value, v => CustomerStatus.From(v))

@@ -39,3 +39,6 @@ test-results
 **/*.suo
 src/backend/shared-keys/
 *.nupkg
+
+# Roslyn BuildHost artifacts
+**/BuildHost-*

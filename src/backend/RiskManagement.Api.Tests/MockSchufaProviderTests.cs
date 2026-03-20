@@ -1,6 +1,5 @@
-using CustomerManagement.Domain.ValueObjects;
-using CustomerManagement.Infrastructure.ExternalServices;
 using FluentAssertions;
+using RiskManagement.Infrastructure.ExternalServices;
 
 namespace RiskManagement.Api.Tests;
 
@@ -8,13 +7,10 @@ public class MockSchufaProviderTests
 {
     private readonly MockSchufaProvider _provider = new();
 
-    private static Address CreateTestAddress() =>
-        Address.Create("Musterstraße 1", "Berlin", "10115", "Deutschland");
-
     [Fact]
     public async Task CheckAsync_DefaultCase_ShouldReturnNoDefaultAndScore420()
     {
-        var result = await _provider.CheckAsync("Max", "Mustermann", new DateOnly(1990, 1, 1), CreateTestAddress());
+        var result = await _provider.CheckAsync("Max", "Mustermann", new DateOnly(1990, 1, 1), "Musterstraße 1", "Berlin", "10115", "Deutschland");
 
         result.HasPaymentDefault.Should().BeFalse();
         result.CreditScore.Should().Be(420);
@@ -28,7 +24,7 @@ public class MockSchufaProviderTests
     [InlineData("TestDefault")]
     public async Task CheckAsync_LastNameContainsVerzugOrDefault_ShouldReturnPaymentDefaultAndScore250(string lastName)
     {
-        var result = await _provider.CheckAsync("Max", lastName, new DateOnly(1990, 1, 1), CreateTestAddress());
+        var result = await _provider.CheckAsync("Max", lastName, new DateOnly(1990, 1, 1), "Musterstraße 1", "Berlin", "10115", "Deutschland");
 
         result.HasPaymentDefault.Should().BeTrue();
         result.CreditScore.Should().Be(250);
@@ -39,7 +35,7 @@ public class MockSchufaProviderTests
     {
         var dateOfBirth = DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-70));
 
-        var result = await _provider.CheckAsync("Max", "Mustermann", dateOfBirth, CreateTestAddress());
+        var result = await _provider.CheckAsync("Max", "Mustermann", dateOfBirth, "Musterstraße 1", "Berlin", "10115", "Deutschland");
 
         result.HasPaymentDefault.Should().BeFalse();
         result.CreditScore.Should().Be(520);
@@ -50,7 +46,7 @@ public class MockSchufaProviderTests
     {
         var dateOfBirth = DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-20));
 
-        var result = await _provider.CheckAsync("Max", "Mustermann", dateOfBirth, CreateTestAddress());
+        var result = await _provider.CheckAsync("Max", "Mustermann", dateOfBirth, "Musterstraße 1", "Berlin", "10115", "Deutschland");
 
         result.HasPaymentDefault.Should().BeFalse();
         result.CreditScore.Should().Be(350);
@@ -61,7 +57,7 @@ public class MockSchufaProviderTests
     {
         var dateOfBirth = DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-70));
 
-        var result = await _provider.CheckAsync("Max", "Verzug", dateOfBirth, CreateTestAddress());
+        var result = await _provider.CheckAsync("Max", "Verzug", dateOfBirth, "Musterstraße 1", "Berlin", "10115", "Deutschland");
 
         result.HasPaymentDefault.Should().BeTrue();
         result.CreditScore.Should().Be(250);

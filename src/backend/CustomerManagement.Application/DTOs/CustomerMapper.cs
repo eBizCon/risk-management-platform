@@ -19,15 +19,6 @@ public static class CustomerMapper
             ZipCode = customer.Address.ZipCode,
             Country = customer.Address.Country,
             EmploymentStatus = customer.EmploymentStatus.Value,
-            CreditReport = customer.CreditReport is not null
-                ? new CreditReportResponse
-                {
-                    HasPaymentDefault = customer.CreditReport.HasPaymentDefault,
-                    CreditScore = customer.CreditReport.CreditScore,
-                    CheckedAt = customer.CreditReport.CheckedAt.ToString("o"),
-                    Provider = customer.CreditReport.Provider
-                }
-                : null,
             Status = customer.Status.Value,
             CreatedBy = customer.CreatedBy.Value,
             CreatedAt = customer.CreatedAt.ToString("o"),
@@ -43,15 +34,11 @@ public static class CustomerMapper
             FirstName = customer.FirstName,
             LastName = customer.LastName,
             EmploymentStatus = customer.EmploymentStatus.Value,
-            CreditReport = customer.CreditReport is not null
-                ? new CreditReportResponse
-                {
-                    HasPaymentDefault = customer.CreditReport.HasPaymentDefault,
-                    CreditScore = customer.CreditReport.CreditScore,
-                    CheckedAt = customer.CreditReport.CheckedAt.ToString("o"),
-                    Provider = customer.CreditReport.Provider
-                }
-                : null,
+            DateOfBirth = customer.DateOfBirth.ToString("yyyy-MM-dd"),
+            Street = customer.Address.Street,
+            City = customer.Address.City,
+            ZipCode = customer.Address.ZipCode,
+            Country = customer.Address.Country,
             Status = customer.Status.Value
         };
     }

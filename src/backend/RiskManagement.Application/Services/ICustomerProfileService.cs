@@ -10,11 +10,12 @@ public record CustomerProfile(
     string FirstName,
     string LastName,
     string EmploymentStatus,
-    CustomerCreditReport? CreditReport,
+    string DateOfBirth,
+    CustomerAddress Address,
     string Status);
 
-public record CustomerCreditReport(
-    bool HasPaymentDefault,
-    int? CreditScore,
-    string CheckedAt,
-    string Provider);
+public record CustomerAddress(
+    string Street,
+    string City,
+    string ZipCode,
+    string Country);

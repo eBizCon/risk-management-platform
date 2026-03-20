@@ -13,7 +13,6 @@ public class Customer : AggregateRoot<CustomerId>
     public DateOnly DateOfBirth { get; private set; }
     public Address Address { get; private set; } = null!;
     public EmploymentStatus EmploymentStatus { get; private set; } = EmploymentStatus.Employed;
-    public CreditReport? CreditReport { get; private set; }
     public CustomerStatus Status { get; private set; } = null!;
     public EmailAddress CreatedBy { get; private set; } = null!;
     public DateTime CreatedAt { get; private set; }
@@ -95,14 +94,6 @@ public class Customer : AggregateRoot<CustomerId>
         Status = CustomerStatus.Active;
         UpdatedAt = DateTime.UtcNow;
         AddDomainEvent(new CustomerActivatedEvent(Id));
-    }
-
-    public void UpdateCreditReport(CreditReport creditReport)
-    {
-        GuardActiveStatus();
-        CreditReport = creditReport;
-        UpdatedAt = DateTime.UtcNow;
-        AddDomainEvent(new CreditReportReceivedEvent(Id, creditReport.HasPaymentDefault, creditReport.CreditScore));
     }
 
     private void GuardActiveStatus()

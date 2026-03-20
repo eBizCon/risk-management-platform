@@ -8,6 +8,7 @@ using RiskManagement.Application.Validation;
 using RiskManagement.Domain.Aggregates.ApplicationAggregate;
 using RiskManagement.Domain.Aggregates.ScoringConfigAggregate;
 using RiskManagement.Domain.Services;
+using RiskManagement.Infrastructure.ExternalServices;
 using RiskManagement.Infrastructure.HttpClients;
 using RiskManagement.Infrastructure.Persistence;
 using RiskManagement.Infrastructure.Seeding;
@@ -32,6 +33,7 @@ public static class DependencyInjection
         string customerServiceUrl, string serviceApiKey)
     {
         services.AddSingleton<IScoringService, ScoringService>();
+        services.AddScoped<ICreditCheckService, MockSchufaProvider>();
 
         services.AddScoped<IValidator<ApplicationCreateDto>, ApplicationValidator>();
         services.AddScoped<IValidator<ApplicationUpdateDto>, ApplicationUpdateValidator>();

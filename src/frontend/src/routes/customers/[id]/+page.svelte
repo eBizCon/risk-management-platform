@@ -12,7 +12,6 @@
 
 	let showDeleteDialog = $state(false);
 	let showArchiveDialog = $state(false);
-	let creditCheckLoading = $state(false);
 
 	function formatDate(dateString: string | null): string {
 		if (!dateString) return '-';
@@ -64,18 +63,6 @@
 		}
 	}
 
-	async function handleRequestCreditReport() {
-		if (creditCheckLoading) return;
-		creditCheckLoading = true;
-		try {
-			const response = await fetch(`/api/customers/${customer.id}/credit-report`, { method: 'POST' });
-			if (response.ok) {
-				window.location.reload();
-			}
-		} finally {
-			creditCheckLoading = false;
-		}
-	}
 </script>
 
 <svelte:head>
@@ -196,45 +183,7 @@
 				</dl>
 			</div>
 
-			<div class="card p-6 lg:col-span-2" data-testid="customer-credit-report-section">
-				<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
-					<h2 class="text-lg font-semibold text-primary">Bonität</h2>
-					{#if customer.status === 'active'}
-						<button
-							onclick={handleRequestCreditReport}
-							disabled={creditCheckLoading}
-							class="btn-secondary px-4 py-2 mt-2 sm:mt-0"
-							data-testid="customer-credit-check-btn"
-						>
-							{creditCheckLoading ? 'Prüfung läuft...' : 'Bonität prüfen'}
-						</button>
-					{/if}
-				</div>
-				{#if customer.creditReport}
-					<dl class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-						<div>
-							<dt class="dl-label">Zahlungsverzug</dt>
-							<dd class="mt-1 dl-value" data-testid="customer-detail-hasPaymentDefault">{customer.creditReport.hasPaymentDefault ? 'Ja' : 'Nein'}</dd>
-						</div>
-						<div>
-							<dt class="dl-label">Credit Score</dt>
-							<dd class="mt-1 dl-value" data-testid="customer-detail-creditScore">{customer.creditReport.creditScore ?? '-'}</dd>
-						</div>
-						<div>
-							<dt class="dl-label">Geprüft am</dt>
-							<dd class="mt-1 dl-value" data-testid="customer-detail-creditCheckedAt">{formatDate(customer.creditReport.checkedAt)}</dd>
-						</div>
-						<div>
-							<dt class="dl-label">Anbieter</dt>
-							<dd class="mt-1 dl-value" data-testid="customer-detail-creditProvider">{customer.creditReport.provider}</dd>
-						</div>
-					</dl>
-				{:else}
-					<p class="text-secondary" data-testid="customer-no-credit-report">Keine Bonitätsprüfung vorhanden</p>
-				{/if}
-			</div>
-
-			<div class="card p-6 lg:col-span-2">
+				<div class="card p-6 lg:col-span-2">
 				<h2 class="text-lg font-semibold text-primary mb-4">Zeitstempel</h2>
 				<dl class="grid grid-cols-1 sm:grid-cols-3 gap-4">
 					<div>

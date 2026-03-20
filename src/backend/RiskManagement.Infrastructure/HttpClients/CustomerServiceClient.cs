@@ -64,15 +64,17 @@ public class CustomerServiceClient : ICustomerNameService, ICustomerProfileServi
             if (result?.Customer is null)
                 return null;
 
-            var cr = result.Customer.CreditReport;
             return new CustomerProfile(
                 result.Customer.Id,
                 result.Customer.FirstName,
                 result.Customer.LastName,
                 result.Customer.EmploymentStatus,
-                cr is not null
-                    ? new CustomerCreditReport(cr.HasPaymentDefault, cr.CreditScore, cr.CheckedAt, cr.Provider)
-                    : null,
+                result.Customer.DateOfBirth,
+                new CustomerAddress(
+                    result.Customer.Street,
+                    result.Customer.City,
+                    result.Customer.ZipCode,
+                    result.Customer.Country),
                 result.Customer.Status);
         }
         catch
@@ -81,18 +83,16 @@ public class CustomerServiceClient : ICustomerNameService, ICustomerProfileServi
         }
     }
 
-    private record CreditReportInternalDto(
-        bool HasPaymentDefault,
-        int? CreditScore,
-        string CheckedAt,
-        string Provider);
-
     private record CustomerInternalDto(
         int Id,
         string FirstName,
         string LastName,
         string EmploymentStatus,
-        CreditReportInternalDto? CreditReport,
+        string DateOfBirth,
+        string Street,
+        string City,
+        string ZipCode,
+        string Country,
         string Status);
 
     private record CustomerInternalResult(CustomerInternalDto Customer);
