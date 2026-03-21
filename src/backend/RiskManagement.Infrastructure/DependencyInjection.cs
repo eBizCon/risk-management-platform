@@ -74,6 +74,7 @@ public static class DependencyInjection
             x.AddConsumer<FinalizeApplicationConsumer>();
             x.AddConsumer<FinalizeApplicationUpdateConsumer>();
             x.AddConsumer<FinalizeApplicationUpdateFaultConsumer>();
+            x.AddConsumer<MarkApplicationFailedConsumer>();
 
             x.AddConsumer<CustomerCreatedConsumer>();
             x.AddConsumer<CustomerUpdatedConsumer>();

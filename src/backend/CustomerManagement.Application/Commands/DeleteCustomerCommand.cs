@@ -15,11 +15,14 @@ public class DeleteCustomerHandler : ICommandHandler<DeleteCustomerCommand, Dele
 {
     private readonly ICustomerRepository _repository;
     private readonly IApplicationServiceClient _applicationServiceClient;
+    private readonly IDispatcher _dispatcher;
 
-    public DeleteCustomerHandler(ICustomerRepository repository, IApplicationServiceClient applicationServiceClient)
+    public DeleteCustomerHandler(ICustomerRepository repository, IApplicationServiceClient applicationServiceClient,
+        IDispatcher dispatcher)
     {
         _repository = repository;
         _applicationServiceClient = applicationServiceClient;
+        _dispatcher = dispatcher;
     }
 
     public async Task<Result<DeleteCustomerResult>> HandleAsync(DeleteCustomerCommand command,
@@ -39,6 +42,8 @@ public class DeleteCustomerHandler : ICommandHandler<DeleteCustomerCommand, Dele
 
         await _repository.RemoveAsync(customer, ct);
         await _repository.SaveChangesAsync(ct);
+
+        await _dispatcher.PublishDomainEventsAsync(customer, ct);
 
         return Result<DeleteCustomerResult>.Success(new DeleteCustomerResult(true));
     }

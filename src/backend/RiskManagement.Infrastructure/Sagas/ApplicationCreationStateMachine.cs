@@ -341,6 +341,10 @@ public class ApplicationCreationStateMachine : MassTransitStateMachine<Applicati
                     ctx.Saga.FailureReason = ctx.Message.Reason;
                     ctx.Saga.CompletedAt = DateTime.UtcNow;
                 })
+                .Publish(ctx => new MarkApplicationFailed(
+                    ctx.Saga.CorrelationId,
+                    ctx.Saga.ApplicationId,
+                    ctx.Message.Reason))
                 .TransitionTo(Failed)
                 .Finalize());
 

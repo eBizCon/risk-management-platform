@@ -10,10 +10,12 @@ public record ArchiveCustomerResult(CustomerResponse Customer);
 public class ArchiveCustomerHandler : ICommandHandler<ArchiveCustomerCommand, ArchiveCustomerResult>
 {
     private readonly ICustomerRepository _repository;
+    private readonly IDispatcher _dispatcher;
 
-    public ArchiveCustomerHandler(ICustomerRepository repository)
+    public ArchiveCustomerHandler(ICustomerRepository repository, IDispatcher dispatcher)
     {
         _repository = repository;
+        _dispatcher = dispatcher;
     }
 
     public async Task<Result<ArchiveCustomerResult>> HandleAsync(ArchiveCustomerCommand command,
@@ -28,6 +30,8 @@ public class ArchiveCustomerHandler : ICommandHandler<ArchiveCustomerCommand, Ar
 
         customer.Archive();
         await _repository.SaveChangesAsync(ct);
+
+        await _dispatcher.PublishDomainEventsAsync(customer, ct);
 
         return Result<ArchiveCustomerResult>.Success(new ArchiveCustomerResult(CustomerMapper.ToResponse(customer)));
     }

@@ -38,7 +38,8 @@ public static class DependencyInjection
         });
 
         var applicationAssembly = typeof(CustomerCreateDto).Assembly;
-        services.AddSharedKernel(applicationAssembly);
+        var infrastructureAssembly = typeof(DependencyInjection).Assembly;
+        services.AddSharedKernel(applicationAssembly, infrastructureAssembly);
 
         return services;
     }
