@@ -11,11 +11,15 @@ public class ApplicationSnapshotTests
 {
     private readonly ScoringService _scoringService = new();
 
-    private static ScoringConfigVersion CreateConfigVersion() =>
-        ScoringConfigVersion.Create(1, ScoringConfig.Default, EmailAddress.Create("admin@test.com"));
+    private static ScoringConfigVersion CreateConfigVersion()
+    {
+        return ScoringConfigVersion.Create(1, ScoringConfig.Default, EmailAddress.Create("admin@test.com"));
+    }
 
-    private static CreditReport CreateCreditReport(bool hasPaymentDefault = false, int? creditScore = 420) =>
-        CreditReport.Create(hasPaymentDefault, creditScore, DateTime.UtcNow, "schufa_mock");
+    private static CreditReport CreateCreditReport(bool hasPaymentDefault = false, int? creditScore = 420)
+    {
+        return CreditReport.Create(hasPaymentDefault, creditScore, DateTime.UtcNow, "schufa_mock");
+    }
 
     [Fact]
     public void Create_WithSnapshotValues_ShouldStoreEmploymentStatus()

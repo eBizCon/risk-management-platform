@@ -11,11 +11,13 @@
 	const statusOptions = [
 		{ value: '', label: 'Alle Status' },
 		{ value: 'draft', label: 'Entwürfe' },
+		{ value: 'processing', label: 'Wird verarbeitet' },
 		{ value: 'submitted', label: 'Eingereicht' },
 		{ value: 'needs_information', label: 'Rückfrage offen' },
 		{ value: 'resubmitted', label: 'Erneut eingereicht' },
 		{ value: 'approved', label: 'Genehmigt' },
-		{ value: 'rejected', label: 'Abgelehnt' }
+		{ value: 'rejected', label: 'Abgelehnt' },
+		{ value: 'failed', label: 'Fehlgeschlagen' }
 	];
 
 	function handleFilterChange(event: Event) {

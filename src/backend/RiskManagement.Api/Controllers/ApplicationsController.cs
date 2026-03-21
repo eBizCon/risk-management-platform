@@ -27,6 +27,14 @@ public class ApplicationsController : ControllerBase
         return result.ToActionResult();
     }
 
+    [HttpGet("customers")]
+    [Authorize(Policy = AuthPolicies.ApplicantOrProcessor)]
+    public async Task<IActionResult> GetActiveCustomers()
+    {
+        var result = await _dispatcher.QueryAsync(new GetActiveCustomersQuery());
+        return result.ToActionResult();
+    }
+
     [HttpPost]
     public async Task<IActionResult> CreateApplication([FromBody] ApplicationCreateDto dto,
         [FromQuery] bool submit = false)
@@ -34,11 +42,11 @@ public class ApplicationsController : ControllerBase
         if (submit)
         {
             var submitResult = await _dispatcher.SendAsync(new CreateAndSubmitApplicationCommand(dto, User.GetEmail()));
-            return submitResult.ToActionResult();
+            return submitResult.ToAcceptedResult();
         }
 
         var result = await _dispatcher.SendAsync(new CreateApplicationCommand(dto, User.GetEmail()));
-        return result.ToActionResult();
+        return result.ToAcceptedResult();
     }
 
     [HttpGet("{id:int}")]

@@ -5,17 +5,16 @@ namespace RiskManagement.Domain.ValueObjects;
 
 public sealed class CreditReport : ValueObject
 {
-    public bool HasPaymentDefault { get; }
+    public bool? HasPaymentDefault { get; }
     public int? CreditScore { get; }
-    public DateTime CheckedAt { get; }
-    public string Provider { get; }
+    public DateTime? CheckedAt { get; }
+    public string? Provider { get; }
 
     private CreditReport()
     {
-        Provider = string.Empty;
     }
 
-    private CreditReport(bool hasPaymentDefault, int? creditScore, DateTime checkedAt, string provider)
+    private CreditReport(bool? hasPaymentDefault, int? creditScore, DateTime? checkedAt, string? provider)
     {
         HasPaymentDefault = hasPaymentDefault;
         CreditScore = creditScore;

@@ -64,6 +64,17 @@ export const handle: Handle = async ({ event, resolve }) => {
 			body
 		});
 
+		// On 401 Unauthorized from backend, clear session and redirect to login
+		if (response.status === 401) {
+			const { clearSessionCookie } = await import('$lib/server/auth/session');
+			clearSessionCookie(event.cookies);
+			const returnUrl = encodeURIComponent(event.url.pathname + event.url.search);
+			return new Response(null, {
+				status: 302,
+				headers: { Location: `/login?returnTo=${returnUrl}` }
+			});
+		}
+
 		return new Response(response.body, {
 			status: response.status,
 			statusText: response.statusText,

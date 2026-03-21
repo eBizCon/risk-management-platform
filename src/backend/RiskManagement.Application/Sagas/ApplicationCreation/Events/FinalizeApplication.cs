@@ -1,0 +1,16 @@
+namespace RiskManagement.Application.Sagas.ApplicationCreation.Events;
+
+public record FinalizeApplication(
+    Guid CorrelationId,
+    int ApplicationId,
+    int CustomerId,
+    double Income,
+    double FixedCosts,
+    double DesiredRate,
+    string UserEmail,
+    string EmploymentStatus,
+    bool HasPaymentDefault,
+    int? CreditScore,
+    DateTime CreditCheckedAt,
+    string CreditProvider,
+    bool AutoSubmit);

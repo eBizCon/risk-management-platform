@@ -4,7 +4,9 @@ export type ApplicationStatus =
 	| 'needs_information'
 	| 'resubmitted'
 	| 'approved'
-	| 'rejected';
+	| 'rejected'
+	| 'processing'
+	| 'failed';
 export type EmploymentStatus = 'employed' | 'self_employed' | 'unemployed' | 'retired';
 export type TrafficLight = 'red' | 'yellow' | 'green';
 export type UserRole = 'applicant' | 'processor' | 'risk_manager';
@@ -44,6 +46,7 @@ export interface Application {
 	trafficLight: TrafficLight | null;
 	scoringReasons: string | null;
 	processorComment: string | null;
+	failureReason: string | null;
 	createdAt: string;
 	submittedAt: string | null;
 	processedAt: string | null;
@@ -89,7 +92,9 @@ export const statusLabels: Record<string, string> = {
 	needs_information: 'Rückfrage offen',
 	resubmitted: 'Erneut eingereicht',
 	approved: 'Genehmigt',
-	rejected: 'Abgelehnt'
+	rejected: 'Abgelehnt',
+	processing: 'Wird verarbeitet',
+	failed: 'Fehlgeschlagen'
 };
 
 export const trafficLightLabels: Record<string, string> = {

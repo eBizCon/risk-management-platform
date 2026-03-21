@@ -56,11 +56,12 @@ public class ApplicationConfiguration : IEntityTypeConfiguration<ApplicationEnti
 
         entity.OwnsOne(e => e.CreditReport, cr =>
         {
-            cr.Property(c => c.HasPaymentDefault).HasColumnName("has_payment_default").IsRequired();
+            cr.Property(c => c.HasPaymentDefault).HasColumnName("has_payment_default").IsRequired(false);
             cr.Property(c => c.CreditScore).HasColumnName("credit_score");
-            cr.Property(c => c.CheckedAt).HasColumnName("credit_checked_at").IsRequired();
-            cr.Property(c => c.Provider).HasColumnName("credit_provider").HasMaxLength(50).IsRequired();
+            cr.Property(c => c.CheckedAt).HasColumnName("credit_checked_at").IsRequired(false);
+            cr.Property(c => c.Provider).HasColumnName("credit_provider").HasMaxLength(50).IsRequired(false);
         });
+        entity.Navigation(e => e.CreditReport).IsRequired(false);
 
         entity.Property(e => e.Status)
             .HasColumnName("status")
@@ -92,6 +93,7 @@ public class ApplicationConfiguration : IEntityTypeConfiguration<ApplicationEnti
             .IsRequired(false);
 
         entity.Property(e => e.ProcessorComment).HasColumnName("processor_comment");
+        entity.Property(e => e.FailureReason).HasColumnName("failure_reason");
         entity.Property(e => e.CreatedAt).HasColumnName("created_at").IsRequired();
         entity.Property(e => e.SubmittedAt).HasColumnName("submitted_at");
         entity.Property(e => e.ProcessedAt).HasColumnName("processed_at");

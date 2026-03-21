@@ -1,5 +1,5 @@
-import { error } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
+import { handleApiResponse } from '$lib/api';
 
 export interface ScoringConfig {
 	id: number;
@@ -26,16 +26,13 @@ export interface ScoringConfig {
 	createdAt: string;
 }
 
-export const load: PageLoad = async ({ fetch }) => {
+export const load: PageLoad = async ({ fetch, url }) => {
 	const res = await fetch('/api/scoring-config');
 
-	if (!res.ok) {
-		if (res.status === 404) {
-			return { config: null };
-		}
-		throw error(res.status, 'Fehler beim Laden der Scoring-Konfiguration');
+	if (res.status === 404) {
+		return { config: null };
 	}
 
-	const config: ScoringConfig = await res.json();
+	const config = await handleApiResponse<ScoringConfig>(res, url, 'Fehler beim Laden der Scoring-Konfiguration');
 	return { config };
 };

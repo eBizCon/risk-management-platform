@@ -20,8 +20,13 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 var applicationServiceUrl = builder.Configuration["APPLICATION_SERVICE_URL"] ?? "http://localhost:5000";
 var serviceApiKey = builder.Configuration["SERVICE_API_KEY"] ?? "";
 
+var rabbitMqConnectionString = builder.Configuration.GetConnectionString("messaging")
+                               ?? builder.Configuration["RabbitMQ:ConnectionString"]
+                               ?? "amqp://risk:risk@localhost:5672";
+
 builder.Services.AddCustomerInfrastructure(connectionString);
 builder.Services.AddCustomerApplicationServices(applicationServiceUrl, serviceApiKey);
+builder.Services.AddMessaging(rabbitMqConnectionString);
 
 var oidcIssuer = builder.Configuration["OIDC_ISSUER"] ?? "http://localhost:8081/realms/risk-management";
 var oidcRolesClaimPath = builder.Configuration["OIDC_ROLES_CLAIM_PATH"] ?? "realm_access.roles";
@@ -40,8 +45,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-builder.Services.AddTransient<IClaimsTransformation>(
-    _ => new KeycloakRoleClaimsTransformer(oidcRolesClaimPath));
+builder.Services.AddTransient<IClaimsTransformation>(_ => new KeycloakRoleClaimsTransformer(oidcRolesClaimPath));
 
 builder.Services.AddAuthorization(options =>
 {

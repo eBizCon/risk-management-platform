@@ -1,11 +1,9 @@
 using FluentValidation;
+using MassTransit;
 using RiskManagement.Application.Common;
 using RiskManagement.Application.DTOs;
-using RiskManagement.Application.Services;
+using RiskManagement.Application.Sagas.ApplicationCreation.Events;
 using RiskManagement.Domain.Aggregates.ApplicationAggregate;
-using RiskManagement.Domain.Aggregates.ScoringConfigAggregate;
-using RiskManagement.Domain.Services;
-using RiskManagement.Domain.ValueObjects;
 using SharedKernel.ValueObjects;
 using AppId = RiskManagement.Domain.Aggregates.ApplicationAggregate.ApplicationId;
 
@@ -19,26 +17,17 @@ public record UpdateApplicationResult(ApplicationResponse Application);
 public class UpdateApplicationHandler : ICommandHandler<UpdateApplicationCommand, UpdateApplicationResult>
 {
     private readonly IApplicationRepository _repository;
-    private readonly IScoringConfigRepository _configRepository;
-    private readonly IScoringService _scoringService;
     private readonly IValidator<ApplicationUpdateDto> _validator;
-    private readonly ICustomerProfileService _customerProfileService;
-    private readonly ICreditCheckService _creditCheckService;
+    private readonly IPublishEndpoint _publishEndpoint;
 
     public UpdateApplicationHandler(
         IApplicationRepository repository,
-        IScoringConfigRepository configRepository,
-        IScoringService scoringService,
         IValidator<ApplicationUpdateDto> validator,
-        ICustomerProfileService customerProfileService,
-        ICreditCheckService creditCheckService)
+        IPublishEndpoint publishEndpoint)
     {
         _repository = repository;
-        _configRepository = configRepository;
-        _scoringService = scoringService;
         _validator = validator;
-        _customerProfileService = customerProfileService;
-        _creditCheckService = creditCheckService;
+        _publishEndpoint = publishEndpoint;
     }
 
     public async Task<Result<UpdateApplicationResult>> HandleAsync(UpdateApplicationCommand command,
@@ -58,36 +47,18 @@ public class UpdateApplicationHandler : ICommandHandler<UpdateApplicationCommand
             return Result<UpdateApplicationResult>.ValidationFailure(errors, command.Dto);
         }
 
-        var customerProfile = await _customerProfileService.GetCustomerProfileAsync(command.Dto.CustomerId, ct);
-        if (customerProfile is null)
-            return Result<UpdateApplicationResult>.Failure("Kunde nicht gefunden");
-
-        var checkResult = await _creditCheckService.CheckAsync(
-            customerProfile.FirstName,
-            customerProfile.LastName,
-            DateOnly.Parse(customerProfile.DateOfBirth),
-            customerProfile.Address.Street,
-            customerProfile.Address.City,
-            customerProfile.Address.ZipCode,
-            customerProfile.Address.Country);
-        var creditReport = CreditReport.FromCheckResult(checkResult);
-
-        var configVersion = await _configRepository.GetCurrentAsync(ct);
-        if (configVersion is null)
-            return Result<UpdateApplicationResult>.Failure("Keine Scoring-Konfiguration gefunden");
-
-        application.UpdateDetails(
-            command.Dto.CustomerId,
-            Money.Create((decimal)command.Dto.Income),
-            Money.Create((decimal)command.Dto.FixedCosts),
-            Money.CreatePositive((decimal)command.Dto.DesiredRate),
-            EmploymentStatus.From(customerProfile.EmploymentStatus),
-            creditReport,
-            _scoringService,
-            configVersion.Config,
-            configVersion.Id);
-
+        application.SetProcessing();
         await _repository.SaveChangesAsync(ct);
+
+        await _publishEndpoint.Publish(new ApplicationUpdateStarted(
+            Guid.NewGuid(),
+            application.Id.Value,
+            command.Dto.CustomerId,
+            command.Dto.Income,
+            command.Dto.FixedCosts,
+            command.Dto.DesiredRate,
+            command.UserEmail,
+            false), ct);
 
         return Result<UpdateApplicationResult>.Success(new UpdateApplicationResult(
             ApplicationMapper.ToResponse(application)));

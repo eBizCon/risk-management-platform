@@ -237,6 +237,16 @@ a {
 	color: var(--color-danger);
 }
 
+.status-processing {
+	background-color: color-mix(in srgb, var(--color-info) 15%, transparent);
+	color: var(--color-info);
+}
+
+.status-failed {
+	background-color: color-mix(in srgb, var(--color-danger) 15%, transparent);
+	color: var(--color-danger);
+}
+
 /* Table styles */
 .table-header {
 	@apply bg-bg-muted text-text-muted;

@@ -18,7 +18,8 @@ public sealed class CreditCheckResult : ValueObject
         Provider = provider;
     }
 
-    public static CreditCheckResult Create(bool hasPaymentDefault, int? creditScore, DateTime checkedAt, string provider)
+    public static CreditCheckResult Create(bool hasPaymentDefault, int? creditScore, DateTime checkedAt,
+        string provider)
     {
         if (creditScore is < 100 or > 600)
             throw new DomainException("CreditScore muss zwischen 100 und 600 liegen");

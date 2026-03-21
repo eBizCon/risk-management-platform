@@ -24,10 +24,14 @@
 
 	async function fetchActiveCustomers() {
 		try {
-			const res = await fetch('/api/customers/active');
+			const res = await fetch('/api/applications/customers');
 			if (res.ok) {
 				const body = await res.json();
-				customers = body.customers ?? body;
+				const raw = body.customers ?? body;
+				customers = raw.map((c: Record<string, unknown>) => ({
+					...c,
+					id: c.customerId ?? c.id
+				}));
 			}
 		} finally {
 			customersLoading = false;
@@ -81,7 +85,11 @@
 
 			const result = await res.json();
 			if (result.application?.id) {
-				await goto(`/applications/${result.application.id}`);
+				const isProcessing = res.status === 202;
+				const target = isProcessing
+					? `/applications/${result.application.id}?processing=true`
+					: `/applications/${result.application.id}`;
+				await goto(target);
 			}
 		} finally {
 			isSubmitting = false;

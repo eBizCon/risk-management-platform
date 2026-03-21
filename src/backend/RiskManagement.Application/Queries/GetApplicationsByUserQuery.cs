@@ -1,7 +1,7 @@
 using RiskManagement.Application.Common;
 using RiskManagement.Application.DTOs;
-using RiskManagement.Application.Services;
 using RiskManagement.Domain.Aggregates.ApplicationAggregate;
+using RiskManagement.Domain.ReadModels;
 using RiskManagement.Domain.ValueObjects;
 
 namespace RiskManagement.Application.Queries;
@@ -11,12 +11,12 @@ public record GetApplicationsByUserQuery(string UserEmail, string? Status = null
 public class GetApplicationsByUserHandler : IQueryHandler<GetApplicationsByUserQuery, ApplicationResponse[]>
 {
     private readonly IApplicationRepository _repository;
-    private readonly ICustomerNameService _customerNameService;
+    private readonly ICustomerReadModelRepository _customerReadModelRepository;
 
-    public GetApplicationsByUserHandler(IApplicationRepository repository, ICustomerNameService customerNameService)
+    public GetApplicationsByUserHandler(IApplicationRepository repository, ICustomerReadModelRepository customerReadModelRepository)
     {
         _repository = repository;
-        _customerNameService = customerNameService;
+        _customerReadModelRepository = customerReadModelRepository;
     }
 
     public async Task<Result<ApplicationResponse[]>> HandleAsync(GetApplicationsByUserQuery query,
@@ -30,7 +30,7 @@ public class GetApplicationsByUserHandler : IQueryHandler<GetApplicationsByUserQ
         var responses = ApplicationMapper.ToResponseArray(applications);
 
         var customerIds = responses.Select(r => r.CustomerId).Distinct();
-        var names = await _customerNameService.GetCustomerNamesAsync(customerIds, ct);
+        var names = await _customerReadModelRepository.GetCustomerNamesAsync(customerIds, ct);
         foreach (var response in responses)
             if (names.TryGetValue(response.CustomerId, out var name))
                 response.CustomerName = name;

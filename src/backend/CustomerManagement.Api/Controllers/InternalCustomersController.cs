@@ -15,6 +15,13 @@ public class InternalCustomersController : ControllerBase
         _dispatcher = dispatcher;
     }
 
+    [HttpGet]
+    public async Task<IActionResult> GetAllCustomers()
+    {
+        var result = await _dispatcher.QueryAsync(new GetAllCustomersInternalQuery());
+        return result.ToActionResult();
+    }
+
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetCustomer(int id)
     {

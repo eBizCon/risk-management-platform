@@ -41,16 +41,10 @@ public class InternalAuthMiddlewareTests
         var context = new DefaultHttpContext();
         context.Request.Path = path;
         if (headers != null)
-        {
             foreach (var (key, value) in headers)
-            {
                 context.Request.Headers[key] = value;
-            }
-        }
-        if (user != null)
-        {
-            context.User = user;
-        }
+
+        if (user != null) context.User = user;
         return context;
     }
 
@@ -69,7 +63,11 @@ public class InternalAuthMiddlewareTests
     public async Task Health_Endpoint_Bypasses_Auth()
     {
         var nextCalled = false;
-        var middleware = CreateMiddleware(_ => { nextCalled = true; return Task.CompletedTask; });
+        var middleware = CreateMiddleware(_ =>
+        {
+            nextCalled = true;
+            return Task.CompletedTask;
+        });
         var context = CreateContext("/health");
 
         await middleware.InvokeAsync(context);
@@ -82,7 +80,11 @@ public class InternalAuthMiddlewareTests
     public async Task Non_Api_Path_Bypasses_Auth()
     {
         var nextCalled = false;
-        var middleware = CreateMiddleware(_ => { nextCalled = true; return Task.CompletedTask; });
+        var middleware = CreateMiddleware(_ =>
+        {
+            nextCalled = true;
+            return Task.CompletedTask;
+        });
         var context = CreateContext("/some-page");
 
         await middleware.InvokeAsync(context);
@@ -94,7 +96,11 @@ public class InternalAuthMiddlewareTests
     public async Task Api_Request_Without_ApiKey_Returns_401()
     {
         var nextCalled = false;
-        var middleware = CreateMiddleware(_ => { nextCalled = true; return Task.CompletedTask; });
+        var middleware = CreateMiddleware(_ =>
+        {
+            nextCalled = true;
+            return Task.CompletedTask;
+        });
         var context = CreateContext("/api/applications");
 
         await middleware.InvokeAsync(context);
@@ -107,7 +113,11 @@ public class InternalAuthMiddlewareTests
     public async Task Api_Request_With_Invalid_ApiKey_Returns_401()
     {
         var nextCalled = false;
-        var middleware = CreateMiddleware(_ => { nextCalled = true; return Task.CompletedTask; });
+        var middleware = CreateMiddleware(_ =>
+        {
+            nextCalled = true;
+            return Task.CompletedTask;
+        });
         var context = CreateContext("/api/applications", new Dictionary<string, string>
         {
             ["X-Api-Key"] = "wrong-key"
@@ -123,7 +133,11 @@ public class InternalAuthMiddlewareTests
     public async Task Api_Internal_With_Valid_ApiKey_Passes_Without_User()
     {
         var nextCalled = false;
-        var middleware = CreateMiddleware(_ => { nextCalled = true; return Task.CompletedTask; });
+        var middleware = CreateMiddleware(_ =>
+        {
+            nextCalled = true;
+            return Task.CompletedTask;
+        });
         var context = CreateContext("/api/internal/score", new Dictionary<string, string>
         {
             ["X-Api-Key"] = ValidApiKey
@@ -139,7 +153,11 @@ public class InternalAuthMiddlewareTests
     {
         var nextCalled = false;
         var middleware = CreateMiddleware(
-            _ => { nextCalled = true; return Task.CompletedTask; },
+            _ =>
+            {
+                nextCalled = true;
+                return Task.CompletedTask;
+            },
             "Production");
 
         var jwtUser = CreateAuthenticatedUser("jwt-user-1", "applicant");
@@ -158,7 +176,11 @@ public class InternalAuthMiddlewareTests
     {
         var nextCalled = false;
         var middleware = CreateMiddleware(
-            _ => { nextCalled = true; return Task.CompletedTask; },
+            _ =>
+            {
+                nextCalled = true;
+                return Task.CompletedTask;
+            },
             "Production");
 
         var context = CreateContext("/api/applications", new Dictionary<string, string>
@@ -177,7 +199,11 @@ public class InternalAuthMiddlewareTests
     {
         var nextCalled = false;
         var middleware = CreateMiddleware(
-            _ => { nextCalled = true; return Task.CompletedTask; },
+            _ =>
+            {
+                nextCalled = true;
+                return Task.CompletedTask;
+            },
             "Production");
 
         var context = CreateContext("/api/applications", new Dictionary<string, string>
@@ -253,7 +279,11 @@ public class InternalAuthMiddlewareTests
     public async Task Api_Request_With_No_Headers_Returns_401_In_Development()
     {
         var nextCalled = false;
-        var middleware = CreateMiddleware(_ => { nextCalled = true; return Task.CompletedTask; });
+        var middleware = CreateMiddleware(_ =>
+        {
+            nextCalled = true;
+            return Task.CompletedTask;
+        });
         var context = CreateContext("/api/applications", new Dictionary<string, string>
         {
             ["X-Api-Key"] = ValidApiKey

@@ -6,12 +6,14 @@
 	import ScoreDisplay from '$lib/components/ScoreDisplay.svelte';
 	import RoleGuard from '$lib/components/RoleGuard.svelte';
 	import { employmentStatusLabels } from '$lib/types';
-	import { ArrowLeft, Edit, Send } from 'lucide-svelte';
+	import type { Application } from '$lib/types';
+	import { ArrowLeft, Edit, Send, Loader2, AlertTriangle, RefreshCw, Trash2 } from 'lucide-svelte';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
 
-	const app = $derived(data.application);
+	let polledApplication = $state<Application | null>(null);
+	const app = $derived(polledApplication ?? data.application);
 	const inquiries = $derived(data.inquiries);
 	const reasons = $derived(app.scoringReasons ? JSON.parse(app.scoringReasons) : []);
 	const showSubmittedMessage = $derived($page.url.searchParams.get('submitted') === 'true');
@@ -19,9 +21,84 @@
 		$page.url.searchParams.get('answeredInquiry') === 'true'
 	);
 	const canAnswerInquiry = $derived(app.status === 'needs_information');
+	const isProcessing = $derived(app.status === 'processing');
+	const isFailed = $derived(app.status === 'failed');
 	let showConfirmDialog = $state(false);
 	let responseText = $state('');
 	let answerInquiryErrors = $state<Record<string, string[]>>({});
+	let isRetrying = $state(false);
+
+	let pollTimer: ReturnType<typeof setInterval> | null = null;
+
+	$effect(() => {
+		if (isProcessing) {
+			startPolling();
+		} else {
+			stopPolling();
+		}
+		return () => stopPolling();
+	});
+
+	function startPolling() {
+		if (pollTimer) return;
+		pollTimer = setInterval(async () => {
+			try {
+				const res = await fetch(`/api/applications/${app.id}`);
+				if (res.ok) {
+					const updated: Application = await res.json();
+					polledApplication = updated;
+					if (updated.status !== 'processing') {
+						stopPolling();
+					}
+				}
+			} catch {
+				// ignore fetch errors during polling
+			}
+		}, 2000);
+	}
+
+	function stopPolling() {
+		if (pollTimer) {
+			clearInterval(pollTimer);
+			pollTimer = null;
+		}
+	}
+
+	async function handleRetry() {
+		isRetrying = true;
+		try {
+			await fetch(`/api/applications/${app.id}`, { method: 'DELETE' });
+
+			const res = await fetch('/api/applications?submit=true', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					customerId: app.customerId,
+					income: app.income,
+					fixedCosts: app.fixedCosts,
+					desiredRate: app.desiredRate
+				})
+			});
+
+			if (res.ok) {
+				const result = await res.json();
+				if (result.application?.id) {
+					await goto(`/applications/${result.application.id}?processing=true`);
+				}
+			}
+		} finally {
+			isRetrying = false;
+		}
+	}
+
+	async function handleDeleteFailed() {
+		if (confirm('Möchten Sie diesen fehlgeschlagenen Antrag wirklich löschen?')) {
+			const res = await fetch(`/api/applications/${app.id}`, { method: 'DELETE' });
+			if (res.ok) {
+				await goto('/applications');
+			}
+		}
+	}
 
 	function formatDate(dateString: string | null): string {
 		if (!dateString) return '-';
@@ -135,6 +212,47 @@
 				data-testid="application-inquiry-answered-message"
 			>
 				<p class="font-medium">Ihre Antwort wurde gespeichert und der Antrag erneut eingereicht.</p>
+			</div>
+		{/if}
+
+		{#if isProcessing}
+			<div class="card p-8 flex flex-col items-center gap-4 text-center" data-testid="processing-indicator">
+				<Loader2 class="w-10 h-10 text-info animate-spin" />
+				<p class="text-lg font-medium text-primary">Antrag wird verarbeitet...</p>
+				<p class="text-sm text-secondary">Kundendaten werden abgerufen und Bonität geprüft. Dies kann einen Moment dauern.</p>
+			</div>
+		{/if}
+
+		{#if isFailed}
+			<div class="card p-6 border-danger" data-testid="failure-indicator">
+				<div class="flex items-start gap-4">
+					<AlertTriangle class="w-6 h-6 text-danger shrink-0 mt-0.5" />
+					<div class="flex-1">
+						<p class="text-lg font-medium text-danger">Verarbeitung fehlgeschlagen</p>
+						{#if app.failureReason}
+							<p class="mt-2 text-sm text-secondary" data-testid="failure-reason">{app.failureReason}</p>
+						{/if}
+						<div class="mt-4 flex flex-col sm:flex-row gap-3">
+							<button
+								onclick={handleRetry}
+								disabled={isRetrying}
+								class="btn-primary inline-flex items-center px-4 py-2"
+								data-testid="retry-application"
+							>
+								<span class={isRetrying ? 'animate-spin' : ''}><RefreshCw class="w-4 h-4 mr-2" /></span>
+								{isRetrying ? 'Wird erstellt...' : 'Erneut versuchen'}
+							</button>
+							<button
+								onclick={handleDeleteFailed}
+								class="btn-secondary inline-flex items-center px-4 py-2 text-danger border-danger hover:bg-danger/10"
+								data-testid="delete-failed-application"
+							>
+								<Trash2 class="w-4 h-4 mr-2" />
+								Löschen
+							</button>
+						</div>
+					</div>
+				</div>
 			</div>
 		{/if}
 

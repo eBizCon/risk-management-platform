@@ -7,6 +7,7 @@ using RiskManagement.Api.Models;
 using RiskManagement.Infrastructure;
 using RiskManagement.Infrastructure.Persistence;
 using RiskManagement.Infrastructure.Seeding;
+using RiskManagement.Infrastructure.Services;
 using SharedKernel.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -25,8 +26,20 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 var customerServiceUrl = builder.Configuration["CUSTOMER_SERVICE_URL"] ?? "http://localhost:5001";
 var serviceApiKey = builder.Configuration["SERVICE_API_KEY"] ?? "";
 
+var rabbitMqConnectionString = builder.Configuration.GetConnectionString("messaging")
+                               ?? builder.Configuration["RabbitMQ:ConnectionString"]
+                               ?? "amqp://guest:guest@localhost:5672";
+
 builder.Services.AddInfrastructure(connectionString);
 builder.Services.AddApplicationServices(customerServiceUrl, serviceApiKey);
+builder.Services.AddMessaging(rabbitMqConnectionString);
+
+builder.Services.AddHttpClient("CustomerSyncClient", client =>
+{
+    client.BaseAddress = new Uri(customerServiceUrl);
+    client.DefaultRequestHeaders.Add("X-Api-Key", serviceApiKey);
+});
+builder.Services.AddHostedService<CustomerReadModelSyncService>();
 
 var oidcIssuer = builder.Configuration["OIDC_ISSUER"] ?? "http://localhost:8081/realms/risk-management";
 var oidcRolesClaimPath = builder.Configuration["OIDC_ROLES_CLAIM_PATH"] ?? "realm_access.roles";
@@ -45,8 +58,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-builder.Services.AddTransient<IClaimsTransformation>(
-    _ => new KeycloakRoleClaimsTransformer(oidcRolesClaimPath));
+builder.Services.AddTransient<IClaimsTransformation>(_ => new KeycloakRoleClaimsTransformer(oidcRolesClaimPath));
 
 builder.Services.AddAuthorization(options =>
 {

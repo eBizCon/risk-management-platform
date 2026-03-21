@@ -23,6 +23,7 @@ public class Application : AggregateRoot<ApplicationId>
     public string? ScoringReasons { get; private set; }
     public ScoringConfigVersionId? ScoringConfigVersionId { get; private set; }
     public string? ProcessorComment { get; private set; }
+    public string? FailureReason { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime? SubmittedAt { get; private set; }
     public DateTime? ProcessedAt { get; private set; }
@@ -79,6 +80,73 @@ public class Application : AggregateRoot<ApplicationId>
         return app;
     }
 
+    public static Application CreateProcessing(
+        int customerId,
+        Money income,
+        Money fixedCosts,
+        Money desiredRate,
+        EmailAddress createdBy)
+    {
+        if (customerId <= 0)
+            throw new DomainException("Kunde muss ausgewählt werden");
+
+        if (income <= Money.Zero)
+            throw new DomainException("Einkommen muss positiv sein");
+
+        if (desiredRate <= Money.Zero)
+            throw new DomainException("Gewünschte Rate muss positiv sein");
+
+        if (fixedCosts >= income)
+            throw new DomainException("Fixkosten müssen geringer als das Einkommen sein");
+
+        if (desiredRate > income - fixedCosts)
+            throw new DomainException("Gewünschte Rate darf das verfügbare Einkommen nicht übersteigen");
+
+        return new Application
+        {
+            CustomerId = customerId,
+            Income = income,
+            FixedCosts = fixedCosts,
+            DesiredRate = desiredRate,
+            Status = ApplicationStatus.Processing,
+            CreatedAt = DateTime.UtcNow,
+            CreatedBy = createdBy
+        };
+    }
+
+    public void Finalize(
+        EmploymentStatus employmentStatus,
+        CreditReport creditReport,
+        IScoringService scoringService,
+        ScoringConfig scoringConfig,
+        ScoringConfigVersionId scoringConfigVersionId)
+    {
+        if (Status != ApplicationStatus.Processing)
+            throw new DomainException("Nur Anträge im Status 'Verarbeitung' können finalisiert werden");
+
+        EmploymentStatus = employmentStatus;
+        CreditReport = creditReport;
+        ApplyScoring(scoringService, scoringConfig, scoringConfigVersionId);
+        Status = ApplicationStatus.Draft;
+    }
+
+    public void SetProcessing()
+    {
+        if (Status != ApplicationStatus.Draft)
+            throw new DomainException("Nur Entwürfe können in den Verarbeitungsstatus versetzt werden");
+
+        Status = ApplicationStatus.Processing;
+    }
+
+    public void MarkFailed(string reason)
+    {
+        if (Status != ApplicationStatus.Processing)
+            throw new DomainException("Nur Anträge im Status 'Verarbeitung' können als fehlgeschlagen markiert werden");
+
+        FailureReason = reason;
+        Status = ApplicationStatus.Failed;
+    }
+
     public void Submit(IScoringService scoringService, ScoringConfig scoringConfig,
         ScoringConfigVersionId scoringConfigVersionId)
     {
@@ -127,8 +195,8 @@ public class Application : AggregateRoot<ApplicationId>
         ScoringConfig scoringConfig,
         ScoringConfigVersionId scoringConfigVersionId)
     {
-        if (Status != ApplicationStatus.Draft)
-            throw new DomainException("Nur Entwürfe können bearbeitet werden");
+        if (Status != ApplicationStatus.Draft && Status != ApplicationStatus.Processing)
+            throw new DomainException("Nur Entwürfe und Anträge in Verarbeitung können bearbeitet werden");
 
         if (customerId <= 0)
             throw new DomainException("Kunde muss ausgewählt werden");
@@ -153,6 +221,9 @@ public class Application : AggregateRoot<ApplicationId>
         CreditReport = creditReport;
 
         ApplyScoring(scoringService, scoringConfig, scoringConfigVersionId);
+
+        if (Status == ApplicationStatus.Processing)
+            Status = ApplicationStatus.Draft;
     }
 
     public void Rescore(IScoringService scoringService, ScoringConfig scoringConfig,
@@ -163,8 +234,8 @@ public class Application : AggregateRoot<ApplicationId>
 
     public void Delete()
     {
-        if (Status != ApplicationStatus.Draft)
-            throw new DomainException("Nur Entwürfe können gelöscht werden");
+        if (Status != ApplicationStatus.Draft && Status != ApplicationStatus.Failed)
+            throw new DomainException("Nur Entwürfe und fehlgeschlagene Anträge können gelöscht werden");
 
         AddDomainEvent(new ApplicationDeletedEvent(Id));
     }
@@ -200,9 +271,12 @@ public class Application : AggregateRoot<ApplicationId>
     private void ApplyScoring(IScoringService scoringService, ScoringConfig scoringConfig,
         ScoringConfigVersionId scoringConfigVersionId)
     {
+        var hasPaymentDefault = CreditReport?.HasPaymentDefault
+                                ?? throw new DomainException("CreditReport muss vorhanden sein für Scoring");
+
         var result =
             scoringService.CalculateScore(Income, FixedCosts, DesiredRate, EmploymentStatus,
-                CreditReport.HasPaymentDefault, scoringConfig);
+                hasPaymentDefault, scoringConfig);
         Score = result.Score;
         TrafficLight = result.TrafficLight;
         ScoringReasons = JsonSerializer.Serialize(result.Reasons);

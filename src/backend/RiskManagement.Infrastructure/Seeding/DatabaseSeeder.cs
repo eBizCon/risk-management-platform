@@ -32,7 +32,8 @@ public class DatabaseSeeder
         "Antrag aufgrund negativer Gesamtbewertung abgelehnt."
     };
 
-    private static readonly (string Name, double Income, double FixedCosts, double DesiredRate, EmploymentStatus EmploymentStatus,
+    private static readonly (string Name, double Income, double FixedCosts, double DesiredRate, EmploymentStatus
+        EmploymentStatus,
         bool HasPaymentDefault)[] Templates =
         {
             ("Max Mustermann", 5200, 1900, 700, EmploymentStatus.Employed, false),

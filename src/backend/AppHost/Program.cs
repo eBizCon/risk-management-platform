@@ -16,18 +16,28 @@ var keycloak = builder.AddKeycloak("keycloak", 8081, kcAdmin, kcPassword)
     .WithDataVolume()
     .WithRealmImport("../../../dev/keycloak/import");
 
+var rabbitmqUser = builder.AddParameter("rabbitmq-user", "risk");
+var rabbitmqPassword = builder.AddParameter("rabbitmq-password", "risk", secret: true);
+
+var rabbitmq = builder.AddRabbitMQ("messaging", rabbitmqUser, rabbitmqPassword)
+    .WithDataVolume();
+
 var customerApi = builder.AddProject<Projects.CustomerManagement_Api>("customer-api")
     .WithReference(customerDb, "DefaultConnection")
     .WithReference(keycloak)
+    .WithReference(rabbitmq)
     .WaitFor(postgres)
-    .WaitFor(keycloak);
+    .WaitFor(keycloak)
+    .WaitFor(rabbitmq);
 
 var riskApi = builder.AddProject<Projects.RiskManagement_Api>("risk-api")
     .WithReference(riskDb, "DefaultConnection")
     .WithReference(keycloak)
     .WithReference(customerApi)
+    .WithReference(rabbitmq)
     .WaitFor(postgres)
-    .WaitFor(keycloak);
+    .WaitFor(keycloak)
+    .WaitFor(rabbitmq);
 
 customerApi.WithEnvironment("APPLICATION_SERVICE_URL", riskApi.GetEndpoint("http"));
 

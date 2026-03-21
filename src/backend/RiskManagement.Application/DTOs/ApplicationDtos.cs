@@ -52,6 +52,7 @@ public class ApplicationResponse
     public string? TrafficLight { get; set; }
     public string? ScoringReasons { get; set; }
     public string? ProcessorComment { get; set; }
+    public string? FailureReason { get; set; }
     public string CreatedAt { get; set; } = string.Empty;
     public string? SubmittedAt { get; set; }
     public string? ProcessedAt { get; set; }

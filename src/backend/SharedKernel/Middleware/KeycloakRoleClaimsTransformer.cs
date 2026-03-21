@@ -22,29 +22,20 @@ public sealed class KeycloakRoleClaimsTransformer : IClaimsTransformation
             return Task.FromResult(principal);
 
         var roles = ExtractRolesFromClaims(identity, _rolesClaimPath);
-        foreach (var role in roles)
-        {
-            identity.AddClaim(new Claim(ClaimTypes.Role, role));
-        }
+        foreach (var role in roles) identity.AddClaim(new Claim(ClaimTypes.Role, role));
 
         var sub = identity.FindFirst("sub")?.Value;
         if (sub is not null && !identity.HasClaim(c => c.Type == ClaimTypes.NameIdentifier))
-        {
             identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, sub));
-        }
 
         var email = identity.FindFirst("email")?.Value;
         if (email is not null && !identity.HasClaim(c => c.Type == ClaimTypes.Email))
-        {
             identity.AddClaim(new Claim(ClaimTypes.Email, email));
-        }
 
         var name = identity.FindFirst("name")?.Value
                    ?? identity.FindFirst("preferred_username")?.Value;
         if (name is not null && !identity.HasClaim(c => c.Type == ClaimTypes.Name))
-        {
             identity.AddClaim(new Claim(ClaimTypes.Name, name));
-        }
 
         return Task.FromResult(principal);
     }
@@ -62,9 +53,7 @@ public sealed class KeycloakRoleClaimsTransformer : IClaimsTransformation
             return [];
 
         if (pathParts.Length == 1)
-        {
             return rootClaim.Value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        }
 
         try
         {
@@ -87,12 +76,10 @@ public sealed class KeycloakRoleClaimsTransformer : IClaimsTransformation
         }
 
         if (current.ValueKind == JsonValueKind.Array)
-        {
             return current.EnumerateArray()
                 .Where(e => e.ValueKind == JsonValueKind.String)
                 .Select(e => e.GetString()!)
                 .Where(s => !string.IsNullOrWhiteSpace(s));
-        }
 
         if (current.ValueKind == JsonValueKind.String)
         {

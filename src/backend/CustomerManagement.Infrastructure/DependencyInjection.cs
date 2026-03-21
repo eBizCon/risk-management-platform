@@ -5,6 +5,7 @@ using CustomerManagement.Domain.Aggregates.CustomerAggregate;
 using CustomerManagement.Infrastructure.HttpClients;
 using CustomerManagement.Infrastructure.Persistence;
 using FluentValidation;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using SharedKernel;
@@ -38,6 +39,22 @@ public static class DependencyInjection
 
         var applicationAssembly = typeof(CustomerCreateDto).Assembly;
         services.AddSharedKernel(applicationAssembly);
+
+        return services;
+    }
+
+    public static IServiceCollection AddMessaging(this IServiceCollection services, string connectionString)
+    {
+        services.AddMassTransit(x =>
+        {
+            x.SetKebabCaseEndpointNameFormatter();
+
+            x.UsingRabbitMq((context, cfg) =>
+            {
+                cfg.Host(new Uri(connectionString));
+                cfg.ConfigureEndpoints(context);
+            });
+        });
 
         return services;
     }

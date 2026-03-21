@@ -1,10 +1,9 @@
 using FluentValidation;
+using MassTransit;
 using RiskManagement.Application.Common;
 using RiskManagement.Application.DTOs;
-using RiskManagement.Application.Services;
+using RiskManagement.Application.Sagas.ApplicationCreation.Events;
 using RiskManagement.Domain.Aggregates.ApplicationAggregate;
-using RiskManagement.Domain.Aggregates.ScoringConfigAggregate;
-using RiskManagement.Domain.Services;
 using RiskManagement.Domain.ValueObjects;
 using SharedKernel.ValueObjects;
 using ApplicationEntity = RiskManagement.Domain.Aggregates.ApplicationAggregate.Application;
@@ -21,29 +20,17 @@ public class
     CreateAndSubmitApplicationResult>
 {
     private readonly IApplicationRepository _repository;
-    private readonly IScoringConfigRepository _configRepository;
-    private readonly IScoringService _scoringService;
     private readonly IValidator<ApplicationCreateDto> _validator;
-    private readonly IDispatcher _dispatcher;
-    private readonly ICustomerProfileService _customerProfileService;
-    private readonly ICreditCheckService _creditCheckService;
+    private readonly IPublishEndpoint _publishEndpoint;
 
     public CreateAndSubmitApplicationHandler(
         IApplicationRepository repository,
-        IScoringConfigRepository configRepository,
-        IScoringService scoringService,
         IValidator<ApplicationCreateDto> validator,
-        IDispatcher dispatcher,
-        ICustomerProfileService customerProfileService,
-        ICreditCheckService creditCheckService)
+        IPublishEndpoint publishEndpoint)
     {
         _repository = repository;
-        _configRepository = configRepository;
-        _scoringService = scoringService;
         _validator = validator;
-        _dispatcher = dispatcher;
-        _customerProfileService = customerProfileService;
-        _creditCheckService = creditCheckService;
+        _publishEndpoint = publishEndpoint;
     }
 
     public async Task<Result<CreateAndSubmitApplicationResult>> HandleAsync(CreateAndSubmitApplicationCommand command,
@@ -56,43 +43,25 @@ public class
             return Result<CreateAndSubmitApplicationResult>.ValidationFailure(errors, command.Dto);
         }
 
-        var customerProfile = await _customerProfileService.GetCustomerProfileAsync(command.Dto.CustomerId, ct);
-        if (customerProfile is null)
-            return Result<CreateAndSubmitApplicationResult>.Failure("Kunde nicht gefunden");
-
-        var checkResult = await _creditCheckService.CheckAsync(
-            customerProfile.FirstName,
-            customerProfile.LastName,
-            DateOnly.Parse(customerProfile.DateOfBirth),
-            customerProfile.Address.Street,
-            customerProfile.Address.City,
-            customerProfile.Address.ZipCode,
-            customerProfile.Address.Country);
-        var creditReport = CreditReport.FromCheckResult(checkResult);
-
-        var configVersion = await _configRepository.GetCurrentAsync(ct);
-        if (configVersion is null)
-            return Result<CreateAndSubmitApplicationResult>.Failure("Keine Scoring-Konfiguration gefunden");
-
-        var application = ApplicationEntity.Create(
+        var application = ApplicationEntity.CreateProcessing(
             command.Dto.CustomerId,
             Money.Create((decimal)command.Dto.Income),
             Money.Create((decimal)command.Dto.FixedCosts),
             Money.CreatePositive((decimal)command.Dto.DesiredRate),
-            EmploymentStatus.From(customerProfile.EmploymentStatus),
-            creditReport,
-            EmailAddress.Create(command.UserEmail),
-            _scoringService,
-            configVersion.Config,
-            configVersion.Id);
+            EmailAddress.Create(command.UserEmail));
 
         await _repository.AddAsync(application, ct);
         await _repository.SaveChangesAsync(ct);
 
-        application.Submit(_scoringService, configVersion.Config, configVersion.Id);
-        await _repository.SaveChangesAsync(ct);
-
-        await _dispatcher.PublishDomainEventsAsync(application, ct);
+        await _publishEndpoint.Publish(new ApplicationCreationStarted(
+            Guid.NewGuid(),
+            application.Id.Value,
+            command.Dto.CustomerId,
+            command.Dto.Income,
+            command.Dto.FixedCosts,
+            command.Dto.DesiredRate,
+            command.UserEmail,
+            true), ct);
 
         return Result<CreateAndSubmitApplicationResult>.Success(new CreateAndSubmitApplicationResult(
             ApplicationMapper.ToResponse(application)));

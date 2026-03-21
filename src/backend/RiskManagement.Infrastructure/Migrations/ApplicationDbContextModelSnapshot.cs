@@ -22,6 +22,128 @@ namespace RiskManagement.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("RiskManagement.Application.Sagas.ApplicationCreation.ApplicationCreationState", b =>
+                {
+                    b.Property<Guid>("CorrelationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("correlation_id");
+
+                    b.Property<int>("ApplicationId")
+                        .HasColumnType("integer")
+                        .HasColumnName("application_id");
+
+                    b.Property<bool>("AutoSubmit")
+                        .HasColumnType("boolean")
+                        .HasColumnName("auto_submit");
+
+                    b.Property<string>("City")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("city");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("completed_at");
+
+                    b.Property<string>("Country")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("country");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTime?>("CreditCheckedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("credit_checked_at");
+
+                    b.Property<string>("CreditProvider")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("credit_provider");
+
+                    b.Property<int?>("CreditScore")
+                        .HasColumnType("integer")
+                        .HasColumnName("credit_score");
+
+                    b.Property<string>("CurrentState")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("current_state");
+
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("integer")
+                        .HasColumnName("customer_id");
+
+                    b.Property<string>("DateOfBirth")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("date_of_birth");
+
+                    b.Property<double>("DesiredRate")
+                        .HasColumnType("double precision")
+                        .HasColumnName("desired_rate");
+
+                    b.Property<string>("EmploymentStatus")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("employment_status");
+
+                    b.Property<string>("FailureReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("failure_reason");
+
+                    b.Property<string>("FirstName")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("first_name");
+
+                    b.Property<double>("FixedCosts")
+                        .HasColumnType("double precision")
+                        .HasColumnName("fixed_costs");
+
+                    b.Property<bool?>("HasPaymentDefault")
+                        .HasColumnType("boolean")
+                        .HasColumnName("has_payment_default");
+
+                    b.Property<double>("Income")
+                        .HasColumnType("double precision")
+                        .HasColumnName("income");
+
+                    b.Property<string>("LastName")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("last_name");
+
+                    b.Property<string>("OperationType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Street")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("street");
+
+                    b.Property<string>("UserEmail")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("user_email");
+
+                    b.Property<string>("ZipCode")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("zip_code");
+
+                    b.HasKey("CorrelationId");
+
+                    b.ToTable("saga_application_creation_state", (string)null);
+                });
+
             modelBuilder.Entity("RiskManagement.Domain.Aggregates.ApplicationAggregate.Application", b =>
                 {
                     b.Property<int>("Id")
@@ -53,6 +175,10 @@ namespace RiskManagement.Infrastructure.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("character varying(30)")
                         .HasColumnName("employment_status");
+
+                    b.Property<string>("FailureReason")
+                        .HasColumnType("text")
+                        .HasColumnName("failure_reason");
 
                     b.Property<double>("FixedCosts")
                         .HasColumnType("double precision")
@@ -183,6 +309,39 @@ namespace RiskManagement.Infrastructure.Migrations
                     b.ToTable("scoring_config_versions", (string)null);
                 });
 
+            modelBuilder.Entity("RiskManagement.Domain.ReadModels.CustomerReadModel", b =>
+                {
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("integer")
+                        .HasColumnName("customer_id");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("first_name");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("last_name");
+
+                    b.Property<DateTime>("LastUpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_updated_at");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.HasKey("CustomerId");
+
+                    b.ToTable("customer_read_models", (string)null);
+                });
+
             modelBuilder.Entity("RiskManagement.Domain.Aggregates.ApplicationAggregate.Application", b =>
                 {
                     b.HasOne("RiskManagement.Domain.Aggregates.ScoringConfigAggregate.ScoringConfigVersion", null)
@@ -194,7 +353,7 @@ namespace RiskManagement.Infrastructure.Migrations
                             b1.Property<int>("ApplicationId")
                                 .HasColumnType("integer");
 
-                            b1.Property<DateTime>("CheckedAt")
+                            b1.Property<DateTime?>("CheckedAt")
                                 .HasColumnType("timestamp with time zone")
                                 .HasColumnName("credit_checked_at");
 
@@ -202,12 +361,11 @@ namespace RiskManagement.Infrastructure.Migrations
                                 .HasColumnType("integer")
                                 .HasColumnName("credit_score");
 
-                            b1.Property<bool>("HasPaymentDefault")
+                            b1.Property<bool?>("HasPaymentDefault")
                                 .HasColumnType("boolean")
                                 .HasColumnName("has_payment_default");
 
                             b1.Property<string>("Provider")
-                                .IsRequired()
                                 .HasMaxLength(50)
                                 .HasColumnType("character varying(50)")
                                 .HasColumnName("credit_provider");
@@ -220,8 +378,7 @@ namespace RiskManagement.Infrastructure.Migrations
                                 .HasForeignKey("ApplicationId");
                         });
 
-                    b.Navigation("CreditReport")
-                        .IsRequired();
+                    b.Navigation("CreditReport");
                 });
 
             modelBuilder.Entity("RiskManagement.Domain.Aggregates.ApplicationAggregate.ApplicationInquiry", b =>

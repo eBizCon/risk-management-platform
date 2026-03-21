@@ -18,6 +18,11 @@ public class CustomerRepository : ICustomerRepository
         return await _context.Customers.FirstOrDefaultAsync(c => c.Id == id, ct);
     }
 
+    public async Task<List<Customer>> GetAllAsync(CancellationToken ct = default)
+    {
+        return await _context.Customers.ToListAsync(ct);
+    }
+
     public async Task<List<Customer>> GetAllByCreatorAsync(EmailAddress createdBy, CancellationToken ct = default)
     {
         return await _context.Customers

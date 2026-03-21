@@ -1,7 +1,7 @@
 using RiskManagement.Application.Common;
 using RiskManagement.Application.DTOs;
-using RiskManagement.Application.Services;
 using RiskManagement.Domain.Aggregates.ApplicationAggregate;
+using RiskManagement.Domain.ReadModels;
 using RiskManagement.Domain.ValueObjects;
 
 namespace RiskManagement.Application.Queries;
@@ -13,12 +13,12 @@ public class
     GetProcessorApplicationsHandler : IQueryHandler<GetProcessorApplicationsQuery, ProcessorApplicationsResponse>
 {
     private readonly IApplicationRepository _repository;
-    private readonly ICustomerNameService _customerNameService;
+    private readonly ICustomerReadModelRepository _customerReadModelRepository;
 
-    public GetProcessorApplicationsHandler(IApplicationRepository repository, ICustomerNameService customerNameService)
+    public GetProcessorApplicationsHandler(IApplicationRepository repository, ICustomerReadModelRepository customerReadModelRepository)
     {
         _repository = repository;
-        _customerNameService = customerNameService;
+        _customerReadModelRepository = customerReadModelRepository;
     }
 
     public async Task<Result<ProcessorApplicationsResponse>> HandleAsync(GetProcessorApplicationsQuery query,
@@ -34,7 +34,7 @@ public class
         var applications = ApplicationMapper.ToResponseArray(items);
 
         var customerIds = applications.Select(a => a.CustomerId).Distinct();
-        var names = await _customerNameService.GetCustomerNamesAsync(customerIds, ct);
+        var names = await _customerReadModelRepository.GetCustomerNamesAsync(customerIds, ct);
         foreach (var app in applications)
             if (names.TryGetValue(app.CustomerId, out var name))
                 app.CustomerName = name;

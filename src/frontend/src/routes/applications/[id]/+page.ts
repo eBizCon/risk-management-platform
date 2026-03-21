@@ -1,8 +1,9 @@
 import { error } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
 import type { ApplicationInquiry } from '$lib/types';
+import { handleApiResponse } from '$lib/api';
 
-export const load: PageLoad = async ({ fetch, params }) => {
+export const load: PageLoad = async ({ fetch, params, url }) => {
 	const id = parseInt(params.id);
 
 	if (isNaN(id)) {
@@ -10,14 +11,10 @@ export const load: PageLoad = async ({ fetch, params }) => {
 	}
 
 	const res = await fetch(`/api/applications/${id}`);
-	if (!res.ok) {
-		if (res.status === 404) {
-			throw error(404, 'Antrag nicht gefunden');
-		}
-		throw error(res.status, 'Fehler beim Laden');
+	if (res.status === 404) {
+		throw error(404, 'Antrag nicht gefunden');
 	}
-
-	const application = await res.json();
+	const application = await handleApiResponse<Record<string, unknown>>(res, url, 'Fehler beim Laden');
 
 	let inquiries: ApplicationInquiry[] = [];
 	try {

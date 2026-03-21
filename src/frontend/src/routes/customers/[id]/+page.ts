@@ -1,11 +1,8 @@
-import { error } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
+import { handleApiResponse } from '$lib/api';
 
-export const load: PageLoad = async ({ fetch, params }) => {
+export const load: PageLoad = async ({ fetch, params, url }) => {
 	const res = await fetch(`/api/customers/${params.id}`);
-	if (!res.ok) {
-		throw error(res.status, 'Fehler beim Laden des Kunden');
-	}
-	const body = await res.json();
-	return { customer: body.customer ?? body };
+	const body = await handleApiResponse<{ customer?: unknown } | unknown>(res, url, 'Fehler beim Laden des Kunden');
+	return { customer: 'customer' in (body as Record<string, unknown>) ? (body as Record<string, unknown>).customer : body };
 };
