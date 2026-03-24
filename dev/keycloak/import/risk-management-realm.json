@@ -8,6 +8,9 @@
 			},
 			{
 				"name": "processor"
+			},
+			{
+				"name": "risk_manager"
 			}
 		]
 	},
@@ -17,14 +20,16 @@
 			"name": "risk-management-platform",
 			"protocol": "openid-connect",
 			"enabled": true,
-			"publicClient": true,
+			"publicClient": false,
+			"clientAuthenticatorType": "client-secret",
+			"secret": "dev-client-secret",
 			"standardFlowEnabled": true,
 			"directAccessGrantsEnabled": true,
-			"redirectUris": ["http://localhost:5173/*"],
-			"webOrigins": ["http://localhost:5173"],
+			"redirectUris": ["http://localhost:5173/*", "http://localhost:5227/*"],
+			"webOrigins": ["http://localhost:5173", "http://localhost:5227"],
 			"defaultClientScopes": ["profile", "roles", "email"],
 			"attributes": {
-				"post.logout.redirect.uris": "http://localhost:5173/*"
+				"post.logout.redirect.uris": "http://localhost:5173/*##http://localhost:5227/*"
 			}
 		}
 	],
@@ -60,6 +65,22 @@
 				}
 			],
 			"realmRoles": ["processor"]
+		},
+		{
+			"username": "riskmanager",
+			"enabled": true,
+			"email": "riskmanager@example.com",
+			"emailVerified": true,
+			"firstName": "Risk",
+			"lastName": "Manager",
+			"credentials": [
+				{
+					"type": "password",
+					"value": "riskmanager",
+					"temporary": false
+				}
+			],
+			"realmRoles": ["risk_manager"]
 		}
 	]
 }

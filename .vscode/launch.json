@@ -1,0 +1,45 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "RiskManagement API",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-risk-management-api",
+      "program": "${workspaceFolder}/src/backend/RiskManagement.Api/bin/Debug/net8.0/RiskManagement.Api.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/src/backend/RiskManagement.Api",
+      "stopAtEntry": false,
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5227"
+      },
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "CustomerManagement API",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-customer-management-api",
+      "program": "${workspaceFolder}/src/backend/CustomerManagement.Api/bin/Debug/net8.0/CustomerManagement.Api.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/src/backend/CustomerManagement.Api",
+      "stopAtEntry": false,
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5000"
+      },
+      "console": "integratedTerminal"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "All APIs",
+      "configurations": [
+        "RiskManagement API",
+        "CustomerManagement API"
+      ],
+      "stopAll": true
+    }
+  ]
+}
