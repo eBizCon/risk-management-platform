@@ -75,8 +75,15 @@ public class FinalizeApplicationConsumer : IConsumer<FinalizeApplication>
         }
         catch (Exception ex)
         {
-            application.MarkFailed(ex.Message);
-            await _repository.SaveChangesAsync(context.CancellationToken);
+            try
+            {
+                application.MarkFailed(ex.Message);
+                await _repository.SaveChangesAsync(context.CancellationToken);
+            }
+            catch
+            {
+                // MarkFailed may fail if status already transitioned from Processing (e.g. to Draft)
+            }
 
             await context.Publish(new ApplicationCreationFailed(
                 msg.CorrelationId,
