@@ -49,8 +49,12 @@ public class Customer : AggregateRoot<CustomerId>
             CreatedAt = DateTime.UtcNow
         };
 
-        customer.AddDomainEvent(new CustomerCreatedEvent(customer.Id, customer.FirstName, customer.LastName));
         return customer;
+    }
+
+    public void NotifyCreated()
+    {
+        AddDomainEvent(new CustomerCreatedEvent(Id, FirstName, LastName));
     }
 
     public void Update(

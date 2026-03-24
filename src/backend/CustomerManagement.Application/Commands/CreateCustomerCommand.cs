@@ -49,6 +49,7 @@ public class CreateCustomerHandler : ICommandHandler<CreateCustomerCommand, Crea
         await _repository.AddAsync(customer, ct);
         await _repository.SaveChangesAsync(ct);
 
+        customer.NotifyCreated();
         await _dispatcher.PublishDomainEventsAsync(customer, ct);
 
         return Result<CreateCustomerResult>.Success(new CreateCustomerResult(CustomerMapper.ToResponse(customer)));
