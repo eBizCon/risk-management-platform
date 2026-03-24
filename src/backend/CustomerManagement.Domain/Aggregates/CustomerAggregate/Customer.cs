@@ -100,6 +100,11 @@ public class Customer : AggregateRoot<CustomerId>
         AddDomainEvent(new CustomerActivatedEvent(Id));
     }
 
+    public void Delete()
+    {
+        AddDomainEvent(new CustomerDeletedEvent(Id));
+    }
+
     private void GuardActiveStatus()
     {
         if (Status != CustomerStatus.Active)

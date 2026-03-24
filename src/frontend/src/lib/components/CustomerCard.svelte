@@ -34,10 +34,10 @@
 		</div>
 		<span
 			class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium shrink-0"
-			class:bg-success={customer.status === 'Active'}
-			class:text-white={customer.status === 'Active'}
-			class:bg-bg-muted={customer.status === 'Archived'}
-			class:text-secondary={customer.status === 'Archived'}
+			class:bg-success={customer.status === 'active'}
+			class:text-white={customer.status === 'active'}
+			class:bg-bg-muted={customer.status === 'archived'}
+			class:text-secondary={customer.status === 'archived'}
 		>
 			{customerStatusLabels[customer.status] ?? customer.status}
 		</span>
@@ -70,7 +70,7 @@
 				<span>Ansehen</span>
 			</button>
 			<div class="flex flex-wrap gap-2">
-				{#if customer.status === 'Active'}
+				{#if customer.status === 'active'}
 					<button
 						type="button"
 						class="inline-flex items-center justify-center gap-2 px-3 py-2 min-h-[44px] min-w-[44px] rounded-md border border-border text-secondary hover:text-primary"

@@ -17,7 +17,7 @@ builder.Services.AddControllers()
     });
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")!;
-var applicationServiceUrl = builder.Configuration["APPLICATION_SERVICE_URL"] ?? "http://localhost:5000";
+var applicationServiceUrl = builder.Configuration["APPLICATION_SERVICE_URL"] ?? "http://localhost:5227";
 var serviceApiKey = builder.Configuration["SERVICE_API_KEY"] ?? "";
 
 var rabbitMqConnectionString = builder.Configuration.GetConnectionString("messaging")
