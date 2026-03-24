@@ -45,7 +45,7 @@ public class ApplicationResponse
     public double FixedCosts { get; set; }
     public double DesiredRate { get; set; }
     public string EmploymentStatus { get; set; } = string.Empty;
-    public bool HasPaymentDefault { get; set; }
+    public bool? HasPaymentDefault { get; set; }
     public int? CreditScore { get; set; }
     public string Status { get; set; } = string.Empty;
     public int? Score { get; set; }

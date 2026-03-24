@@ -33,6 +33,9 @@ public class SubmitApplicationHandler : ICommandHandler<SubmitApplicationCommand
         if (application.CreatedBy != EmailAddress.Create(command.UserEmail))
             return Result<ApplicationResponse>.Forbidden("Zugriff verweigert");
 
+        if (application.Status != Domain.ValueObjects.ApplicationStatus.Draft)
+            return Result<ApplicationResponse>.Failure("Nur Entwürfe können eingereicht werden");
+
         application.SetProcessing();
         await _repository.SaveChangesAsync(ct);
 

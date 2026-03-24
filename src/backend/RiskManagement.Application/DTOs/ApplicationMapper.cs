@@ -14,7 +14,7 @@ public static class ApplicationMapper
             FixedCosts = (double)application.FixedCosts.Amount,
             DesiredRate = (double)application.DesiredRate.Amount,
             EmploymentStatus = application.EmploymentStatus.Value,
-            HasPaymentDefault = application.CreditReport?.HasPaymentDefault ?? false,
+            HasPaymentDefault = application.CreditReport?.HasPaymentDefault,
             CreditScore = application.CreditReport?.CreditScore,
             Status = application.Status.Value,
             Score = application.Score,

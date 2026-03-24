@@ -39,7 +39,7 @@ export interface Application {
 	fixedCosts: number;
 	desiredRate: number;
 	employmentStatus: EmploymentStatus;
-	hasPaymentDefault: boolean;
+	hasPaymentDefault: boolean | null;
 	creditScore: number | null;
 	status: ApplicationStatus;
 	score: number | null;

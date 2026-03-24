@@ -59,9 +59,9 @@ public class FinalizeApplicationUpdateConsumer : IConsumer<FinalizeApplicationUp
 
             application.UpdateDetails(
                 msg.CustomerId,
-                Money.Create(Convert.ToDecimal(msg.Income)),
+                Money.CreatePositive(Convert.ToDecimal(msg.Income)),
                 Money.Create(Convert.ToDecimal(msg.FixedCosts)),
-                Money.Create(Convert.ToDecimal(msg.DesiredRate)),
+                Money.CreatePositive(Convert.ToDecimal(msg.DesiredRate)),
                 EmploymentStatus.From(msg.EmploymentStatus),
                 creditReport,
                 _scoringService,

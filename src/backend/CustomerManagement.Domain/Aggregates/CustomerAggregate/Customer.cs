@@ -79,7 +79,7 @@ public class Customer : AggregateRoot<CustomerId>
         EmploymentStatus = employmentStatus;
         UpdatedAt = DateTime.UtcNow;
 
-        AddDomainEvent(new CustomerUpdatedEvent(Id, FirstName, LastName));
+        AddDomainEvent(new CustomerUpdatedEvent(Id, FirstName, LastName, Status.Value));
     }
 
     public void Archive()

@@ -33,7 +33,7 @@ public class IntegrationEventPublisherTests
     public async Task CustomerUpdatedPublisher_ShouldPublishIntegrationEvent()
     {
         var publisher = new CustomerUpdatedIntegrationEventPublisher(_publishEndpointMock.Object);
-        var domainEvent = new CustomerUpdatedEvent(new CustomerId(2), "Anna", "Schmidt");
+        var domainEvent = new CustomerUpdatedEvent(new CustomerId(2), "Anna", "Schmidt", "active");
 
         await publisher.HandleAsync(domainEvent);
 

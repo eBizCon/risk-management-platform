@@ -40,6 +40,9 @@ public class UpdateApplicationHandler : ICommandHandler<UpdateApplicationCommand
         if (application.CreatedBy != EmailAddress.Create(command.UserEmail))
             return Result<UpdateApplicationResult>.Forbidden("Zugriff verweigert");
 
+        if (application.Status != Domain.ValueObjects.ApplicationStatus.Draft)
+            return Result<UpdateApplicationResult>.Failure("Nur Entwürfe können bearbeitet werden");
+
         var validationResult = await _validator.ValidateAsync(command.Dto, ct);
         if (!validationResult.IsValid)
         {

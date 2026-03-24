@@ -23,7 +23,7 @@ builder.Services.AddControllers()
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")!;
 
-var customerServiceUrl = builder.Configuration["CUSTOMER_SERVICE_URL"] ?? "http://localhost:5001";
+var customerServiceUrl = builder.Configuration["CUSTOMER_SERVICE_URL"] ?? "http://localhost:5000";
 var serviceApiKey = builder.Configuration["SERVICE_API_KEY"] ?? "";
 
 var rabbitMqConnectionString = builder.Configuration.GetConnectionString("messaging")

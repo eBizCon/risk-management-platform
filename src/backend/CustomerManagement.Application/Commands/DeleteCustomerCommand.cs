@@ -41,10 +41,11 @@ public class DeleteCustomerHandler : ICommandHandler<DeleteCustomerCommand, Dele
                 "Kunde kann nicht gelöscht werden, da noch Kreditanträge existieren");
 
         customer.Delete();
-        await _dispatcher.PublishDomainEventsAsync(customer, ct);
 
         await _repository.RemoveAsync(customer, ct);
         await _repository.SaveChangesAsync(ct);
+
+        await _dispatcher.PublishDomainEventsAsync(customer, ct);
 
         return Result<DeleteCustomerResult>.Success(new DeleteCustomerResult(true));
     }

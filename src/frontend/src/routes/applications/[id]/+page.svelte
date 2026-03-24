@@ -279,7 +279,7 @@
 						</div>
 						<div>
 							<dt class="dl-label">Zahlungsverzug in der Vergangenheit</dt>
-							<dd class="mt-1 dl-value">{app.hasPaymentDefault ? 'Ja' : 'Nein'}</dd>
+							<dd class="mt-1 dl-value">{app.hasPaymentDefault == null ? '-' : app.hasPaymentDefault ? 'Ja' : 'Nein'}</dd>
 						</div>
 						<div>
 							<dt class="dl-label">Credit Score</dt>

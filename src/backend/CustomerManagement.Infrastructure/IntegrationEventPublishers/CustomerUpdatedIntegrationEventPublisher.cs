@@ -21,7 +21,7 @@ public class CustomerUpdatedIntegrationEventPublisher : IDomainEventHandler<Cust
                 domainEvent.CustomerId.Value,
                 domainEvent.FirstName,
                 domainEvent.LastName,
-                "active"),
+                domainEvent.Status),
             ct);
     }
 }
