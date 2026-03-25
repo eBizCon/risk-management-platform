@@ -14,7 +14,7 @@ public class ScoringConfigVersionConfiguration : IEntityTypeConfiguration<Scorin
         entity.HasKey(e => e.Id);
         entity.Property(e => e.Id)
             .HasColumnName("id")
-            .ValueGeneratedOnAdd()
+            .UseHiLo("scoring_config_version_id_seq")
             .HasConversion(
                 v => v.Value,
                 v => new ScoringConfigVersionId(v));

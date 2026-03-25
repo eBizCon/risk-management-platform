@@ -43,6 +43,7 @@ public class CustomerRepository : ICustomerRepository
     public async Task AddAsync(Customer customer, CancellationToken ct = default)
     {
         await _context.Customers.AddAsync(customer, ct);
+        customer.NotifyCreated();
     }
 
     public Task RemoveAsync(Customer customer, CancellationToken ct = default)

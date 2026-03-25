@@ -52,6 +52,12 @@ public static class DependencyInjection
     {
         services.AddMassTransit(x =>
         {
+            x.AddEntityFrameworkOutbox<CustomerDbContext>(o =>
+            {
+                o.UsePostgres();
+                o.UseBusOutbox();
+            });
+
             x.SetKebabCaseEndpointNameFormatter();
 
             x.UsingRabbitMq((context, cfg) =>

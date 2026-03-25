@@ -1,5 +1,6 @@
 using CustomerManagement.Domain.Aggregates.CustomerAggregate;
 using CustomerManagement.Domain.ValueObjects;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using SharedKernel.ValueObjects;
 
@@ -17,6 +18,12 @@ public class CustomerDbContext : DbContext
     {
         modelBuilder.HasDefaultSchema("customer");
 
+        modelBuilder.HasSequence<int>("customer_id_seq", "customer").StartsAt(1000).IncrementsBy(10);
+
+        modelBuilder.AddInboxStateEntity();
+        modelBuilder.AddOutboxMessageEntity();
+        modelBuilder.AddOutboxStateEntity();
+
         modelBuilder.Entity<Customer>(entity =>
         {
             entity.ToTable("customers");
@@ -25,7 +32,7 @@ public class CustomerDbContext : DbContext
             entity.Property(e => e.Id)
                 .HasColumnName("id")
                 .HasConversion(id => id.Value, value => new CustomerId(value))
-                .ValueGeneratedOnAdd();
+                .UseHiLo("customer_id_seq", "customer");
 
             entity.Property(e => e.FirstName).HasColumnName("first_name").HasMaxLength(50).IsRequired();
             entity.Property(e => e.LastName).HasColumnName("last_name").HasMaxLength(50).IsRequired();
