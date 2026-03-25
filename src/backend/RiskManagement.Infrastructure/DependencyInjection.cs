@@ -26,7 +26,7 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, string connectionString)
     {
-        services.AddSingleton<DomainEventDispatchInterceptor>();
+        services.AddScoped<DomainEventDispatchInterceptor>();
 
         services.AddDbContext<ApplicationDbContext>((sp, options) =>
             options.UseNpgsql(connectionString)

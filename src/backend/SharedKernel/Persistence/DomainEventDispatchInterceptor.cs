@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using Microsoft.Extensions.DependencyInjection;
 using SharedKernel.Common;
 using SharedKernel.Dispatching;
 
@@ -7,11 +6,11 @@ namespace SharedKernel.Persistence;
 
 public class DomainEventDispatchInterceptor : SaveChangesInterceptor
 {
-    private readonly IServiceProvider _serviceProvider;
+    private readonly IDispatcher _dispatcher;
 
-    public DomainEventDispatchInterceptor(IServiceProvider serviceProvider)
+    public DomainEventDispatchInterceptor(IDispatcher dispatcher)
     {
-        _serviceProvider = serviceProvider;
+        _dispatcher = dispatcher;
     }
 
     public override async ValueTask<int> SavedChangesAsync(
@@ -21,9 +20,6 @@ public class DomainEventDispatchInterceptor : SaveChangesInterceptor
     {
         if (eventData.Context is null)
             return result;
-
-        // IDispatcher aus dem Scope holen (nicht im Constructor, wegen Scoped Lifetime)
-        var dispatcher = _serviceProvider.GetRequiredService<IDispatcher>();
 
         var aggregates = eventData.Context.ChangeTracker
             .Entries<IHasDomainEvents>()
@@ -36,7 +32,7 @@ public class DomainEventDispatchInterceptor : SaveChangesInterceptor
             var events = aggregate.DomainEvents.ToList();
             aggregate.ClearDomainEvents();
             foreach (var evt in events)
-                await dispatcher.PublishAsync(evt, ct);
+                await _dispatcher.PublishAsync(evt, ct);
         }
 
         return result;
