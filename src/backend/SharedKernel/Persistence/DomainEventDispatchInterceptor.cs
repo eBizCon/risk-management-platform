@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.DependencyInjection;
 using SharedKernel.Common;
 using SharedKernel.Dispatching;
 
