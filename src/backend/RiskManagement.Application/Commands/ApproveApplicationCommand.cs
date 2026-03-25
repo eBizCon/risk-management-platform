@@ -15,14 +15,11 @@ public class ApproveApplicationHandler : ICommandHandler<ApproveApplicationComma
 {
     private readonly IApplicationRepository _repository;
     private readonly IValidator<ApproveApplicationDto> _validator;
-    private readonly IDispatcher _dispatcher;
 
-    public ApproveApplicationHandler(IApplicationRepository repository, IValidator<ApproveApplicationDto> validator,
-        IDispatcher dispatcher)
+    public ApproveApplicationHandler(IApplicationRepository repository, IValidator<ApproveApplicationDto> validator)
     {
         _repository = repository;
         _validator = validator;
-        _dispatcher = dispatcher;
     }
 
     public async Task<Result<ApproveApplicationResult>> HandleAsync(ApproveApplicationCommand command,
@@ -41,8 +38,6 @@ public class ApproveApplicationHandler : ICommandHandler<ApproveApplicationComma
 
         application.Approve(command.Dto.Comment);
         await _repository.SaveChangesAsync(ct);
-
-        await _dispatcher.PublishDomainEventsAsync(application, ct);
 
         return Result<ApproveApplicationResult>.Success(new ApproveApplicationResult(
             ApplicationMapper.ToResponse(application)));

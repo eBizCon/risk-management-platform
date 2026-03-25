@@ -10,12 +10,10 @@ public record DeleteApplicationCommand(int ApplicationId, string UserEmail) : IC
 public class DeleteApplicationHandler : ICommandHandler<DeleteApplicationCommand, bool>
 {
     private readonly IApplicationRepository _repository;
-    private readonly IDispatcher _dispatcher;
 
-    public DeleteApplicationHandler(IApplicationRepository repository, IDispatcher dispatcher)
+    public DeleteApplicationHandler(IApplicationRepository repository)
     {
         _repository = repository;
-        _dispatcher = dispatcher;
     }
 
     public async Task<Result<bool>> HandleAsync(DeleteApplicationCommand command, CancellationToken ct = default)
@@ -30,8 +28,6 @@ public class DeleteApplicationHandler : ICommandHandler<DeleteApplicationCommand
         application.Delete();
         await _repository.RemoveAsync(application, ct);
         await _repository.SaveChangesAsync(ct);
-
-        await _dispatcher.PublishDomainEventsAsync(application, ct);
 
         return Result<bool>.Success(true);
     }

@@ -10,12 +10,10 @@ public record ActivateCustomerResult(CustomerResponse Customer);
 public class ActivateCustomerHandler : ICommandHandler<ActivateCustomerCommand, ActivateCustomerResult>
 {
     private readonly ICustomerRepository _repository;
-    private readonly IDispatcher _dispatcher;
 
-    public ActivateCustomerHandler(ICustomerRepository repository, IDispatcher dispatcher)
+    public ActivateCustomerHandler(ICustomerRepository repository)
     {
         _repository = repository;
-        _dispatcher = dispatcher;
     }
 
     public async Task<Result<ActivateCustomerResult>> HandleAsync(ActivateCustomerCommand command,
@@ -30,8 +28,6 @@ public class ActivateCustomerHandler : ICommandHandler<ActivateCustomerCommand, 
 
         customer.Activate();
         await _repository.SaveChangesAsync(ct);
-
-        await _dispatcher.PublishDomainEventsAsync(customer, ct);
 
         return Result<ActivateCustomerResult>.Success(
             new ActivateCustomerResult(CustomerMapper.ToResponse(customer)));

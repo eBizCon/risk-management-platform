@@ -15,14 +15,11 @@ public class UpdateCustomerHandler : ICommandHandler<UpdateCustomerCommand, Upda
 {
     private readonly ICustomerRepository _repository;
     private readonly IValidator<CustomerUpdateDto> _validator;
-    private readonly IDispatcher _dispatcher;
 
-    public UpdateCustomerHandler(ICustomerRepository repository, IValidator<CustomerUpdateDto> validator,
-        IDispatcher dispatcher)
+    public UpdateCustomerHandler(ICustomerRepository repository, IValidator<CustomerUpdateDto> validator)
     {
         _repository = repository;
         _validator = validator;
-        _dispatcher = dispatcher;
     }
 
     public async Task<Result<UpdateCustomerResult>> HandleAsync(UpdateCustomerCommand command,
@@ -54,8 +51,6 @@ public class UpdateCustomerHandler : ICommandHandler<UpdateCustomerCommand, Upda
             EmploymentStatus.From(command.Dto.EmploymentStatus));
 
         await _repository.SaveChangesAsync(ct);
-
-        await _dispatcher.PublishDomainEventsAsync(customer, ct);
 
         return Result<UpdateCustomerResult>.Success(new UpdateCustomerResult(CustomerMapper.ToResponse(customer)));
     }

@@ -14,14 +14,11 @@ public class CreateCustomerHandler : ICommandHandler<CreateCustomerCommand, Crea
 {
     private readonly ICustomerRepository _repository;
     private readonly IValidator<CustomerCreateDto> _validator;
-    private readonly IDispatcher _dispatcher;
 
-    public CreateCustomerHandler(ICustomerRepository repository, IValidator<CustomerCreateDto> validator,
-        IDispatcher dispatcher)
+    public CreateCustomerHandler(ICustomerRepository repository, IValidator<CustomerCreateDto> validator)
     {
         _repository = repository;
         _validator = validator;
-        _dispatcher = dispatcher;
     }
 
     public async Task<Result<CreateCustomerResult>> HandleAsync(CreateCustomerCommand command,
@@ -47,10 +44,8 @@ public class CreateCustomerHandler : ICommandHandler<CreateCustomerCommand, Crea
             EmailAddress.Create(command.UserEmail));
 
         await _repository.AddAsync(customer, ct);
-        await _repository.SaveChangesAsync(ct);
-
         customer.NotifyCreated();
-        await _dispatcher.PublishDomainEventsAsync(customer, ct);
+        await _repository.SaveChangesAsync(ct);
 
         return Result<CreateCustomerResult>.Success(new CreateCustomerResult(CustomerMapper.ToResponse(customer)));
     }
