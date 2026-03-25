@@ -9,6 +9,7 @@ using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using SharedKernel;
+using SharedKernel.Persistence;
 
 namespace CustomerManagement.Infrastructure;
 
@@ -17,8 +18,11 @@ public static class DependencyInjection
     public static IServiceCollection AddCustomerInfrastructure(this IServiceCollection services,
         string connectionString)
     {
-        services.AddDbContext<CustomerDbContext>(options =>
-            options.UseNpgsql(connectionString));
+        services.AddScoped<DomainEventDispatchInterceptor>();
+
+        services.AddDbContext<CustomerDbContext>((sp, options) =>
+            options.UseNpgsql(connectionString)
+                .AddInterceptors(sp.GetRequiredService<DomainEventDispatchInterceptor>()));
 
         services.AddScoped<ICustomerRepository, CustomerRepository>();
 

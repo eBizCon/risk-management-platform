@@ -2,6 +2,7 @@ using CustomerManagement.Application.DTOs;
 using CustomerManagement.Domain.Aggregates.CustomerAggregate;
 using CustomerManagement.Domain.ValueObjects;
 using FluentValidation;
+using SharedKernel.Dispatching;
 using SharedKernel.ValueObjects;
 
 namespace CustomerManagement.Application.Commands;
@@ -49,6 +50,9 @@ public class CreateCustomerHandler : ICommandHandler<CreateCustomerCommand, Crea
         await _repository.AddAsync(customer, ct);
         await _repository.SaveChangesAsync(ct);
 
+        // NotifyCreated must be called after SaveChangesAsync because
+        // CustomerCreatedEvent captures the database-generated Id (int, ValueGeneratedOnAdd).
+        // Before save, Id holds a temporary EF Core placeholder value.
         customer.NotifyCreated();
         await _dispatcher.PublishDomainEventsAsync(customer, ct);
 
