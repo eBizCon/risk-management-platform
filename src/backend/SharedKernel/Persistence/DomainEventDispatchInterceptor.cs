@@ -50,4 +50,12 @@ public class DomainEventDispatchInterceptor : SaveChangesInterceptor
 
         return result;
     }
+
+    public override Task SaveChangesFailedAsync(
+        DbContextErrorEventData eventData,
+        CancellationToken ct = default)
+    {
+        _pendingEvents.Clear();
+        return base.SaveChangesFailedAsync(eventData, ct);
+    }
 }
