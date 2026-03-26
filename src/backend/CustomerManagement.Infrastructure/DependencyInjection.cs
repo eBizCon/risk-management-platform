@@ -1,3 +1,4 @@
+using System.Reflection;
 using CustomerManagement.Application.Commands;
 using CustomerManagement.Application.DTOs;
 using CustomerManagement.Application.Validation;
@@ -8,7 +9,7 @@ using FluentValidation;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using SharedKernel;
+using SharedKernel.Dispatching;
 using SharedKernel.Persistence;
 
 namespace CustomerManagement.Infrastructure;
@@ -41,9 +42,14 @@ public static class DependencyInjection
             client.DefaultRequestHeaders.Add("X-Api-Key", serviceApiKey);
         });
 
+        services.AddScoped<IDispatcher, Dispatcher>();
+
         var applicationAssembly = typeof(CustomerCreateDto).Assembly;
         var infrastructureAssembly = typeof(DependencyInjection).Assembly;
-        services.AddSharedKernel(applicationAssembly, infrastructureAssembly);
+        RegisterHandlers(services, typeof(ICommandHandler<,>), applicationAssembly);
+        RegisterHandlers(services, typeof(IQueryHandler<,>), applicationAssembly);
+        RegisterHandlers(services, typeof(IDomainEventHandler<>), applicationAssembly);
+        RegisterHandlers(services, typeof(IDomainEventHandler<>), infrastructureAssembly);
 
         return services;
     }
@@ -68,5 +74,23 @@ public static class DependencyInjection
         });
 
         return services;
+    }
+
+    private static void RegisterHandlers(IServiceCollection services, Type openGenericInterface, Assembly assembly)
+    {
+        foreach (var type in assembly.GetTypes())
+        {
+            if (type.IsAbstract || type.IsInterface)
+                continue;
+
+            foreach (var iface in type.GetInterfaces())
+            {
+                if (!iface.IsGenericType)
+                    continue;
+
+                if (iface.GetGenericTypeDefinition() == openGenericInterface)
+                    services.AddScoped(iface, type);
+            }
+        }
     }
 }
