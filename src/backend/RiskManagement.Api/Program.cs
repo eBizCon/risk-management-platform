@@ -83,7 +83,7 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Middleware pipeline
-app.UseMiddleware<ExceptionHandlingMiddleware>();
+app.UseMiddleware<RiskManagement.Api.Middleware.ExceptionHandlingMiddleware>();
 app.UseAuthentication();
 app.UseMiddleware<InternalAuthMiddleware>();
 app.UseAuthorization();

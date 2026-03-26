@@ -15,7 +15,7 @@ public class ApplicationInquiryConfiguration : IEntityTypeConfiguration<Applicat
         entity.HasKey(e => e.Id);
         entity.Property(e => e.Id)
             .HasColumnName("id")
-            .ValueGeneratedOnAdd()
+            .UseHiLo("inquiry_id_seq")
             .HasConversion(
                 v => v.Value,
                 v => new InquiryId(v));

@@ -21,6 +21,10 @@ public class ApplicationDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.HasSequence<int>("application_id_seq").StartsAt(1000).IncrementsBy(10);
+        modelBuilder.HasSequence<int>("inquiry_id_seq").StartsAt(1000).IncrementsBy(10);
+        modelBuilder.HasSequence<int>("scoring_config_version_id_seq").StartsAt(100).IncrementsBy(10);
+
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
     }
 }

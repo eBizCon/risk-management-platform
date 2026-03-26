@@ -18,7 +18,7 @@ public class ApplicationConfiguration : IEntityTypeConfiguration<ApplicationEnti
         entity.HasKey(e => e.Id);
         entity.Property(e => e.Id)
             .HasColumnName("id")
-            .ValueGeneratedOnAdd()
+            .UseHiLo("application_id_seq")
             .HasConversion(
                 v => v.Value,
                 v => new AppId(v));
