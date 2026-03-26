@@ -1,8 +1,300 @@
 {
   "repo_notes": [
     {
-      "content": "Exclude Markdown and README files from sources.",
-      "author": "Team Lead"
+      "content": "Exclude Markdown and README files from sources."
+    }
+  ],
+  "pages": [
+    {
+      "title": "Overview",
+      "purpose": "High-level introduction to the Risk Management Platform: what it does, who uses it, the technology stack, and how the major subsystems relate. Links to all child sections for deeper exploration.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Getting Started",
+      "purpose": "Step-by-step guide for onboarding engineers: cloning the repo, installing dependencies, configuring environment variables, starting local infrastructure (Docker Compose, Keycloak, PostgreSQL), running the dev server, and executing tests.",
+      "parent": "Overview",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "User Roles and Permissions",
+      "purpose": "Describes the three user roles (applicant, processor, risk_manager), what each role can do, which routes they can access, and how roles are enforced via Keycloak OIDC and authorization policies in both the frontend and backend APIs.",
+      "parent": "Overview",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "System Architecture",
+      "purpose": "Overview of the bounded-context architecture, service topology, communication patterns (synchronous HTTP, asynchronous RabbitMQ), and the Shared Kernel. Links to child pages for each major architectural concern.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Shared Kernel",
+      "purpose": "Documents the SharedKernel class library: DDD building blocks (AggregateRoot, Entity, ValueObject, Enumeration), the CQRS dispatcher pattern (IDispatcher, ICommandHandler, IQueryHandler, IDomainEventHandler), the Result<T> pattern, shared value objects (EmailAddress), DomainException, and the DomainEventDispatchInterceptor.",
+      "parent": "System Architecture",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Service Communication and Integration",
+      "purpose": "Explains how the two bounded contexts communicate: synchronous HTTP (Customer/Supplier with Anti-Corruption Layer), service-to-service authentication via X-Api-Key and InternalAuthMiddleware, integration events published over RabbitMQ, and the CustomerReadModel sync strategy.",
+      "parent": "System Architecture",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": ".NET Aspire Orchestration",
+      "purpose": "Covers the AppHost project that uses .NET Aspire to wire together all services (risk-api, customer-api, PostgreSQL, RabbitMQ, Keycloak) for local development and integration testing, including ServiceDefaults extensions.",
+      "parent": "System Architecture",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Risk Management Bounded Context",
+      "purpose": "Overview of the RiskManagement bounded context: its layers (Domain, Application, Infrastructure, API), the Application aggregate, and how commands, queries, and the saga fit together. Links to child pages for each layer.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Application Domain Model",
+      "purpose": "Deep dive into the Application aggregate root: its properties, the ApplicationStatus lifecycle (Processing → Draft → Submitted → Approved/Rejected/NeedsInformation/Resubmitted/Failed), guard clauses, domain methods (Finalize, Submit, Approve, Reject, MarkFailed, Delete), child entity ApplicationInquiry, and all domain value objects (Money, CreditReport, TrafficLight, ApplicationStatus, ScoringResult).",
+      "parent": "Risk Management Bounded Context",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Application Commands and Queries (CQRS)",
+      "purpose": "Documents all command handlers (Create, CreateAndSubmit, Update, UpdateAndSubmit, Submit, Delete, Approve, Reject, CreateInquiry, AnswerInquiry, RescoreOpenApplications) and query handlers (GetApplication, GetApplicationsByUser, GetProcessorApplications, GetDashboardStats, GetInquiries), including their authorization rules, validation, and the Result<T> return pattern.",
+      "parent": "Risk Management Bounded Context",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Application Creation Saga",
+      "purpose": "Detailed walkthrough of the MassTransit state machine that orchestrates asynchronous application creation: states (FetchingCustomer, CheckingCredit, Finalizing, Completed, Failed), all saga messages, the three consumers (FetchCustomerProfileConsumer, PerformCreditCheckConsumer, FinalizeApplicationConsumer), fault consumers, retry policy, and saga persistence in PostgreSQL.",
+      "parent": "Risk Management Bounded Context",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Scoring System",
+      "purpose": "Explains the risk scoring algorithm: IScoringService interface, ScoringService implementation, ScoringConfigVersion (versioned parameters: thresholds, income ratios, rate tiers, employment penalties), MockSchufaProvider for credit checks, TrafficLight output (Green/Yellow/Red), and the RescoreOpenApplications workflow for risk managers.",
+      "parent": "Risk Management Bounded Context",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Risk Management API and Persistence",
+      "purpose": "Covers the RiskManagement.Api controllers (ApplicationsController, ProcessorController, InquiryController, ScoringConfigController, DashboardController, InternalApplicationsController), EF Core ApplicationDbContext, entity configurations (HiLo sequences, owned entities, value conversions), and database migrations.",
+      "parent": "Risk Management Bounded Context",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Customer Management Bounded Context",
+      "purpose": "Overview of the CustomerManagement bounded context: its purpose as a supporting domain, the Customer aggregate, and how it integrates with the Risk Management context. Links to child pages for domain model, commands, and API.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Customer Domain Model and Commands",
+      "purpose": "Documents the Customer aggregate root: properties (Name, Address, Phone, EmploymentStatus, CustomerStatus), lifecycle methods (Create, Update, Activate, Archive, Delete), domain events (CustomerCreatedEvent, CustomerUpdatedEvent, etc.), and all command handlers (CreateCustomer, UpdateCustomer, ActivateCustomer, ArchiveCustomer, DeleteCustomer) including ownership checks and the IApplicationServiceClient dependency check.",
+      "parent": "Customer Management Bounded Context",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Customer Management API and Infrastructure",
+      "purpose": "Covers the CustomerManagement.Api (CustomersController, InternalCustomersController), CustomerDbContext, CustomerRepository, EF Core migrations (HiLo, MassTransit Outbox), integration event publishers (CustomerCreated/Updated/Activated/Archived/Deleted), and the Outbox pattern for reliable messaging.",
+      "parent": "Customer Management Bounded Context",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Frontend (SvelteKit BFF)",
+      "purpose": "Overview of the SvelteKit frontend acting as a Backend-for-Frontend: its layered architecture (pages, server load functions, API routes, service layer, Drizzle ORM), the three role-based views, and how it proxies to the backend APIs. Links to child pages for routing, components, and auth.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "UI Components",
+      "purpose": "Describes all reusable Svelte components: ApplicationForm, ApplicationCard, ApplicationTable, CustomerCard, CustomerForm, CustomerTable, ConfirmDialog, StatusBadge, TrafficLight, ScoreDisplay, Pagination, RoleGuard, MobileMenu, and dashboard chart components (DashboardStats, StatusPieChart, StatusBarChart).",
+      "parent": "Frontend (SvelteKit BFF)",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Authentication and Session Management (Frontend)",
+      "purpose": "Explains the OIDC Authorization Code flow with PKCE implemented in the frontend: hooks.server.ts as the auth gatekeeper, the OIDC service (oidc.ts), session management (session.ts, in-memory store, httpOnly cookies), role extraction from JWT claims, route protection rules for applicant/processor/risk_manager paths, and the no-automatic-redirect policy.",
+      "parent": "Frontend (SvelteKit BFF)",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Testing",
+      "purpose": "Overview of the testing strategy across the platform: unit tests (Vitest for frontend, xUnit for backend), integration tests, and E2E tests (Playwright). Links to child pages for backend and frontend/E2E testing.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Backend Tests",
+      "purpose": "Documents the xUnit test suite in RiskManagement.Api.Tests: unit tests for command handlers (Create, Submit, Update, UpdateAndSubmit), saga consumer tests (FinalizeApplicationConsumer, FetchCustomerProfileConsumer, PerformCreditCheckConsumer, MarkApplicationFailed), scoring service tests, validation tests, integration event publisher tests, and the InternalAuthMiddleware tests.",
+      "parent": "Testing",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Frontend Unit Tests and E2E Tests",
+      "purpose": "Covers Vitest unit tests (scoring.test.ts, validation.test.ts, session.test.ts, seed.test.ts), Playwright E2E test structure (fixtures.ts, auth helpers, applicant.test.ts, processor.test.ts, inquiry-process.test.ts, dashboard.test.ts, risk-manager.test.ts), the test session bypass endpoint (/api/test/session), and CI configuration.",
+      "parent": "Testing",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Infrastructure and Deployment",
+      "purpose": "Overview of deployment infrastructure: Azure Container Apps via Bicep IaC, Docker containerization, CI/CD pipelines, and local development environment setup. Links to child pages for cloud deployment and local dev.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Cloud Deployment (Azure Container Apps)",
+      "purpose": "Documents the Bicep IaC modules (main.bicep, containerApp.bicep, containerAppsEnvironment.bicep, containerRegistry.bicep, postgresql.bicep), deployment parameters, the deploy.sh/setup.sh/destroy.sh scripts, the GitHub Actions deploy workflow, and the Dockerfile for the SvelteKit app.",
+      "parent": "Infrastructure and Deployment",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Local Development Environment",
+      "purpose": "Covers the Docker Compose setup for local development (Keycloak, PostgreSQL), Keycloak realm import (risk-management-realm.json with pre-configured users and roles), helper scripts (services-up.sh, services-down.sh, add-migration.sh), and VS Code workspace configuration.",
+      "parent": "Infrastructure and Deployment",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Developer Workflow and Tooling",
+      "purpose": "Explains the AI-assisted development workflow powered by the .windsurf directory: skills, workflows, backlog management, code style rules, and the OpenSpec change management system. Links to child pages for the agent system and coding standards.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Windsurf AI Agent System",
+      "purpose": "Documents the .windsurf orchestration framework: the feature lifecycle pipeline (create-user-story → refine-user-story → plan-implementation-blueprint → create-tasklist → execute-tasklist), all skills (analyse-bug, run-e2e, event-storming, skill-creator), workflow definitions, progress tracking via .progress.json files, and Approval Gates.",
+      "parent": "Developer Workflow and Tooling",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Coding Standards and Rules",
+      "purpose": "Covers all .windsurf/rules files: backend architecture rules (DDD layers, Clean Architecture), backend DDD rules, backend code style, backend testing rules, backend database rules, frontend code style (Svelte 5 runes), frontend testing rules, styling/CSS rules (Tailwind), and the database schema conventions.",
+      "parent": "Developer Workflow and Tooling",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "OpenSpec Change Management",
+      "purpose": "Explains the OpenSpec system in the openspec/ directory: how architectural changes are proposed (proposal.md), designed (design.md), specified (spec.md), tasked (tasks.md), and archived. Covers active change sets (bff-auth-gateway, customer-credit-profile, masstransit-saga, customer-read-model) and the archive of completed changes.",
+      "parent": "Developer Workflow and Tooling",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Glossary",
+      "purpose": "Definitions of all codebase-specific terms, German domain vocabulary, abbreviations, and architectural concepts that an onboarding engineer needs to understand. Each entry includes code pointers.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
     }
   ]
 }
