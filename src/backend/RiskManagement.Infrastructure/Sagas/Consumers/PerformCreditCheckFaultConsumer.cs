@@ -16,11 +16,11 @@ public class PerformCreditCheckFaultConsumer : IConsumer<Fault<PerformCreditChec
     public async Task Consume(ConsumeContext<Fault<PerformCreditCheck>> context)
     {
         var correlationId = context.Message.Message.CorrelationId;
-        
+
         // Extrahiere die Exception-Information für den Fehlergrund
         var exceptions = context.Message.Exceptions;
-        var reason = exceptions.Length > 0 
-            ? $"Credit check failed: {exceptions[0].Message}" 
+        var reason = exceptions.Length > 0
+            ? $"Credit check failed: {exceptions[0].Message}"
             : "Credit check failed with unknown error";
 
         await context.Publish(new ApplicationCreationFailed(correlationId, reason));

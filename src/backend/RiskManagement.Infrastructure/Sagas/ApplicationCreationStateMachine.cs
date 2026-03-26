@@ -77,6 +77,7 @@ public class ApplicationCreationStateMachine : MassTransitStateMachine<Applicati
     /// Dies ist das Start-Event, das die Saga auslöst.
     /// </summary>
     public Event<ApplicationCreationStarted> ApplicationCreationStarted { get; private set; } = null!;
+
     public Event<ApplicationUpdateStarted> ApplicationUpdateStarted { get; private set; } = null!;
 
     /// <summary>

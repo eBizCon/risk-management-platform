@@ -15,11 +15,11 @@ public class FetchCustomerProfileFaultConsumer : IConsumer<Fault<FetchCustomerPr
     public async Task Consume(ConsumeContext<Fault<FetchCustomerProfile>> context)
     {
         var correlationId = context.Message.Message.CorrelationId;
-        
+
         // Extrahiere die Exception-Information für den Fehlergrund
         var exceptions = context.Message.Exceptions;
-        var reason = exceptions.Length > 0 
-            ? $"Customer profile fetch failed: {exceptions[0].Message}" 
+        var reason = exceptions.Length > 0
+            ? $"Customer profile fetch failed: {exceptions[0].Message}"
             : "Customer profile fetch failed with unknown error";
 
         await context.Publish(new ApplicationCreationFailed(correlationId, reason));

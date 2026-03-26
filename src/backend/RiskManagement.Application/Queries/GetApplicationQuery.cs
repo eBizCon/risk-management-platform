@@ -14,7 +14,8 @@ public class GetApplicationHandler : IQueryHandler<GetApplicationQuery, Applicat
     private readonly IApplicationRepository _repository;
     private readonly ICustomerReadModelRepository _customerReadModelRepository;
 
-    public GetApplicationHandler(IApplicationRepository repository, ICustomerReadModelRepository customerReadModelRepository)
+    public GetApplicationHandler(IApplicationRepository repository,
+        ICustomerReadModelRepository customerReadModelRepository)
     {
         _repository = repository;
         _customerReadModelRepository = customerReadModelRepository;

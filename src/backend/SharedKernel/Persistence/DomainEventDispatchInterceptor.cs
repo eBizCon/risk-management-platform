@@ -10,7 +10,9 @@ public class DomainEventDispatchInterceptor : SaveChangesInterceptor
     private readonly IDispatcher _dispatcher;
 
     public DomainEventDispatchInterceptor(IDispatcher dispatcher)
-        => _dispatcher = dispatcher;
+    {
+        _dispatcher = dispatcher;
+    }
 
     public override async ValueTask<InterceptionResult<int>> SavingChangesAsync(
         DbContextEventData eventData,

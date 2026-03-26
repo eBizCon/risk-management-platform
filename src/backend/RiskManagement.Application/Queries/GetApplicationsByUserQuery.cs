@@ -13,7 +13,8 @@ public class GetApplicationsByUserHandler : IQueryHandler<GetApplicationsByUserQ
     private readonly IApplicationRepository _repository;
     private readonly ICustomerReadModelRepository _customerReadModelRepository;
 
-    public GetApplicationsByUserHandler(IApplicationRepository repository, ICustomerReadModelRepository customerReadModelRepository)
+    public GetApplicationsByUserHandler(IApplicationRepository repository,
+        ICustomerReadModelRepository customerReadModelRepository)
     {
         _repository = repository;
         _customerReadModelRepository = customerReadModelRepository;

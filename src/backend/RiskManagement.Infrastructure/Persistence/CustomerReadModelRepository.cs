@@ -26,7 +26,8 @@ public class CustomerReadModelRepository : ICustomerReadModelRepository
         return !await _dbContext.CustomerReadModels.AnyAsync(ct);
     }
 
-    public async Task<Dictionary<int, string>> GetCustomerNamesAsync(IEnumerable<int> customerIds, CancellationToken ct = default)
+    public async Task<Dictionary<int, string>> GetCustomerNamesAsync(IEnumerable<int> customerIds,
+        CancellationToken ct = default)
     {
         var idList = customerIds.Distinct().ToList();
         return await _dbContext.CustomerReadModels
