@@ -58,21 +58,22 @@ Represents a back-and-forth information request between processor and applicant.
 ┌──────────┐  Saga completes   ┌───────┐  Submit()   ┌───────────┐      │
 │Processing │ ───────────────► │ Draft │ ──────────► │ Submitted │      │
 └──────────┘   Finalize()      └───────┘              └─────┬─────┘      │
-     │                            │                         │            │
-     │ MarkFailed()               │ Delete()                ├── Approve() ──► ┌──────────┐
-     ▼                            ▼                         │                 │ Approved │
-┌────────┐                   (removed)                      │                 └──────────┘
-│ Failed │                                                  │
-└────────┘                                                  ├── Reject() ───► ┌──────────┐
-     │                                                      │                 │ Rejected │
-     │ Delete()                                             │                 └──────────┘
-     ▼                                                      │
-  (removed)                                                 │ RequestInformation()
-                                                            ▼
-                                                ┌───────────────────────┐
-                                                │  NeedsInformation     │
-                                                └───────────┬───────────┘
-                                                            │
+     ▲                            │ │                       │            │
+     │                            │ │                       │            │
+     │ SetProcessing()            │ │ Delete()              ├── Approve() ──► ┌──────────┐
+     │ (Update/Submit             │ ▼                       │                 │ Approved │
+     │  via Saga)                 │(removed)                │                 └──────────┘
+     │                            │                         │
+     └────────────────────────────┘                         ├── Reject() ───► ┌──────────┐
+                                                            │                 │ Rejected │
+                                                            │                 └──────────┘
+  ┌────────┐                                                │
+  │ Failed │◄── MarkFailed() ── (from Processing)          │ RequestInformation()
+  └────────┘                                                ▼
+     │                                          ┌───────────────────────┐
+     │ Delete()                                 │  NeedsInformation     │
+     ▼                                          └───────────┬───────────┘
+  (removed)                                                 │
                                                             │ AnswerInquiry()
                                                             ▼
                                                 ┌───────────────────────┐
@@ -99,10 +100,11 @@ Represents a back-and-forth information request between processor and applicant.
 |-------------------|---------------------|------------------------|----------------------------------------------------|
 | Processing        | Draft               | `Finalize()`           | Status == Processing                               |
 | Processing        | Failed              | `MarkFailed()`         | Status == Processing                               |
+| Draft             | Processing          | `SetProcessing()`      | Status == Draft                                    |
 | Draft             | Submitted           | `Submit()`             | Status == Draft                                    |
 | Draft             | *(deleted)*         | `Delete()`             | Status == Draft                                    |
 | Failed            | *(deleted)*         | `Delete()`             | Status == Failed                                   |
-| Draft             | Draft               | `UpdateDetails()`      | Status == Draft (re-score, no transition)          |
+| Draft             | Draft               | `UpdateDetails()`      | Status == Draft (re-score, no status transition)   |
 | Submitted         | Approved            | `Approve()`            | Status == Submitted or Resubmitted                 |
 | Submitted         | Rejected            | `Reject()`             | Status == Submitted or Resubmitted                 |
 | Submitted         | NeedsInformation    | `RequestInformation()` | Status == Submitted or Resubmitted; no open inquiry|
@@ -125,9 +127,9 @@ All commands are dispatched via `IDispatcher.SendAsync()`. Handlers implement `I
 |----------------------------------|----------------------------------|----------------------------------------------------------------------------------------|
 | `CreateApplicationCommand`       | `POST /api/applications`         | Creates application in `Processing` status; publishes `ApplicationCreationStarted` to RabbitMQ (AutoSubmit=false) |
 | `CreateAndSubmitApplicationCommand` | `POST /api/applications?submit=true` | Same as above but with `AutoSubmit=true` — saga will auto-submit after finalization |
-| `UpdateApplicationCommand`       | `PUT /api/applications/{id}`     | Updates draft application details; re-fetches customer profile & credit report; re-scores |
-| `UpdateAndSubmitApplicationCommand` | `PUT /api/applications/{id}?submit=true` | Updates + submits in one operation; raises `ApplicationSubmittedEvent`        |
-| `SubmitApplicationCommand`       | `POST /api/applications/{id}/submit` | Submits a draft application; re-scores; raises `ApplicationSubmittedEvent`         |
+| `UpdateApplicationCommand`       | `PUT /api/applications/{id}`     | Sets draft to `Processing`; publishes `ApplicationUpdateStarted` (AutoSubmit=false) — saga re-fetches profile, credit report, re-scores |
+| `UpdateAndSubmitApplicationCommand` | `PUT /api/applications/{id}?submit=true` | Sets draft to `Processing`; publishes `ApplicationUpdateStarted` (AutoSubmit=true) — saga re-fetches, re-scores, auto-submits |
+| `SubmitApplicationCommand`       | `POST /api/applications/{id}/submit` | Sets draft to `Processing`; publishes `ApplicationUpdateStarted` (AutoSubmit=true) — saga re-fetches, re-scores, auto-submits |
 | `DeleteApplicationCommand`       | `DELETE /api/applications/{id}`  | Deletes draft or failed application; raises `ApplicationDeletedEvent`                  |
 | `ApproveApplicationCommand`      | `POST /api/processor/{id}/approve` | Approves submitted/resubmitted application; raises `ApplicationDecidedEvent("approved")` |
 | `RejectApplicationCommand`       | `POST /api/processor/{id}/reject`  | Rejects submitted/resubmitted application; raises `ApplicationDecidedEvent("rejected")` |
@@ -185,11 +187,23 @@ The creation of an application is orchestrated asynchronously via a **MassTransi
 
 ### Saga State Machine: `ApplicationCreationStateMachine`
 
+The saga supports **two entry paths** via the `OperationType` field on the saga state:
+
+- **Create** (`ApplicationCreationStarted`) — New application; saga finalizes via `FinalizeApplication`
+- **Update** (`ApplicationUpdateStarted`) — Existing draft; saga finalizes via `FinalizeApplicationUpdate`
+
+Both paths share the same intermediate steps (FetchCustomerProfile → PerformCreditCheck) and the same state machine states.
+
 **State Machine States:**
 
 ```
 Initial ──► FetchingCustomer ──► CheckingCredit ──► Finalizing ──► Completed
-                                                                       │
+                                                         │
+                                            ┌─────────────┤
+                                            │ Create:     │ Update:
+                                            │ Finalize-   │ FinalizeApplication-
+                                            │ Application │ Update
+                                            └─────────────┘
                         ◄──────── Failed ◄─── (from any state) ────────┘
 ```
 
@@ -259,14 +273,17 @@ Initial ──► FetchingCustomer ──► CheckingCredit ──► Finalizing
 
 | Message                        | Type     | Publisher                          | Consumer / Handler                    | Payload                                                                 |
 |-------------------------------|----------|------------------------------------|---------------------------------------|-------------------------------------------------------------------------|
-| `ApplicationCreationStarted`  | Event    | Command Handler (via MassTransit)  | Saga State Machine                    | CorrelationId, ApplicationId, CustomerId, Income, FixedCosts, DesiredRate, UserEmail, AutoSubmit |
+| `ApplicationCreationStarted`  | Event    | `CreateApplicationHandler` (via MassTransit)  | Saga State Machine              | CorrelationId, ApplicationId, CustomerId, Income, FixedCosts, DesiredRate, UserEmail, AutoSubmit |
 | `FetchCustomerProfile`        | Command  | Saga State Machine                 | `FetchCustomerProfileConsumer`        | CorrelationId, CustomerId                                               |
 | `CustomerProfileFetched`      | Event    | `FetchCustomerProfileConsumer`     | Saga State Machine                    | CorrelationId, FirstName, LastName, EmploymentStatus, DateOfBirth, Street, City, ZipCode, Country |
 | `PerformCreditCheck`          | Command  | Saga State Machine                 | `PerformCreditCheckConsumer`          | CorrelationId, FirstName, LastName, DateOfBirth, Street, City, ZipCode, Country |
 | `CreditCheckCompleted`        | Event    | `PerformCreditCheckConsumer`       | Saga State Machine                    | CorrelationId, HasPaymentDefault, CreditScore, CheckedAt, Provider      |
-| `FinalizeApplication`         | Command  | Saga State Machine                 | `FinalizeApplicationConsumer`         | CorrelationId, ApplicationId, CustomerId, Income, FixedCosts, DesiredRate, UserEmail, EmploymentStatus, HasPaymentDefault, CreditScore, CreditCheckedAt, CreditProvider, AutoSubmit |
-| `ApplicationCreationCompleted`| Event    | `FinalizeApplicationConsumer`      | Saga State Machine                    | CorrelationId                                                           |
-| `ApplicationCreationFailed`   | Event    | Any Consumer (on error)            | Saga State Machine                    | CorrelationId, Reason                                                   |
+| `FinalizeApplication`         | Command  | Saga (if OperationType=Create)     | `FinalizeApplicationConsumer`         | CorrelationId, ApplicationId, CustomerId, Income, FixedCosts, DesiredRate, UserEmail, EmploymentStatus, HasPaymentDefault, CreditScore, CreditCheckedAt, CreditProvider, AutoSubmit |
+| `ApplicationUpdateStarted`    | Event    | `UpdateApplicationHandler` / `UpdateAndSubmitApplicationHandler` / `SubmitApplicationHandler` | Saga State Machine | CorrelationId, ApplicationId, CustomerId, Income, FixedCosts, DesiredRate, UserEmail, AutoSubmit |
+| `FinalizeApplicationUpdate`   | Command  | Saga (if OperationType=Update)     | `FinalizeApplicationUpdateConsumer`   | CorrelationId, ApplicationId, CustomerId, Income, FixedCosts, DesiredRate, UserEmail, EmploymentStatus, HasPaymentDefault, CreditScore, CreditCheckedAt, CreditProvider, AutoSubmit |
+| `MarkApplicationFailed`       | Command  | Saga (on `ApplicationCreationFailed`) | `MarkApplicationFailedConsumer`    | CorrelationId, ApplicationId, Reason                                    |
+| `ApplicationCreationCompleted`| Event    | `FinalizeApplicationConsumer` or `FinalizeApplicationUpdateConsumer` | Saga State Machine | CorrelationId                                                    |
+| `ApplicationCreationFailed`   | Event    | Any Consumer / Fault Consumer      | Saga State Machine                    | CorrelationId, Reason                                                   |
 
 ### Saga Persistence
 
@@ -307,8 +324,13 @@ Additionally, a `CustomerReadModelSyncService` (BackgroundService) performs an i
 | Consumer                          | Message Type                            | Category              |
 |-----------------------------------|-----------------------------------------|-----------------------|
 | `FetchCustomerProfileConsumer`    | `FetchCustomerProfile`                  | Saga step             |
+| `FetchCustomerProfileFaultConsumer` | `Fault<FetchCustomerProfile>`         | Fault handler         |
 | `PerformCreditCheckConsumer`      | `PerformCreditCheck`                    | Saga step             |
-| `FinalizeApplicationConsumer`     | `FinalizeApplication`                   | Saga step             |
+| `PerformCreditCheckFaultConsumer` | `Fault<PerformCreditCheck>`             | Fault handler         |
+| `FinalizeApplicationConsumer`     | `FinalizeApplication`                   | Saga step (Create)    |
+| `FinalizeApplicationUpdateConsumer` | `FinalizeApplicationUpdate`           | Saga step (Update)    |
+| `FinalizeApplicationUpdateFaultConsumer` | `Fault<FinalizeApplicationUpdate>` | Fault handler         |
+| `MarkApplicationFailedConsumer`   | `MarkApplicationFailed`                 | Error handling        |
 | `CustomerCreatedConsumer`         | `CustomerCreatedIntegrationEvent`       | Cross-BC sync         |
 | `CustomerUpdatedConsumer`         | `CustomerUpdatedIntegrationEvent`       | Cross-BC sync         |
 | `CustomerActivatedConsumer`       | `CustomerActivatedIntegrationEvent`     | Cross-BC sync         |
