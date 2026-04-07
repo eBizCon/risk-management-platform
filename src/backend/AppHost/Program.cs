@@ -19,6 +19,7 @@ var keycloak = builder.AddKeycloak("keycloak", 8081, kcAdmin, kcPassword)
     .WithoutHttpsCertificate();
 #pragma warning restore ASPIRECERTIFICATES001
 
+
 var rabbitmqUser = builder.AddParameter("rabbitmq-user", "risk");
 var rabbitmqPassword = builder.AddParameter("rabbitmq-password", "risk", secret: true);
 
