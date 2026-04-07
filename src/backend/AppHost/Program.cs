@@ -12,9 +12,12 @@ var customerDb = postgres.AddDatabase("customer-management");
 var kcAdmin = builder.AddParameter("kc-admin", "admin");
 var kcPassword = builder.AddParameter("kc-password", "admin", secret: true);
 
+#pragma warning disable ASPIRECERTIFICATES001
 var keycloak = builder.AddKeycloak("keycloak", 8081, kcAdmin, kcPassword)
     .WithDataVolume()
-    .WithRealmImport("../../../dev/keycloak/import");
+    .WithRealmImport("../../../dev/keycloak/import")
+    .WithoutHttpsCertificate();
+#pragma warning restore ASPIRECERTIFICATES001
 
 var rabbitmqUser = builder.AddParameter("rabbitmq-user", "risk");
 var rabbitmqPassword = builder.AddParameter("rabbitmq-password", "risk", secret: true);
