@@ -14,7 +14,8 @@ var kcPassword = builder.AddParameter("kc-password", "admin", secret: true);
 
 var keycloak = builder.AddKeycloak("keycloak", 8081, kcAdmin, kcPassword)
     .WithDataVolume()
-    .WithRealmImport("../../../dev/keycloak/import");
+    .WithRealmImport("../../../dev/keycloak/import")
+    .WithEnvironment("KC_HTTPS_MANAGEMENT_ENABLED", "false");
 
 var rabbitmqUser = builder.AddParameter("rabbitmq-user", "risk");
 var rabbitmqPassword = builder.AddParameter("rabbitmq-password", "risk", secret: true);
