@@ -1,9 +1,10 @@
 import type { PageLoad } from './$types';
+import type { Customer } from '$lib/types';
 import { handleApiResponse } from '$lib/api';
 
 export const load: PageLoad = async ({ fetch, url }) => {
 	const res = await fetch('/api/customers');
-	const body = await handleApiResponse<{ customers?: unknown[] } | unknown[]>(
+	const body = await handleApiResponse<{ customers?: Customer[] } | Customer[]>(
 		res,
 		url,
 		'Fehler beim Laden der Kunden'
