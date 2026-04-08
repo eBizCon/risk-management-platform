@@ -9,7 +9,11 @@
 		isSubmitting?: boolean;
 	}
 
-	let { application = null, errors = $bindable({}), isSubmitting = $bindable(false) }: Props = $props();
+	let {
+		application = null,
+		errors = $bindable({}),
+		isSubmitting = $bindable(false)
+	}: Props = $props();
 
 	let showConfirmDialog = $state(false);
 	let pendingAction = $state<'submit' | null>(null);
@@ -122,7 +126,15 @@
 	}
 </script>
 
-<form onsubmit={(e) => { e.preventDefault(); handleSaveClick(); }} class="space-y-6" data-testid="application-form" bind:this={formRef}>
+<form
+	onsubmit={(e) => {
+		e.preventDefault();
+		handleSaveClick();
+	}}
+	class="space-y-6"
+	data-testid="application-form"
+	bind:this={formRef}
+>
 	{#if application?.id}
 		<input type="hidden" name="id" value={application.id} />
 	{/if}
@@ -167,7 +179,9 @@
 		{#if customers.length === 0 && !customersLoading}
 			<p class="mt-1 text-sm text-secondary">
 				Keine aktiven Kunden vorhanden.
-				<a href="/customers/new" class="text-brand-primary hover:text-brand-primary-hover">Neuen Kunden anlegen</a>
+				<a href="/customers/new" class="text-brand-primary hover:text-brand-primary-hover"
+					>Neuen Kunden anlegen</a
+				>
 			</p>
 		{/if}
 		{#if errors.customerId}

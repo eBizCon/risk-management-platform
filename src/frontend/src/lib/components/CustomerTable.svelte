@@ -96,7 +96,8 @@
 						{customer.phone}
 					</td>
 					<td class="px-4 py-4 whitespace-nowrap text-sm text-secondary">
-						{customer.zipCode} {customer.city}
+						{customer.zipCode}
+						{customer.city}
 					</td>
 					<td class="px-4 py-4 whitespace-nowrap">
 						<span

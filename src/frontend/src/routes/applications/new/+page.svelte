@@ -9,21 +9,18 @@
 </svelte:head>
 
 <RoleGuard requiredRole="applicant">
-<div class="space-y-6">
-	<div class="flex flex-col sm:flex-row sm:items-center gap-3">
-		<a
-			href="/applications"
-			class="back-link inline-flex items-center w-full sm:w-auto"
-		>
-			<ArrowLeft class="w-5 h-5 mr-1" />
-			Zurück
-		</a>
-	</div>
+	<div class="space-y-6">
+		<div class="flex flex-col sm:flex-row sm:items-center gap-3">
+			<a href="/applications" class="back-link inline-flex items-center w-full sm:w-auto">
+				<ArrowLeft class="w-5 h-5 mr-1" />
+				Zurück
+			</a>
+		</div>
 
-	<div class="card p-6">
-		<h1 class="text-2xl font-bold text-primary mb-6">Neuen Kreditantrag erstellen</h1>
-		
-		<ApplicationForm />
+		<div class="card p-6">
+			<h1 class="text-2xl font-bold text-primary mb-6">Neuen Kreditantrag erstellen</h1>
+
+			<ApplicationForm />
+		</div>
 	</div>
-</div>
 </RoleGuard>

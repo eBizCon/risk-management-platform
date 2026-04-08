@@ -79,7 +79,10 @@
 
 <form
 	bind:this={formRef}
-	onsubmit={(e) => { e.preventDefault(); submitForm(); }}
+	onsubmit={(e) => {
+		e.preventDefault();
+		submitForm();
+	}}
 	class="space-y-6"
 	data-testid="customer-form"
 >
@@ -115,7 +118,9 @@
 					data-testid="customer-firstName"
 				/>
 				{#if errors.firstName}
-					<p class="mt-1 error-text" data-testid="customer-firstName-error">{errors.firstName[0]}</p>
+					<p class="mt-1 error-text" data-testid="customer-firstName-error">
+						{errors.firstName[0]}
+					</p>
 				{/if}
 			</div>
 			<div>
@@ -174,7 +179,9 @@
 					data-testid="customer-dateOfBirth"
 				/>
 				{#if errors.dateOfBirth}
-					<p class="mt-1 error-text" data-testid="customer-dateOfBirth-error">{errors.dateOfBirth[0]}</p>
+					<p class="mt-1 error-text" data-testid="customer-dateOfBirth-error">
+						{errors.dateOfBirth[0]}
+					</p>
 				{/if}
 			</div>
 		</div>
@@ -192,13 +199,23 @@
 				data-testid="customer-employmentStatus"
 			>
 				<option value="">Bitte wählen...</option>
-				<option value="employed" selected={customer?.employmentStatus === 'employed'}>{employmentStatusLabels.employed}</option>
-				<option value="self_employed" selected={customer?.employmentStatus === 'self_employed'}>{employmentStatusLabels.self_employed}</option>
-				<option value="unemployed" selected={customer?.employmentStatus === 'unemployed'}>{employmentStatusLabels.unemployed}</option>
-				<option value="retired" selected={customer?.employmentStatus === 'retired'}>{employmentStatusLabels.retired}</option>
+				<option value="employed" selected={customer?.employmentStatus === 'employed'}
+					>{employmentStatusLabels.employed}</option
+				>
+				<option value="self_employed" selected={customer?.employmentStatus === 'self_employed'}
+					>{employmentStatusLabels.self_employed}</option
+				>
+				<option value="unemployed" selected={customer?.employmentStatus === 'unemployed'}
+					>{employmentStatusLabels.unemployed}</option
+				>
+				<option value="retired" selected={customer?.employmentStatus === 'retired'}
+					>{employmentStatusLabels.retired}</option
+				>
 			</select>
 			{#if errors.employmentStatus}
-				<p class="mt-1 error-text" data-testid="customer-employmentStatus-error">{errors.employmentStatus[0]}</p>
+				<p class="mt-1 error-text" data-testid="customer-employmentStatus-error">
+					{errors.employmentStatus[0]}
+				</p>
 			{/if}
 		</div>
 	</div>

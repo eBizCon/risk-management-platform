@@ -2,7 +2,8 @@ import type { Handle } from '@sveltejs/kit';
 import { env } from '$env/dynamic/private';
 import { readSessionCookie } from '$lib/server/auth/session';
 
-const getRiskManagementApiUrl = (): string => env.RISK_MANAGEMENT_API_URL ?? 'http://localhost:5227';
+const getRiskManagementApiUrl = (): string =>
+	env.RISK_MANAGEMENT_API_URL ?? 'http://localhost:5227';
 const getCustomerServiceUrl = (): string => env.CUSTOMER_SERVICE_URL ?? 'http://localhost:5000';
 const getServiceApiKey = (): string => env.SERVICE_API_KEY ?? '';
 
@@ -54,9 +55,10 @@ export const handle: Handle = async ({ event, resolve }) => {
 			headers.set('Accept', accept);
 		}
 
-		const body = event.request.method !== 'GET' && event.request.method !== 'HEAD'
-			? await event.request.arrayBuffer()
-			: undefined;
+		const body =
+			event.request.method !== 'GET' && event.request.method !== 'HEAD'
+				? await event.request.arrayBuffer()
+				: undefined;
 
 		const response = await fetch(targetUrl.toString(), {
 			method: event.request.method,

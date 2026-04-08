@@ -13,7 +13,9 @@ test.describe('Risikomanager (Risk Manager) Workflows', () => {
 			await authenticatedPage.goto('/risk-manager/scoring-config');
 			await expect(authenticatedPage.getByTestId('scoring-config-green-threshold')).toBeVisible();
 			await expect(authenticatedPage.getByTestId('scoring-config-yellow-threshold')).toBeVisible();
-			await expect(authenticatedPage.getByTestId('scoring-config-penalty-payment-default')).toBeVisible();
+			await expect(
+				authenticatedPage.getByTestId('scoring-config-penalty-payment-default')
+			).toBeVisible();
 		});
 
 		test('should show save button', async ({ authenticatedPage }) => {

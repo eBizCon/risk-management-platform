@@ -33,6 +33,10 @@ export const load: PageLoad = async ({ fetch, url }) => {
 		return { config: null };
 	}
 
-	const config = await handleApiResponse<ScoringConfig>(res, url, 'Fehler beim Laden der Scoring-Konfiguration');
+	const config = await handleApiResponse<ScoringConfig>(
+		res,
+		url,
+		'Fehler beim Laden der Scoring-Konfiguration'
+	);
 	return { config };
 };
