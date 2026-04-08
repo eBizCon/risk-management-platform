@@ -49,6 +49,11 @@ public class ScoringConfigVersionConfiguration : IEntityTypeConfiguration<Scorin
             config.Property(c => c.PenaltyRetired).HasColumnName("penalty_retired").IsRequired();
             config.Property(c => c.PenaltyUnemployed).HasColumnName("penalty_unemployed").IsRequired();
             config.Property(c => c.PenaltyPaymentDefault).HasColumnName("penalty_payment_default").IsRequired();
+
+            config.Property(c => c.CreditScoreGood).HasColumnName("credit_score_good").IsRequired();
+            config.Property(c => c.CreditScoreModerate).HasColumnName("credit_score_moderate").IsRequired();
+            config.Property(c => c.PenaltyModerateCreditScore).HasColumnName("penalty_moderate_credit_score").IsRequired();
+            config.Property(c => c.PenaltyLowCreditScore).HasColumnName("penalty_low_credit_score").IsRequired();
         });
 
         entity.Property(e => e.CreatedBy)

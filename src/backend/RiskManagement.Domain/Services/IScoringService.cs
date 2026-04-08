@@ -12,5 +12,6 @@ public interface IScoringService
         Money desiredRate,
         EmploymentStatus employmentStatus,
         bool hasPaymentDefault,
+        int? creditScore,
         ScoringConfig config);
 }

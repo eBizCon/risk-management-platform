@@ -27,6 +27,10 @@ public static class ScoringConfigMapper
             version.Config.PenaltyRetired,
             version.Config.PenaltyUnemployed,
             version.Config.PenaltyPaymentDefault,
+            version.Config.CreditScoreGood,
+            version.Config.CreditScoreModerate,
+            version.Config.PenaltyModerateCreditScore,
+            version.Config.PenaltyLowCreditScore,
             version.CreatedBy.Value,
             version.CreatedAt);
     }

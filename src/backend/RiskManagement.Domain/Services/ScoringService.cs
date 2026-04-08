@@ -12,6 +12,7 @@ public class ScoringService : IScoringService
         Money desiredRate,
         EmploymentStatus employmentStatus,
         bool hasPaymentDefault,
+        int? creditScore,
         ScoringConfig config)
     {
         var reasons = new List<string>();
@@ -94,6 +95,28 @@ public class ScoringService : IScoringService
         else
         {
             reasons.Add("Keine früheren Zahlungsverzüge - positive Zahlungshistorie");
+        }
+
+        if (creditScore.HasValue)
+        {
+            if (creditScore.Value >= config.CreditScoreGood)
+            {
+                reasons.Add("Guter externer Bonitätsscore");
+            }
+            else if (creditScore.Value >= config.CreditScoreModerate)
+            {
+                score -= config.PenaltyModerateCreditScore;
+                reasons.Add("Moderater externer Bonitätsscore");
+            }
+            else
+            {
+                score -= config.PenaltyLowCreditScore;
+                reasons.Add("Niedriger externer Bonitätsscore beeinträchtigt die Bewertung");
+            }
+        }
+        else
+        {
+            reasons.Add("Kein externer Bonitätsscore verfügbar");
         }
 
         score = Math.Max(0, Math.Min(100, score));
