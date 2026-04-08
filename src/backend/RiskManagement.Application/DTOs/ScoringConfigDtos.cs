@@ -21,6 +21,10 @@ public record ScoringConfigResponse(
     int PenaltyRetired,
     int PenaltyUnemployed,
     int PenaltyPaymentDefault,
+    int CreditScoreGood,
+    int CreditScoreModerate,
+    int PenaltyModerateCreditScore,
+    int PenaltyLowCreditScore,
     string CreatedBy,
     DateTime CreatedAt);
 
@@ -42,6 +46,10 @@ public record ScoringConfigUpdateDto(
     int PenaltySelfEmployed,
     int PenaltyRetired,
     int PenaltyUnemployed,
-    int PenaltyPaymentDefault);
+    int PenaltyPaymentDefault,
+    int CreditScoreGood,
+    int CreditScoreModerate,
+    int PenaltyModerateCreditScore,
+    int PenaltyLowCreditScore);
 
 public record RescoreResult(int RescoredCount);

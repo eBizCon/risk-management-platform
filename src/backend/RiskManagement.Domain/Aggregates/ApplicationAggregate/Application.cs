@@ -165,11 +165,14 @@ public class Application : AggregateRoot<ApplicationId>
         if (Status != ApplicationStatus.Submitted && Status != ApplicationStatus.Resubmitted)
             throw new InvalidStatusTransitionException(Status, ApplicationStatus.Approved);
 
+        if (TrafficLight != ValueObjects.TrafficLight.Green && string.IsNullOrWhiteSpace(comment))
+            throw new DomainException("Bei Ampelstatus Gelb oder Rot ist eine Begründung für die Genehmigung erforderlich");
+
         Status = ApplicationStatus.Approved;
         ProcessorComment = comment;
         ProcessedAt = DateTime.UtcNow;
 
-        AddDomainEvent(new ApplicationDecidedEvent(Id, "approved"));
+        AddDomainEvent(new ApplicationDecidedEvent(Id, DecisionType.Approved));
     }
 
     public void Reject(string? comment = null)
@@ -177,11 +180,14 @@ public class Application : AggregateRoot<ApplicationId>
         if (Status != ApplicationStatus.Submitted && Status != ApplicationStatus.Resubmitted)
             throw new InvalidStatusTransitionException(Status, ApplicationStatus.Rejected);
 
+        if (TrafficLight == ValueObjects.TrafficLight.Green && string.IsNullOrWhiteSpace(comment))
+            throw new DomainException("Bei Ampelstatus Grün ist eine Begründung für die Ablehnung erforderlich");
+
         Status = ApplicationStatus.Rejected;
         ProcessorComment = comment;
         ProcessedAt = DateTime.UtcNow;
 
-        AddDomainEvent(new ApplicationDecidedEvent(Id, "rejected"));
+        AddDomainEvent(new ApplicationDecidedEvent(Id, DecisionType.Rejected));
     }
 
     public void UpdateDetails(
@@ -229,6 +235,12 @@ public class Application : AggregateRoot<ApplicationId>
     public void Rescore(IScoringService scoringService, ScoringConfig scoringConfig,
         ScoringConfigVersionId scoringConfigVersionId)
     {
+        if (Status == ApplicationStatus.Approved ||
+            Status == ApplicationStatus.Rejected ||
+            Status == ApplicationStatus.Failed ||
+            Status == ApplicationStatus.Processing)
+            throw new DomainException("Abgeschlossene oder in Verarbeitung befindliche Anträge können nicht neu bewertet werden");
+
         ApplyScoring(scoringService, scoringConfig, scoringConfigVersionId);
     }
 
@@ -274,9 +286,10 @@ public class Application : AggregateRoot<ApplicationId>
         var hasPaymentDefault = CreditReport?.HasPaymentDefault
                                 ?? throw new DomainException("CreditReport muss vorhanden sein für Scoring");
 
+        var creditScore = CreditReport?.CreditScore;
         var result =
             scoringService.CalculateScore(Income, FixedCosts, DesiredRate, EmploymentStatus,
-                hasPaymentDefault, scoringConfig);
+                hasPaymentDefault, creditScore, scoringConfig);
         Score = result.Score;
         TrafficLight = result.TrafficLight;
         ScoringReasons = JsonSerializer.Serialize(result.Reasons);

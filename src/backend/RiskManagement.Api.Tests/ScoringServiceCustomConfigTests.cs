@@ -27,7 +27,9 @@ public class ScoringServiceCustomConfigTests
         decimal rateGood = 0.3m, decimal rateModerate = 0.5m, decimal rateHeavy = 0.7m,
         int penaltyModerateRate = 10, int penaltyHeavyRate = 25, int penaltyExcessiveRate = 40,
         int penaltySelfEmployed = 10, int penaltyRetired = 5, int penaltyUnemployed = 35,
-        int penaltyPaymentDefault = 25)
+        int penaltyPaymentDefault = 25,
+        int creditScoreGood = 400, int creditScoreModerate = 250,
+        int penaltyModerateCreditScore = 10, int penaltyLowCreditScore = 20)
     {
         return ScoringConfig.Create(
             greenThreshold, yellowThreshold,
@@ -35,7 +37,8 @@ public class ScoringServiceCustomConfigTests
             penaltyModerateRatio, penaltyLimitedRatio, penaltyCriticalRatio,
             rateGood, rateModerate, rateHeavy,
             penaltyModerateRate, penaltyHeavyRate, penaltyExcessiveRate,
-            penaltySelfEmployed, penaltyRetired, penaltyUnemployed, penaltyPaymentDefault);
+            penaltySelfEmployed, penaltyRetired, penaltyUnemployed, penaltyPaymentDefault,
+            creditScoreGood, creditScoreModerate, penaltyModerateCreditScore, penaltyLowCreditScore);
     }
 
     [Fact]
@@ -45,9 +48,9 @@ public class ScoringServiceCustomConfigTests
         var strictConfig = CreateCustomConfig(penaltyPaymentDefault: 50);
 
         var defaultResult =
-            _scoringService.CalculateScore(M(4000), M(1500), Mp(500), EmploymentStatus.Employed, true, defaultConfig);
+            _scoringService.CalculateScore(M(4000), M(1500), Mp(500), EmploymentStatus.Employed, true, null, defaultConfig);
         var strictResult =
-            _scoringService.CalculateScore(M(4000), M(1500), Mp(500), EmploymentStatus.Employed, true, strictConfig);
+            _scoringService.CalculateScore(M(4000), M(1500), Mp(500), EmploymentStatus.Employed, true, null, strictConfig);
 
         strictResult.Score.Should().BeLessThan(defaultResult.Score);
     }
@@ -59,9 +62,9 @@ public class ScoringServiceCustomConfigTests
         var strictConfig = CreateCustomConfig(penaltyUnemployed: 50);
 
         var defaultResult = _scoringService.CalculateScore(M(4000), M(1500), Mp(500), EmploymentStatus.Unemployed,
-            false, defaultConfig);
+            false, null, defaultConfig);
         var strictResult = _scoringService.CalculateScore(M(4000), M(1500), Mp(500), EmploymentStatus.Unemployed, false,
-            strictConfig);
+            null, strictConfig);
 
         strictResult.Score.Should().BeLessThan(defaultResult.Score);
     }
@@ -73,9 +76,9 @@ public class ScoringServiceCustomConfigTests
         var lenientConfig = CreateCustomConfig(60, 30);
 
         var defaultResult = _scoringService.CalculateScore(M(4000), M(2000), Mp(500), EmploymentStatus.SelfEmployed,
-            false, defaultConfig);
+            false, null, defaultConfig);
         var lenientResult = _scoringService.CalculateScore(M(4000), M(2000), Mp(500), EmploymentStatus.SelfEmployed,
-            false, lenientConfig);
+            false, null, lenientConfig);
 
         defaultResult.Score.Should().Be(lenientResult.Score);
 
@@ -96,7 +99,7 @@ public class ScoringServiceCustomConfigTests
             penaltyPaymentDefault: 0);
 
         var result = _scoringService.CalculateScore(M(2000), M(1800), Mp(150), EmploymentStatus.Unemployed, true,
-            zeroPenaltyConfig);
+            null, zeroPenaltyConfig);
 
         result.Score.Should().Be(100);
     }
@@ -108,9 +111,9 @@ public class ScoringServiceCustomConfigTests
         var highPenalty = CreateCustomConfig(penaltySelfEmployed: 20);
 
         var lowResult = _scoringService.CalculateScore(M(5000), M(2000), Mp(500), EmploymentStatus.SelfEmployed, false,
-            lowPenalty);
+            null, lowPenalty);
         var highResult = _scoringService.CalculateScore(M(5000), M(2000), Mp(500), EmploymentStatus.SelfEmployed, false,
-            highPenalty);
+            null, highPenalty);
 
         (lowResult.Score - highResult.Score).Should().Be(15);
     }
@@ -125,7 +128,7 @@ public class ScoringServiceCustomConfigTests
             penaltyPaymentDefault: 80);
 
         var result = _scoringService.CalculateScore(M(2000), M(1800), Mp(150), EmploymentStatus.Unemployed, true,
-            strictConfig);
+            null, strictConfig);
 
         result.Score.Should().BeInRange(0, 100);
     }

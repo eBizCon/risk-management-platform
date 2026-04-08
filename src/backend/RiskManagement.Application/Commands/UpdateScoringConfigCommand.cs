@@ -41,7 +41,11 @@ public class UpdateScoringConfigHandler : ICommandHandler<UpdateScoringConfigCom
             command.Dto.PenaltySelfEmployed,
             command.Dto.PenaltyRetired,
             command.Dto.PenaltyUnemployed,
-            command.Dto.PenaltyPaymentDefault);
+            command.Dto.PenaltyPaymentDefault,
+            command.Dto.CreditScoreGood,
+            command.Dto.CreditScoreModerate,
+            command.Dto.PenaltyModerateCreditScore,
+            command.Dto.PenaltyLowCreditScore);
 
         var version = ScoringConfigVersion.Create(
             nextVersion,

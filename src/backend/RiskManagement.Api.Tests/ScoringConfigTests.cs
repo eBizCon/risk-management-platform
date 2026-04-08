@@ -15,6 +15,10 @@ public class ScoringConfigTests
         config.YellowThreshold.Should().Be(50);
         config.IncomeRatioGood.Should().Be(0.5m);
         config.PenaltyPaymentDefault.Should().Be(25);
+        config.CreditScoreGood.Should().Be(400);
+        config.CreditScoreModerate.Should().Be(250);
+        config.PenaltyModerateCreditScore.Should().Be(10);
+        config.PenaltyLowCreditScore.Should().Be(20);
     }
 
     [Fact]
@@ -27,11 +31,16 @@ public class ScoringConfigTests
             0.2m, 0.4m, 0.6m,
             5, 15, 30,
             8, 3, 30,
-            20);
+            20,
+            450, 300, 15, 25);
 
         config.GreenThreshold.Should().Be(80);
         config.YellowThreshold.Should().Be(40);
         config.PenaltySelfEmployed.Should().Be(8);
+        config.CreditScoreGood.Should().Be(450);
+        config.CreditScoreModerate.Should().Be(300);
+        config.PenaltyModerateCreditScore.Should().Be(15);
+        config.PenaltyLowCreditScore.Should().Be(25);
     }
 
     [Fact]
@@ -44,7 +53,8 @@ public class ScoringConfigTests
             0.3m, 0.5m, 0.7m,
             10, 25, 40,
             10, 5, 35,
-            25);
+            25,
+            400, 250, 10, 20);
 
         act.Should().Throw<DomainException>().WithMessage("*greenThreshold*größer*yellowThreshold*");
     }
@@ -59,7 +69,8 @@ public class ScoringConfigTests
             0.3m, 0.5m, 0.7m,
             10, 25, 40,
             10, 5, 35,
-            25);
+            25,
+            400, 250, 10, 20);
 
         act.Should().Throw<DomainException>().WithMessage("*zwischen 1 und 99*");
     }
@@ -74,7 +85,8 @@ public class ScoringConfigTests
             0.3m, 0.5m, 0.7m,
             10, 25, 40,
             10, 5, 35,
-            25);
+            25,
+            400, 250, 10, 20);
 
         act.Should().Throw<DomainException>().WithMessage("*incomeRatioGood*größer*incomeRatioModerate*");
     }
@@ -89,7 +101,8 @@ public class ScoringConfigTests
             0.3m, 0.5m, 0.7m,
             10, 25, 40,
             10, 5, 35,
-            25);
+            25,
+            400, 250, 10, 20);
 
         act.Should().Throw<DomainException>().WithMessage("*incomeRatioModerate*größer*incomeRatioLimited*");
     }
@@ -104,7 +117,8 @@ public class ScoringConfigTests
             0.5m, 0.5m, 0.7m,
             10, 25, 40,
             10, 5, 35,
-            25);
+            25,
+            400, 250, 10, 20);
 
         act.Should().Throw<DomainException>().WithMessage("*rateGood*kleiner*rateModerate*");
     }
@@ -119,7 +133,8 @@ public class ScoringConfigTests
             0.3m, 0.7m, 0.7m,
             10, 25, 40,
             10, 5, 35,
-            25);
+            25,
+            400, 250, 10, 20);
 
         act.Should().Throw<DomainException>().WithMessage("*rateModerate*kleiner*rateHeavy*");
     }
@@ -134,7 +149,8 @@ public class ScoringConfigTests
             0.3m, 0.5m, 0.7m,
             10, 25, 40,
             10, 5, 35,
-            25);
+            25,
+            400, 250, 10, 20);
 
         act.Should().Throw<DomainException>().WithMessage("*zwischen 0 und 100*");
     }
@@ -149,7 +165,8 @@ public class ScoringConfigTests
             0.3m, 0.5m, 0.7m,
             10, 25, 40,
             10, 5, 35,
-            101);
+            101,
+            400, 250, 10, 20);
 
         act.Should().Throw<DomainException>().WithMessage("*zwischen 0 und 100*");
     }
@@ -164,9 +181,58 @@ public class ScoringConfigTests
             0.3m, 0.5m, 0.7m,
             10, 25, 40,
             10, 5, 35,
-            25);
+            25,
+            400, 250, 10, 20);
 
         act.Should().Throw<DomainException>().WithMessage("*zwischen 0.01 und 0.99*");
+    }
+
+    [Fact]
+    public void Create_CreditScoreGoodNotGreaterThanModerate_ShouldThrow()
+    {
+        var act = () => ScoringConfig.Create(
+            75, 50,
+            0.5m, 0.3m, 0.1m,
+            15, 30, 50,
+            0.3m, 0.5m, 0.7m,
+            10, 25, 40,
+            10, 5, 35,
+            25,
+            250, 250, 10, 20);
+
+        act.Should().Throw<DomainException>().WithMessage("*creditScoreGood*größer*creditScoreModerate*");
+    }
+
+    [Fact]
+    public void Create_CreditScoreOutOfRange_ShouldThrow()
+    {
+        var act = () => ScoringConfig.Create(
+            75, 50,
+            0.5m, 0.3m, 0.1m,
+            15, 30, 50,
+            0.3m, 0.5m, 0.7m,
+            10, 25, 40,
+            10, 5, 35,
+            25,
+            700, 250, 10, 20);
+
+        act.Should().Throw<DomainException>().WithMessage("*zwischen 100 und 600*");
+    }
+
+    [Fact]
+    public void Create_CreditScoreBelowRange_ShouldThrow()
+    {
+        var act = () => ScoringConfig.Create(
+            75, 50,
+            0.5m, 0.3m, 0.1m,
+            15, 30, 50,
+            0.3m, 0.5m, 0.7m,
+            10, 25, 40,
+            10, 5, 35,
+            25,
+            400, 50, 10, 20);
+
+        act.Should().Throw<DomainException>().WithMessage("*zwischen 100 und 600*");
     }
 
     [Fact]
@@ -189,7 +255,8 @@ public class ScoringConfigTests
             0.3m, 0.5m, 0.7m,
             10, 25, 40,
             10, 5, 35,
-            25);
+            25,
+            400, 250, 10, 20);
 
         config1.Should().NotBe(config2);
     }

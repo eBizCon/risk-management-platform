@@ -27,6 +27,11 @@ public sealed class ScoringConfig : ValueObject
     public int PenaltyUnemployed { get; }
     public int PenaltyPaymentDefault { get; }
 
+    public int CreditScoreGood { get; }
+    public int CreditScoreModerate { get; }
+    public int PenaltyModerateCreditScore { get; }
+    public int PenaltyLowCreditScore { get; }
+
     private ScoringConfig(
         int greenThreshold,
         int yellowThreshold,
@@ -45,7 +50,11 @@ public sealed class ScoringConfig : ValueObject
         int penaltySelfEmployed,
         int penaltyRetired,
         int penaltyUnemployed,
-        int penaltyPaymentDefault)
+        int penaltyPaymentDefault,
+        int creditScoreGood,
+        int creditScoreModerate,
+        int penaltyModerateCreditScore,
+        int penaltyLowCreditScore)
     {
         GreenThreshold = greenThreshold;
         YellowThreshold = yellowThreshold;
@@ -65,6 +74,10 @@ public sealed class ScoringConfig : ValueObject
         PenaltyRetired = penaltyRetired;
         PenaltyUnemployed = penaltyUnemployed;
         PenaltyPaymentDefault = penaltyPaymentDefault;
+        CreditScoreGood = creditScoreGood;
+        CreditScoreModerate = creditScoreModerate;
+        PenaltyModerateCreditScore = penaltyModerateCreditScore;
+        PenaltyLowCreditScore = penaltyLowCreditScore;
     }
 
     public static ScoringConfig Create(
@@ -85,7 +98,11 @@ public sealed class ScoringConfig : ValueObject
         int penaltySelfEmployed,
         int penaltyRetired,
         int penaltyUnemployed,
-        int penaltyPaymentDefault)
+        int penaltyPaymentDefault,
+        int creditScoreGood,
+        int creditScoreModerate,
+        int penaltyModerateCreditScore,
+        int penaltyLowCreditScore)
     {
         ValidateThreshold(greenThreshold, nameof(greenThreshold));
         ValidateThreshold(yellowThreshold, nameof(yellowThreshold));
@@ -119,13 +136,21 @@ public sealed class ScoringConfig : ValueObject
         ValidatePenalty(penaltyUnemployed, nameof(penaltyUnemployed));
         ValidatePenalty(penaltyPaymentDefault, nameof(penaltyPaymentDefault));
 
+        ValidateCreditScore(creditScoreGood, nameof(creditScoreGood));
+        ValidateCreditScore(creditScoreModerate, nameof(creditScoreModerate));
+        if (creditScoreGood <= creditScoreModerate)
+            throw new DomainException("creditScoreGood muss größer als creditScoreModerate sein");
+        ValidatePenalty(penaltyModerateCreditScore, nameof(penaltyModerateCreditScore));
+        ValidatePenalty(penaltyLowCreditScore, nameof(penaltyLowCreditScore));
+
         return new ScoringConfig(
             greenThreshold, yellowThreshold,
             incomeRatioGood, incomeRatioModerate, incomeRatioLimited,
             penaltyModerateRatio, penaltyLimitedRatio, penaltyCriticalRatio,
             rateGood, rateModerate, rateHeavy,
             penaltyModerateRate, penaltyHeavyRate, penaltyExcessiveRate,
-            penaltySelfEmployed, penaltyRetired, penaltyUnemployed, penaltyPaymentDefault);
+            penaltySelfEmployed, penaltyRetired, penaltyUnemployed, penaltyPaymentDefault,
+            creditScoreGood, creditScoreModerate, penaltyModerateCreditScore, penaltyLowCreditScore);
     }
 
     public static ScoringConfig Default => Create(
@@ -146,7 +171,11 @@ public sealed class ScoringConfig : ValueObject
         10,
         5,
         35,
-        25);
+        25,
+        400,
+        250,
+        10,
+        20);
 
     private static void ValidateThreshold(int value, string name)
     {
@@ -164,6 +193,12 @@ public sealed class ScoringConfig : ValueObject
     {
         if (value < 0 || value > 100)
             throw new DomainException($"{name} muss zwischen 0 und 100 liegen");
+    }
+
+    private static void ValidateCreditScore(int value, string name)
+    {
+        if (value < 100 || value > 600)
+            throw new DomainException($"{name} muss zwischen 100 und 600 liegen");
     }
 
     protected override IEnumerable<object?> GetEqualityComponents()
@@ -186,5 +221,9 @@ public sealed class ScoringConfig : ValueObject
         yield return PenaltyRetired;
         yield return PenaltyUnemployed;
         yield return PenaltyPaymentDefault;
+        yield return CreditScoreGood;
+        yield return CreditScoreModerate;
+        yield return PenaltyModerateCreditScore;
+        yield return PenaltyLowCreditScore;
     }
 }
