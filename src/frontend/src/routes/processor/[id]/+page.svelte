@@ -125,7 +125,10 @@
 							<dt class="dl-label">Kunde</dt>
 							<dd class="mt-1 dl-value">
 								{#if app.customerName}
-									<a href="/customers/{app.customerId}" class="text-brand-primary hover:text-brand-primary-hover">
+									<a
+										href="/customers/{app.customerId}"
+										class="text-brand-primary hover:text-brand-primary-hover"
+									>
 										{app.customerName}
 									</a>
 								{:else}
@@ -139,7 +142,9 @@
 						</div>
 						<div>
 							<dt class="dl-label">Zahlungsverzug in der Vergangenheit</dt>
-							<dd class="mt-1 dl-value">{app.hasPaymentDefault == null ? '-' : app.hasPaymentDefault ? 'Ja' : 'Nein'}</dd>
+							<dd class="mt-1 dl-value">
+								{app.hasPaymentDefault == null ? '-' : app.hasPaymentDefault ? 'Ja' : 'Nein'}
+							</dd>
 						</div>
 					</dl>
 				</div>
@@ -239,34 +244,34 @@
 				{#if canCreateInquiry}
 					<div class="card p-6" data-testid="processor-inquiry-form-card">
 						<h2 class="text-lg font-semibold text-primary mb-4">Rückfrage stellen</h2>
-								<form onsubmit={handleInquirySubmit} class="space-y-4">
-								<div>
-									<label for="inquiryText" class="form-label block">Rückfrage</label>
-									<textarea
-										id="inquiryText"
-										name="inquiryText"
-										rows="4"
-										bind:value={inquiryText}
-										class="mt-1 block w-full rounded-md border-default shadow-sm sm:text-sm"
-										data-testid="processor-inquiry-input"
-										placeholder="Welche Informationen werden vom Antragsteller benötigt?"
-									></textarea>
-									{#if inquiryErrors?.inquiryText}
-										<p class="mt-1 error-text" data-testid="processor-inquiry-error">
-											{inquiryErrors.inquiryText[0]}
-										</p>
-									{/if}
-								</div>
-								<div class="flex justify-end">
-									<button
-										type="submit"
-										class="btn-secondary px-4 py-2"
-										data-testid="processor-inquiry-submit"
-									>
-										Rückfrage senden
-									</button>
-								</div>
-							</form>
+						<form onsubmit={handleInquirySubmit} class="space-y-4">
+							<div>
+								<label for="inquiryText" class="form-label block">Rückfrage</label>
+								<textarea
+									id="inquiryText"
+									name="inquiryText"
+									rows="4"
+									bind:value={inquiryText}
+									class="mt-1 block w-full rounded-md border-default shadow-sm sm:text-sm"
+									data-testid="processor-inquiry-input"
+									placeholder="Welche Informationen werden vom Antragsteller benötigt?"
+								></textarea>
+								{#if inquiryErrors?.inquiryText}
+									<p class="mt-1 error-text" data-testid="processor-inquiry-error">
+										{inquiryErrors.inquiryText[0]}
+									</p>
+								{/if}
+							</div>
+							<div class="flex justify-end">
+								<button
+									type="submit"
+									class="btn-secondary px-4 py-2"
+									data-testid="processor-inquiry-submit"
+								>
+									Rückfrage senden
+								</button>
+							</div>
+						</form>
 					</div>
 				{/if}
 
@@ -301,7 +306,7 @@
 										<span class="text-sm font-medium text-primary">Ablehnen</span>
 									</label>
 								</div>
-									{#if decisionErrors?.decision}
+								{#if decisionErrors?.decision}
 									<p class="mt-1 error-text">{decisionErrors.decision[0]}</p>
 								{/if}
 							</div>
@@ -309,8 +314,8 @@
 							<div>
 								<label for="comment" class="form-label block">
 									Kommentar {selectedDecision === 'reject'
-									? '(Pflichtfeld bei Ablehnung)'
-									: '(optional)'}
+										? '(Pflichtfeld bei Ablehnung)'
+										: '(optional)'}
 								</label>
 								<textarea
 									id="comment"
@@ -320,7 +325,7 @@
 									class="mt-1 block w-full rounded-md border-default shadow-sm sm:text-sm"
 									placeholder="Begründung oder Hinweise..."
 								></textarea>
-									{#if decisionErrors?.comment}
+								{#if decisionErrors?.comment}
 									<p class="mt-1 error-text">{decisionErrors.comment[0]}</p>
 								{/if}
 							</div>
@@ -335,10 +340,10 @@
 									class:btn-neutral={!selectedDecision}
 								>
 									{selectedDecision === 'approve'
-									? 'Antrag genehmigen'
-									: selectedDecision === 'reject'
-										? 'Antrag ablehnen'
-										: 'Entscheidung treffen'}
+										? 'Antrag genehmigen'
+										: selectedDecision === 'reject'
+											? 'Antrag ablehnen'
+											: 'Entscheidung treffen'}
 								</button>
 							</div>
 						</form>

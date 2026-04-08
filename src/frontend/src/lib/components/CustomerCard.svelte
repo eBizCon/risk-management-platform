@@ -3,16 +3,23 @@
 	import type { Customer } from '$lib/types';
 	import { Eye, Edit, Trash2, Archive, RotateCcw } from 'lucide-svelte';
 
-	const { customer, showActions = true, onView, onEdit, onDelete, onArchive, onActivate } =
-		$props<{
-			customer: Customer;
-			showActions?: boolean;
-			onView?: (id: number) => void;
-			onEdit?: (id: number) => void;
-			onDelete?: (id: number) => void;
-			onArchive?: (id: number) => void;
-			onActivate?: (id: number) => void;
-		}>();
+	const {
+		customer,
+		showActions = true,
+		onView,
+		onEdit,
+		onDelete,
+		onArchive,
+		onActivate
+	} = $props<{
+		customer: Customer;
+		showActions?: boolean;
+		onView?: (id: number) => void;
+		onEdit?: (id: number) => void;
+		onDelete?: (id: number) => void;
+		onArchive?: (id: number) => void;
+		onActivate?: (id: number) => void;
+	}>();
 
 	const formatDate = (value: string | null) => {
 		if (!value) return '-';
@@ -27,7 +34,10 @@
 <div class="mobile-card" data-testid={`customer-card-${customer.id}`}>
 	<div class="mobile-card-header">
 		<div class="flex-1 min-w-0">
-			<div class="text-base font-semibold text-primary truncate" title="{customer.lastName}, {customer.firstName}">
+			<div
+				class="text-base font-semibold text-primary truncate"
+				title="{customer.lastName}, {customer.firstName}"
+			>
 				{customer.lastName}, {customer.firstName}
 			</div>
 			<div class="text-sm text-secondary truncate">{customer.email ?? '-'}</div>

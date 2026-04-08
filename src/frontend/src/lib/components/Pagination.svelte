@@ -1,5 +1,9 @@
 <script lang="ts">
-	let { page, totalPages, onPageChange }: { page: number; totalPages: number; onPageChange: (page: number) => void } = $props();
+	let {
+		page,
+		totalPages,
+		onPageChange
+	}: { page: number; totalPages: number; onPageChange: (page: number) => void } = $props();
 
 	const visiblePageCount = 5;
 
@@ -33,7 +37,11 @@
 	const isLast = $derived(page === totalPages);
 </script>
 
-<nav class="flex items-center justify-center gap-3" aria-label="Pagination" data-testid="processor-pagination">
+<nav
+	class="flex items-center justify-center gap-3"
+	aria-label="Pagination"
+	data-testid="processor-pagination"
+>
 	<button
 		type="button"
 		class="btn ghost btn-sm px-3 rounded-md"

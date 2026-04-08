@@ -5,15 +5,21 @@
 	import { employmentStatusLabels, statusLabels, trafficLightLabels } from '$lib/types';
 	import type { Application } from '$lib/types';
 
-	const { application, showActions = true, isApplicantView = true, onView, onEdit, onDelete } =
-		$props<{
-			application: Application;
-			showActions?: boolean;
-			isApplicantView?: boolean;
-			onView?: (id: number) => void;
-			onEdit?: (id: number) => void;
-			onDelete?: (id: number) => void;
-		}>();
+	const {
+		application,
+		showActions = true,
+		isApplicantView = true,
+		onView,
+		onEdit,
+		onDelete
+	} = $props<{
+		application: Application;
+		showActions?: boolean;
+		isApplicantView?: boolean;
+		onView?: (id: number) => void;
+		onEdit?: (id: number) => void;
+		onDelete?: (id: number) => void;
+	}>();
 
 	const formatDate = (value: string | null) => {
 		if (!value) return '-';
@@ -38,7 +44,10 @@
 <div class="mobile-card" data-testid={`application-card-${application.id}`}>
 	<div class="mobile-card-header">
 		<div class="flex-1 min-w-0">
-			<div class="text-base font-semibold text-primary truncate" title={application.customerName ?? '-'}>
+			<div
+				class="text-base font-semibold text-primary truncate"
+				title={application.customerName ?? '-'}
+			>
 				{application.customerName ?? '-'}
 			</div>
 		</div>
@@ -62,7 +71,9 @@
 			<div class="text-xs text-secondary">Ampel</div>
 			<div class="flex items-center gap-2">
 				<TrafficLight status={application.trafficLight} showLabel={false} />
-				<span class="text-sm text-secondary">{application.trafficLight ? trafficLightLabels[application.trafficLight] : '-'}</span>
+				<span class="text-sm text-secondary"
+					>{application.trafficLight ? trafficLightLabels[application.trafficLight] : '-'}</span
+				>
 			</div>
 		</div>
 		<div class="space-y-1">
@@ -75,7 +86,9 @@
 		</div>
 		<div class="space-y-1">
 			<div class="text-xs text-secondary">Status</div>
-			<div class="text-sm text-primary">{statusLabels[application.status] ?? application.status}</div>
+			<div class="text-sm text-primary">
+				{statusLabels[application.status] ?? application.status}
+			</div>
 		</div>
 	</div>
 

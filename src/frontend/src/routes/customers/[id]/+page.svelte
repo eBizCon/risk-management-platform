@@ -62,7 +62,6 @@
 			window.location.reload();
 		}
 	}
-
 </script>
 
 <svelte:head>
@@ -136,15 +135,21 @@
 				<dl class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 					<div>
 						<dt class="dl-label">Vorname</dt>
-						<dd class="mt-1 dl-value" data-testid="customer-detail-firstName">{customer.firstName}</dd>
+						<dd class="mt-1 dl-value" data-testid="customer-detail-firstName">
+							{customer.firstName}
+						</dd>
 					</div>
 					<div>
 						<dt class="dl-label">Nachname</dt>
-						<dd class="mt-1 dl-value" data-testid="customer-detail-lastName">{customer.lastName}</dd>
+						<dd class="mt-1 dl-value" data-testid="customer-detail-lastName">
+							{customer.lastName}
+						</dd>
 					</div>
 					<div>
 						<dt class="dl-label">E-Mail</dt>
-						<dd class="mt-1 dl-value" data-testid="customer-detail-email">{customer.email ?? '-'}</dd>
+						<dd class="mt-1 dl-value" data-testid="customer-detail-email">
+							{customer.email ?? '-'}
+						</dd>
 					</div>
 					<div>
 						<dt class="dl-label">Telefon</dt>
@@ -152,11 +157,15 @@
 					</div>
 					<div>
 						<dt class="dl-label">Geburtsdatum</dt>
-						<dd class="mt-1 dl-value" data-testid="customer-detail-dateOfBirth">{customer.dateOfBirth}</dd>
+						<dd class="mt-1 dl-value" data-testid="customer-detail-dateOfBirth">
+							{customer.dateOfBirth}
+						</dd>
 					</div>
 					<div>
 						<dt class="dl-label">Beschäftigungsstatus</dt>
-						<dd class="mt-1 dl-value" data-testid="customer-detail-employmentStatus">{employmentStatusLabels[customer.employmentStatus] ?? customer.employmentStatus}</dd>
+						<dd class="mt-1 dl-value" data-testid="customer-detail-employmentStatus">
+							{employmentStatusLabels[customer.employmentStatus] ?? customer.employmentStatus}
+						</dd>
 					</div>
 				</dl>
 			</div>
@@ -183,7 +192,7 @@
 				</dl>
 			</div>
 
-				<div class="card p-6 lg:col-span-2">
+			<div class="card p-6 lg:col-span-2">
 				<h2 class="text-lg font-semibold text-primary mb-4">Zeitstempel</h2>
 				<dl class="grid grid-cols-1 sm:grid-cols-3 gap-4">
 					<div>

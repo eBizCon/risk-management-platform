@@ -1,5 +1,6 @@
 import { error } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
+import type { Application } from '$lib/types';
 import { handleApiResponse } from '$lib/api';
 
 export const load: PageLoad = async ({ fetch, params, url }) => {
@@ -13,7 +14,7 @@ export const load: PageLoad = async ({ fetch, params, url }) => {
 	if (res.status === 404) {
 		throw error(404, 'Antrag nicht gefunden');
 	}
-	const application = await handleApiResponse<Record<string, unknown>>(res, url, 'Fehler beim Laden');
+	const application = await handleApiResponse<Application>(res, url, 'Fehler beim Laden');
 
 	if (application.status !== 'draft') {
 		throw error(403, 'Nur Entwürfe können bearbeitet werden');

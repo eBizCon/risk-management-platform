@@ -216,10 +216,15 @@
 		{/if}
 
 		{#if isProcessing}
-			<div class="card p-8 flex flex-col items-center gap-4 text-center" data-testid="processing-indicator">
+			<div
+				class="card p-8 flex flex-col items-center gap-4 text-center"
+				data-testid="processing-indicator"
+			>
 				<Loader2 class="w-10 h-10 text-info animate-spin" />
 				<p class="text-lg font-medium text-primary">Antrag wird verarbeitet...</p>
-				<p class="text-sm text-secondary">Kundendaten werden abgerufen und Bonität geprüft. Dies kann einen Moment dauern.</p>
+				<p class="text-sm text-secondary">
+					Kundendaten werden abgerufen und Bonität geprüft. Dies kann einen Moment dauern.
+				</p>
 			</div>
 		{/if}
 
@@ -230,7 +235,9 @@
 					<div class="flex-1">
 						<p class="text-lg font-medium text-danger">Verarbeitung fehlgeschlagen</p>
 						{#if app.failureReason}
-							<p class="mt-2 text-sm text-secondary" data-testid="failure-reason">{app.failureReason}</p>
+							<p class="mt-2 text-sm text-secondary" data-testid="failure-reason">
+								{app.failureReason}
+							</p>
 						{/if}
 						<div class="mt-4 flex flex-col sm:flex-row gap-3">
 							<button
@@ -239,7 +246,9 @@
 								class="btn-primary inline-flex items-center px-4 py-2"
 								data-testid="retry-application"
 							>
-								<span class={isRetrying ? 'animate-spin' : ''}><RefreshCw class="w-4 h-4 mr-2" /></span>
+								<span class={isRetrying ? 'animate-spin' : ''}
+									><RefreshCw class="w-4 h-4 mr-2" /></span
+								>
 								{isRetrying ? 'Wird erstellt...' : 'Erneut versuchen'}
 							</button>
 							<button
@@ -265,7 +274,10 @@
 							<dt class="dl-label">Kunde</dt>
 							<dd class="mt-1 dl-value">
 								{#if app.customerName}
-									<a href="/customers/{app.customerId}" class="text-brand-primary hover:text-brand-primary-hover">
+									<a
+										href="/customers/{app.customerId}"
+										class="text-brand-primary hover:text-brand-primary-hover"
+									>
 										{app.customerName}
 									</a>
 								{:else}
@@ -279,11 +291,15 @@
 						</div>
 						<div>
 							<dt class="dl-label">Zahlungsverzug in der Vergangenheit</dt>
-							<dd class="mt-1 dl-value">{app.hasPaymentDefault == null ? '-' : app.hasPaymentDefault ? 'Ja' : 'Nein'}</dd>
+							<dd class="mt-1 dl-value">
+								{app.hasPaymentDefault == null ? '-' : app.hasPaymentDefault ? 'Ja' : 'Nein'}
+							</dd>
 						</div>
 						<div>
 							<dt class="dl-label">Credit Score</dt>
-							<dd class="mt-1 dl-value" data-testid="application-credit-score">{app.creditScore ?? '-'}</dd>
+							<dd class="mt-1 dl-value" data-testid="application-credit-score">
+								{app.creditScore ?? '-'}
+							</dd>
 						</div>
 					</dl>
 				</div>

@@ -20,7 +20,11 @@
 		<div class="text-center space-y-2">
 			<p class="text-lg font-semibold text-primary">Keine Berechtigung</p>
 			<p class="text-secondary">Bitte melden Sie sich mit einem berechtigten Konto an.</p>
-			<a href="/login" class="btn-primary inline-block px-4 py-2" data-testid="role-guard-login-link">
+			<a
+				href="/login"
+				class="btn-primary inline-block px-4 py-2"
+				data-testid="role-guard-login-link"
+			>
 				Zum Login
 			</a>
 		</div>

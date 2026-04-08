@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @theme {
 	/* Brand Colors */
@@ -41,7 +41,15 @@ html {
 }
 
 body {
-	font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+	font-family:
+		system-ui,
+		-apple-system,
+		BlinkMacSystemFont,
+		'Segoe UI',
+		Roboto,
+		'Helvetica Neue',
+		Arial,
+		sans-serif;
 	background-color: var(--color-bg);
 	color: var(--color-text);
 }
@@ -379,4 +387,3 @@ a {
 .mobile-card-actions {
 	@apply flex flex-col gap-2;
 }
-

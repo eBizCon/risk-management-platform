@@ -15,7 +15,7 @@
 <div class="space-y-3" data-testid="score-display">
 	<div class="flex items-center gap-4">
 		<div class="text-center">
-			<div 
+			<div
 				class="text-3xl font-bold"
 				class:score-high={score !== null && score >= 75}
 				class:score-medium={score !== null && score >= 50 && score < 75}
@@ -32,7 +32,9 @@
 
 	{#if showReasons && reasons.length > 0}
 		<div class="mt-4 space-y-2" data-testid="scoring-reasons">
-			<h4 class="text-sm font-medium text-primary" data-testid="scoring-reasons-title">Bewertungsgründe:</h4>
+			<h4 class="text-sm font-medium text-primary" data-testid="scoring-reasons-title">
+				Bewertungsgründe:
+			</h4>
 			<ul class="space-y-1">
 				{#each reasons as reason}
 					<li class="text-sm text-secondary flex items-start gap-2">

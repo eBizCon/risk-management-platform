@@ -116,7 +116,9 @@
 			{#if user}
 				<div class="text-sm">
 					<div class="font-medium text-primary">{user.name}</div>
-					<div class="text-secondary">{isApplicant ? 'Antragsteller' : isProcessor ? 'Antragsbearbeiter' : 'Risikomanager'}</div>
+					<div class="text-secondary">
+						{isApplicant ? 'Antragsteller' : isProcessor ? 'Antragsbearbeiter' : 'Risikomanager'}
+					</div>
 				</div>
 				<a
 					href="/auth/logout"

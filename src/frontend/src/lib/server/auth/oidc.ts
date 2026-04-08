@@ -18,7 +18,15 @@ export function getOidcEnv() {
 	if (!clientId) throw new Error('OIDC_CLIENT_ID environment variable is required');
 	if (!clientSecret) throw new Error('OIDC_CLIENT_SECRET environment variable is required');
 
-	return { issuer, clientId, clientSecret, scope, rolesClaimPath, postLogoutRedirectUri, redirectUri };
+	return {
+		issuer,
+		clientId,
+		clientSecret,
+		scope,
+		rolesClaimPath,
+		postLogoutRedirectUri,
+		redirectUri
+	};
 }
 
 export async function getOidcConfig(): Promise<client.Configuration> {
