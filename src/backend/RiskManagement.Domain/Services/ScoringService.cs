@@ -13,7 +13,9 @@ public class ScoringService : IScoringService
         EmploymentStatus employmentStatus,
         bool hasPaymentDefault,
         int? creditScore,
-        ScoringConfig config)
+        ScoringConfig config,
+        Money? loanAmount = null,
+        int? loanTerm = null)
     {
         var reasons = new List<string>();
         var score = 100;
@@ -117,6 +119,57 @@ public class ScoringService : IScoringService
         else
         {
             reasons.Add("Kein externer Bonitätsscore verfügbar");
+        }
+
+        if (loanAmount is not null && loanTerm.HasValue)
+        {
+            var loanAmountValue = (double)loanAmount.Amount;
+            var annualIncome = incomeAmount * 12;
+            if (annualIncome > 0)
+            {
+                var loanToIncomeRatio = (decimal)(loanAmountValue / annualIncome);
+
+                if (loanToIncomeRatio <= config.LoanToIncomeRatioGood)
+                {
+                    reasons.Add("Kreditbetrag steht in gutem Verhältnis zum Jahreseinkommen");
+                }
+                else if (loanToIncomeRatio <= config.LoanToIncomeRatioModerate)
+                {
+                    score -= config.PenaltyModerateLoanToIncome;
+                    reasons.Add("Kreditbetrag ist moderat im Verhältnis zum Jahreseinkommen");
+                }
+                else if (loanToIncomeRatio <= config.LoanToIncomeRatioHigh)
+                {
+                    score -= config.PenaltyHighLoanToIncome;
+                    reasons.Add("Kreditbetrag ist hoch im Verhältnis zum Jahreseinkommen");
+                }
+                else
+                {
+                    score -= config.PenaltyCriticalLoanToIncome;
+                    reasons.Add("Kreditbetrag übersteigt das tragbare Maß im Verhältnis zum Jahreseinkommen");
+                }
+            }
+
+            var loanTermValue = loanTerm.Value;
+            if (loanTermValue <= config.LoanTermShort)
+            {
+                reasons.Add("Kurze Laufzeit reduziert das Risiko");
+            }
+            else if (loanTermValue <= config.LoanTermMedium)
+            {
+                score -= config.PenaltyMediumLoanTerm;
+                reasons.Add("Mittlere Laufzeit birgt moderates Risiko");
+            }
+            else if (loanTermValue <= config.LoanTermLong)
+            {
+                score -= config.PenaltyLongLoanTerm;
+                reasons.Add("Lange Laufzeit erhöht das Risiko");
+            }
+            else
+            {
+                score -= config.PenaltyVeryLongLoanTerm;
+                reasons.Add("Sehr lange Laufzeit stellt erhebliches Risiko dar");
+            }
         }
 
         score = Math.Max(0, Math.Min(100, score));

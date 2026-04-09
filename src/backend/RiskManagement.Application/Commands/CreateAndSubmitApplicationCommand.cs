@@ -48,6 +48,8 @@ public class
             Money.Create((decimal)command.Dto.Income),
             Money.Create((decimal)command.Dto.FixedCosts),
             Money.CreatePositive((decimal)command.Dto.DesiredRate),
+            Money.CreatePositive((decimal)command.Dto.LoanAmount),
+            command.Dto.LoanTerm,
             EmailAddress.Create(command.UserEmail));
 
         await _repository.AddAsync(application, ct);
@@ -60,6 +62,8 @@ public class
             command.Dto.Income,
             command.Dto.FixedCosts,
             command.Dto.DesiredRate,
+            command.Dto.LoanAmount,
+            command.Dto.LoanTerm,
             command.UserEmail,
             true), ct);
 

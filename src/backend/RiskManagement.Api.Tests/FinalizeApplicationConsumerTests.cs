@@ -40,6 +40,8 @@ public class FinalizeApplicationConsumerTests
             Money.Create(5000),
             Money.Create(2000),
             Money.CreatePositive(500),
+            Money.CreatePositive(25000),
+            48,
             EmailAddress.Create("user@test.com"));
     }
 
@@ -51,6 +53,8 @@ public class FinalizeApplicationConsumerTests
             5000,
             2000,
             500,
+            25000,
+            48,
             "user@test.com",
             "employed",
             false,

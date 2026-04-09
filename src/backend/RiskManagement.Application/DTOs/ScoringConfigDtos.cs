@@ -25,6 +25,18 @@ public record ScoringConfigResponse(
     int CreditScoreModerate,
     int PenaltyModerateCreditScore,
     int PenaltyLowCreditScore,
+    decimal LoanToIncomeRatioGood,
+    decimal LoanToIncomeRatioModerate,
+    decimal LoanToIncomeRatioHigh,
+    int PenaltyModerateLoanToIncome,
+    int PenaltyHighLoanToIncome,
+    int PenaltyCriticalLoanToIncome,
+    int LoanTermShort,
+    int LoanTermMedium,
+    int LoanTermLong,
+    int PenaltyMediumLoanTerm,
+    int PenaltyLongLoanTerm,
+    int PenaltyVeryLongLoanTerm,
     string CreatedBy,
     DateTime CreatedAt);
 
@@ -50,6 +62,18 @@ public record ScoringConfigUpdateDto(
     int CreditScoreGood,
     int CreditScoreModerate,
     int PenaltyModerateCreditScore,
-    int PenaltyLowCreditScore);
+    int PenaltyLowCreditScore,
+    decimal LoanToIncomeRatioGood,
+    decimal LoanToIncomeRatioModerate,
+    decimal LoanToIncomeRatioHigh,
+    int PenaltyModerateLoanToIncome,
+    int PenaltyHighLoanToIncome,
+    int PenaltyCriticalLoanToIncome,
+    int LoanTermShort,
+    int LoanTermMedium,
+    int LoanTermLong,
+    int PenaltyMediumLoanTerm,
+    int PenaltyLongLoanTerm,
+    int PenaltyVeryLongLoanTerm);
 
 public record RescoreResult(int RescoredCount);

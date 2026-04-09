@@ -28,6 +28,7 @@ public class ApplicationSnapshotTests
 
         var app = ApplicationEntity.Create(
             1, Money.Create(5000), Money.Create(2000), Money.CreatePositive(500),
+            Money.CreatePositive(25000), 48,
             EmploymentStatus.SelfEmployed, CreateCreditReport(),
             EmailAddress.Create("user@test.com"),
             _scoringService, ScoringConfig.Default, configVersion.Id);
@@ -44,6 +45,7 @@ public class ApplicationSnapshotTests
 
         var app = ApplicationEntity.Create(
             1, Money.Create(5000), Money.Create(2000), Money.CreatePositive(500),
+            Money.CreatePositive(25000), 48,
             EmploymentStatus.Unemployed, CreateCreditReport(true, 250),
             EmailAddress.Create("user@test.com"),
             _scoringService, ScoringConfig.Default, configVersion.Id);
@@ -60,6 +62,7 @@ public class ApplicationSnapshotTests
 
         var app = ApplicationEntity.Create(
             1, Money.Create(5000), Money.Create(2000), Money.CreatePositive(500),
+            Money.CreatePositive(25000), 48,
             EmploymentStatus.Employed, CreateCreditReport(creditScore: null),
             EmailAddress.Create("user@test.com"),
             _scoringService, ScoringConfig.Default, configVersion.Id);
@@ -74,6 +77,7 @@ public class ApplicationSnapshotTests
 
         var app = ApplicationEntity.Create(
             1, Money.Create(5000), Money.Create(2000), Money.CreatePositive(500),
+            Money.CreatePositive(25000), 48,
             EmploymentStatus.Employed, CreateCreditReport(),
             EmailAddress.Create("user@test.com"),
             _scoringService, ScoringConfig.Default, configVersion.Id);
@@ -90,12 +94,14 @@ public class ApplicationSnapshotTests
 
         var app = ApplicationEntity.Create(
             1, Money.Create(5000), Money.Create(2000), Money.CreatePositive(500),
+            Money.CreatePositive(25000), 48,
             EmploymentStatus.Employed, CreateCreditReport(),
             EmailAddress.Create("user@test.com"),
             _scoringService, ScoringConfig.Default, configVersion.Id);
 
         app.UpdateDetails(
             2, Money.Create(6000), Money.Create(2500), Money.CreatePositive(600),
+            Money.CreatePositive(30000), 60,
             EmploymentStatus.Retired, CreateCreditReport(true, 300),
             _scoringService, ScoringConfig.Default, configVersion.Id);
 
@@ -113,6 +119,7 @@ public class ApplicationSnapshotTests
 
         var app = ApplicationEntity.Create(
             1, Money.Create(5000), Money.Create(2000), Money.CreatePositive(500),
+            Money.CreatePositive(25000), 48,
             EmploymentStatus.Employed, CreateCreditReport(),
             EmailAddress.Create("user@test.com"),
             _scoringService, ScoringConfig.Default, configVersion.Id);
@@ -120,6 +127,7 @@ public class ApplicationSnapshotTests
 
         var act = () => app.UpdateDetails(
             1, Money.Create(5000), Money.Create(2000), Money.CreatePositive(500),
+            Money.CreatePositive(25000), 48,
             EmploymentStatus.Employed, CreateCreditReport(),
             _scoringService, ScoringConfig.Default, configVersion.Id);
 
@@ -133,6 +141,7 @@ public class ApplicationSnapshotTests
 
         var app = ApplicationEntity.Create(
             1, Money.Create(5000), Money.Create(2000), Money.CreatePositive(500),
+            Money.CreatePositive(25000), 48,
             EmploymentStatus.Employed, CreateCreditReport(),
             EmailAddress.Create("user@test.com"),
             _scoringService, ScoringConfig.Default, configVersion.Id);
@@ -141,6 +150,7 @@ public class ApplicationSnapshotTests
 
         app.UpdateDetails(
             1, Money.Create(5000), Money.Create(2000), Money.CreatePositive(500),
+            Money.CreatePositive(25000), 48,
             EmploymentStatus.Unemployed, CreateCreditReport(true, 200),
             _scoringService, ScoringConfig.Default, configVersion.Id);
 

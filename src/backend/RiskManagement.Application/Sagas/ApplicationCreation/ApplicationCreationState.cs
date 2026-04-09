@@ -12,6 +12,8 @@ public class ApplicationCreationState : SagaStateMachineInstance
     public double Income { get; set; }
     public double FixedCosts { get; set; }
     public double DesiredRate { get; set; }
+    public double LoanAmount { get; set; }
+    public int LoanTerm { get; set; }
     public string UserEmail { get; set; } = null!;
     public bool AutoSubmit { get; set; }
     public string OperationType { get; set; } = "Create";

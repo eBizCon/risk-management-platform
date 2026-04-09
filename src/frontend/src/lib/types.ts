@@ -38,6 +38,8 @@ export interface Application {
 	income: number;
 	fixedCosts: number;
 	desiredRate: number;
+	loanAmount: number | null;
+	loanTerm: number | null;
 	employmentStatus: EmploymentStatus;
 	hasPaymentDefault: boolean | null;
 	creditScore: number | null;

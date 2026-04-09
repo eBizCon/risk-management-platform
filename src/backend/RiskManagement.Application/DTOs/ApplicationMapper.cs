@@ -13,6 +13,8 @@ public static class ApplicationMapper
             Income = (double)application.Income.Amount,
             FixedCosts = (double)application.FixedCosts.Amount,
             DesiredRate = (double)application.DesiredRate.Amount,
+            LoanAmount = application.LoanAmount != null ? (double)application.LoanAmount.Amount : null,
+            LoanTerm = application.LoanTerm,
             EmploymentStatus = application.EmploymentStatus.Value,
             HasPaymentDefault = application.CreditReport?.HasPaymentDefault,
             CreditScore = application.CreditReport?.CreditScore,
