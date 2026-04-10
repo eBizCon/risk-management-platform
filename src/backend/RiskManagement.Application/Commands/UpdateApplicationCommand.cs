@@ -1,9 +1,8 @@
 using FluentValidation;
-using MassTransit;
 using RiskManagement.Application.Common;
 using RiskManagement.Application.DTOs;
-using RiskManagement.Application.Sagas.ApplicationCreation.Events;
 using RiskManagement.Domain.Aggregates.ApplicationAggregate;
+using RiskManagement.Domain.ValueObjects;
 using SharedKernel.ValueObjects;
 using AppId = RiskManagement.Domain.Aggregates.ApplicationAggregate.ApplicationId;
 
@@ -18,16 +17,13 @@ public class UpdateApplicationHandler : ICommandHandler<UpdateApplicationCommand
 {
     private readonly IApplicationRepository _repository;
     private readonly IValidator<ApplicationUpdateDto> _validator;
-    private readonly IPublishEndpoint _publishEndpoint;
 
     public UpdateApplicationHandler(
         IApplicationRepository repository,
-        IValidator<ApplicationUpdateDto> validator,
-        IPublishEndpoint publishEndpoint)
+        IValidator<ApplicationUpdateDto> validator)
     {
         _repository = repository;
         _validator = validator;
-        _publishEndpoint = publishEndpoint;
     }
 
     public async Task<Result<UpdateApplicationResult>> HandleAsync(UpdateApplicationCommand command,
@@ -40,7 +36,7 @@ public class UpdateApplicationHandler : ICommandHandler<UpdateApplicationCommand
         if (application.CreatedBy != EmailAddress.Create(command.UserEmail))
             return Result<UpdateApplicationResult>.Forbidden("Zugriff verweigert");
 
-        if (application.Status != Domain.ValueObjects.ApplicationStatus.Draft)
+        if (application.Status != ApplicationStatus.Draft)
             return Result<UpdateApplicationResult>.Failure("Nur Entwürfe können bearbeitet werden");
 
         var validationResult = await _validator.ValidateAsync(command.Dto, ct);
@@ -50,18 +46,15 @@ public class UpdateApplicationHandler : ICommandHandler<UpdateApplicationCommand
             return Result<UpdateApplicationResult>.ValidationFailure(errors, command.Dto);
         }
 
-        application.SetProcessing();
-        await _repository.SaveChangesAsync(ct);
-
-        await _publishEndpoint.Publish(new ApplicationUpdateStarted(
-            Guid.NewGuid(),
-            application.Id.Value,
+        application.RequestProcessing(
             command.Dto.CustomerId,
-            command.Dto.Income,
-            command.Dto.FixedCosts,
-            command.Dto.DesiredRate,
-            command.UserEmail,
-            false), ct);
+            Money.Create((decimal)command.Dto.Income),
+            Money.Create((decimal)command.Dto.FixedCosts),
+            Money.CreatePositive((decimal)command.Dto.DesiredRate),
+            EmailAddress.Create(command.UserEmail),
+            false);
+
+        await _repository.SaveChangesAsync(ct);
 
         return Result<UpdateApplicationResult>.Success(new UpdateApplicationResult(
             ApplicationMapper.ToResponse(application)));

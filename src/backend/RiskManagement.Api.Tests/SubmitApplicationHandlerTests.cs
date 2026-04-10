@@ -1,10 +1,9 @@
 using FluentAssertions;
-using MassTransit;
 using Moq;
 using RiskManagement.Application.Commands;
-using RiskManagement.Application.Sagas.ApplicationCreation.Events;
 using RiskManagement.Domain.Aggregates.ApplicationAggregate;
 using RiskManagement.Domain.Aggregates.ScoringConfigAggregate;
+using RiskManagement.Domain.Events;
 using RiskManagement.Domain.Services;
 using RiskManagement.Domain.ValueObjects;
 using SharedKernel.ValueObjects;
@@ -16,16 +15,13 @@ namespace RiskManagement.Api.Tests;
 public class SubmitApplicationHandlerTests
 {
     private readonly Mock<IApplicationRepository> _repositoryMock = new();
-    private readonly Mock<IPublishEndpoint> _publishEndpointMock = new();
     private readonly SubmitApplicationHandler _handler;
 
     private const string UserEmail = "user@test.com";
 
     public SubmitApplicationHandlerTests()
     {
-        _handler = new SubmitApplicationHandler(
-            _repositoryMock.Object,
-            _publishEndpointMock.Object);
+        _handler = new SubmitApplicationHandler(_repositoryMock.Object);
     }
 
     private static ApplicationEntity CreateDraftApp()
@@ -62,12 +58,10 @@ public class SubmitApplicationHandlerTests
         app.Status.Should().Be(ApplicationStatus.Processing);
 
         _repositoryMock.Verify(r => r.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
-        _publishEndpointMock.Verify(p => p.Publish(
-            It.Is<ApplicationUpdateStarted>(e =>
-                e.CustomerId == 1 &&
-                e.Income == 5000 &&
-                e.AutoSubmit == true),
-            It.IsAny<CancellationToken>()), Times.Once);
+
+        app.DomainEvents.Should().ContainSingle()
+            .Which.Should().BeOfType<ApplicationUpdateRequestedEvent>()
+            .Which.AutoSubmit.Should().BeTrue();
     }
 
     [Fact]
@@ -80,8 +74,6 @@ public class SubmitApplicationHandlerTests
         var result = await _handler.HandleAsync(command);
 
         result.IsSuccess.Should().BeFalse();
-        _publishEndpointMock.Verify(
-            p => p.Publish(It.IsAny<ApplicationUpdateStarted>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
@@ -95,7 +87,5 @@ public class SubmitApplicationHandlerTests
         var result = await _handler.HandleAsync(command);
 
         result.IsSuccess.Should().BeFalse();
-        _publishEndpointMock.Verify(
-            p => p.Publish(It.IsAny<ApplicationUpdateStarted>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 }

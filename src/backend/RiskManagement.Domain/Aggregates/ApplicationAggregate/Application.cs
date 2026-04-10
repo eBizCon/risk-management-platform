@@ -29,6 +29,8 @@ public class Application : AggregateRoot<ApplicationId>
     public DateTime? ProcessedAt { get; private set; }
     public EmailAddress CreatedBy { get; private set; } = null!;
 
+    private bool _autoSubmit;
+
     private readonly List<ApplicationInquiry> _inquiries = new();
     public IReadOnlyList<ApplicationInquiry> Inquiries => _inquiries.AsReadOnly();
 
@@ -85,7 +87,8 @@ public class Application : AggregateRoot<ApplicationId>
         Money income,
         Money fixedCosts,
         Money desiredRate,
-        EmailAddress createdBy)
+        EmailAddress createdBy,
+        bool autoSubmit)
     {
         if (customerId <= 0)
             throw new DomainException("Kunde muss ausgewählt werden");
@@ -110,8 +113,15 @@ public class Application : AggregateRoot<ApplicationId>
             DesiredRate = desiredRate,
             Status = ApplicationStatus.Processing,
             CreatedAt = DateTime.UtcNow,
-            CreatedBy = createdBy
+            CreatedBy = createdBy,
+            _autoSubmit = autoSubmit
         };
+    }
+
+    public void NotifyCreationRequested()
+    {
+        AddDomainEvent(new ApplicationCreationRequestedEvent(
+            Id, CustomerId, Income, FixedCosts, DesiredRate, CreatedBy, _autoSubmit));
     }
 
     public void Finalize(
@@ -130,12 +140,21 @@ public class Application : AggregateRoot<ApplicationId>
         Status = ApplicationStatus.Draft;
     }
 
-    public void SetProcessing()
+    public void RequestProcessing(
+        int customerId,
+        Money income,
+        Money fixedCosts,
+        Money desiredRate,
+        EmailAddress userEmail,
+        bool autoSubmit)
     {
         if (Status != ApplicationStatus.Draft)
             throw new DomainException("Nur Entwürfe können in den Verarbeitungsstatus versetzt werden");
 
         Status = ApplicationStatus.Processing;
+
+        AddDomainEvent(new ApplicationUpdateRequestedEvent(
+            Id, customerId, income, fixedCosts, desiredRate, userEmail, autoSubmit));
     }
 
     public void MarkFailed(string reason)

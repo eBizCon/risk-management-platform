@@ -61,6 +61,7 @@ public class ApplicationRepository : IApplicationRepository
     public async Task AddAsync(ApplicationEntity application, CancellationToken ct = default)
     {
         await _context.Applications.AddAsync(application, ct);
+        application.NotifyCreationRequested();
     }
 
     public Task RemoveAsync(ApplicationEntity application, CancellationToken ct = default)

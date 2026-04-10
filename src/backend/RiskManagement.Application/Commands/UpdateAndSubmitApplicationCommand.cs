@@ -1,9 +1,8 @@
 using FluentValidation;
-using MassTransit;
 using RiskManagement.Application.Common;
 using RiskManagement.Application.DTOs;
-using RiskManagement.Application.Sagas.ApplicationCreation.Events;
 using RiskManagement.Domain.Aggregates.ApplicationAggregate;
+using RiskManagement.Domain.ValueObjects;
 using SharedKernel.ValueObjects;
 using AppId = RiskManagement.Domain.Aggregates.ApplicationAggregate.ApplicationId;
 
@@ -20,16 +19,13 @@ public class
 {
     private readonly IApplicationRepository _repository;
     private readonly IValidator<ApplicationUpdateDto> _validator;
-    private readonly IPublishEndpoint _publishEndpoint;
 
     public UpdateAndSubmitApplicationHandler(
         IApplicationRepository repository,
-        IValidator<ApplicationUpdateDto> validator,
-        IPublishEndpoint publishEndpoint)
+        IValidator<ApplicationUpdateDto> validator)
     {
         _repository = repository;
         _validator = validator;
-        _publishEndpoint = publishEndpoint;
     }
 
     public async Task<Result<UpdateAndSubmitApplicationResult>> HandleAsync(UpdateAndSubmitApplicationCommand command,
@@ -42,7 +38,7 @@ public class
         if (application.CreatedBy != EmailAddress.Create(command.UserEmail))
             return Result<UpdateAndSubmitApplicationResult>.Forbidden("Zugriff verweigert");
 
-        if (application.Status != Domain.ValueObjects.ApplicationStatus.Draft)
+        if (application.Status != ApplicationStatus.Draft)
             return Result<UpdateAndSubmitApplicationResult>.Failure("Nur Entwürfe können bearbeitet werden");
 
         var validationResult = await _validator.ValidateAsync(command.Dto, ct);
@@ -52,18 +48,15 @@ public class
             return Result<UpdateAndSubmitApplicationResult>.ValidationFailure(errors, command.Dto);
         }
 
-        application.SetProcessing();
-        await _repository.SaveChangesAsync(ct);
-
-        await _publishEndpoint.Publish(new ApplicationUpdateStarted(
-            Guid.NewGuid(),
-            application.Id.Value,
+        application.RequestProcessing(
             command.Dto.CustomerId,
-            command.Dto.Income,
-            command.Dto.FixedCosts,
-            command.Dto.DesiredRate,
-            command.UserEmail,
-            true), ct);
+            Money.Create((decimal)command.Dto.Income),
+            Money.Create((decimal)command.Dto.FixedCosts),
+            Money.CreatePositive((decimal)command.Dto.DesiredRate),
+            EmailAddress.Create(command.UserEmail),
+            true);
+
+        await _repository.SaveChangesAsync(ct);
 
         return Result<UpdateAndSubmitApplicationResult>.Success(new UpdateAndSubmitApplicationResult(
             ApplicationMapper.ToResponse(application)));

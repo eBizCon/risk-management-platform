@@ -60,9 +60,11 @@ public static class DependencyInjection
         services.AddScoped<IDispatcher, Dispatcher>();
 
         var applicationAssembly = typeof(ApplicationCreateDto).Assembly;
+        var infrastructureAssembly = typeof(DependencyInjection).Assembly;
         RegisterHandlers(services, typeof(ICommandHandler<,>), applicationAssembly);
         RegisterHandlers(services, typeof(IQueryHandler<,>), applicationAssembly);
         RegisterHandlers(services, typeof(IDomainEventHandler<>), applicationAssembly);
+        RegisterHandlers(services, typeof(IDomainEventHandler<>), infrastructureAssembly);
 
         return services;
     }

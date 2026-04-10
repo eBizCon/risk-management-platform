@@ -108,7 +108,8 @@ public class ApplicationDomainPolicyTests
     {
         var app = ApplicationEntity.CreateProcessing(
             1, Money.Create(5000), Money.Create(2000), Money.CreatePositive(500),
-            EmailAddress.Create("user@test.com"));
+            EmailAddress.Create("user@test.com"),
+            false);
         app.MarkFailed("some reason");
 
         var configVersion = CreateConfigVersion();
@@ -123,7 +124,8 @@ public class ApplicationDomainPolicyTests
     {
         var app = ApplicationEntity.CreateProcessing(
             1, Money.Create(5000), Money.Create(2000), Money.CreatePositive(500),
-            EmailAddress.Create("user@test.com"));
+            EmailAddress.Create("user@test.com"),
+            false);
 
         var configVersion = CreateConfigVersion();
         var act = () => app.Rescore(_scoringService, ScoringConfig.Default, configVersion.Id);

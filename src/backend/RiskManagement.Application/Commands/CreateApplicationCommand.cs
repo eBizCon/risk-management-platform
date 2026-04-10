@@ -1,8 +1,6 @@
 using FluentValidation;
-using MassTransit;
 using RiskManagement.Application.Common;
 using RiskManagement.Application.DTOs;
-using RiskManagement.Application.Sagas.ApplicationCreation.Events;
 using RiskManagement.Domain.Aggregates.ApplicationAggregate;
 using RiskManagement.Domain.ValueObjects;
 using SharedKernel.ValueObjects;
@@ -18,16 +16,13 @@ public class CreateApplicationHandler : ICommandHandler<CreateApplicationCommand
 {
     private readonly IApplicationRepository _repository;
     private readonly IValidator<ApplicationCreateDto> _validator;
-    private readonly IPublishEndpoint _publishEndpoint;
 
     public CreateApplicationHandler(
         IApplicationRepository repository,
-        IValidator<ApplicationCreateDto> validator,
-        IPublishEndpoint publishEndpoint)
+        IValidator<ApplicationCreateDto> validator)
     {
         _repository = repository;
         _validator = validator;
-        _publishEndpoint = publishEndpoint;
     }
 
     public async Task<Result<CreateApplicationResult>> HandleAsync(CreateApplicationCommand command,
@@ -45,20 +40,11 @@ public class CreateApplicationHandler : ICommandHandler<CreateApplicationCommand
             Money.Create((decimal)command.Dto.Income),
             Money.Create((decimal)command.Dto.FixedCosts),
             Money.CreatePositive((decimal)command.Dto.DesiredRate),
-            EmailAddress.Create(command.UserEmail));
+            EmailAddress.Create(command.UserEmail),
+            false);
 
         await _repository.AddAsync(application, ct);
         await _repository.SaveChangesAsync(ct);
-
-        await _publishEndpoint.Publish(new ApplicationCreationStarted(
-            Guid.NewGuid(),
-            application.Id.Value,
-            command.Dto.CustomerId,
-            command.Dto.Income,
-            command.Dto.FixedCosts,
-            command.Dto.DesiredRate,
-            command.UserEmail,
-            false), ct);
 
         return Result<CreateApplicationResult>.Success(new CreateApplicationResult(
             ApplicationMapper.ToResponse(application)));
