@@ -19,6 +19,8 @@ public class ApplicationCreationStateConfiguration : IEntityTypeConfiguration<Ap
         entity.Property(x => x.Income).HasColumnName("income");
         entity.Property(x => x.FixedCosts).HasColumnName("fixed_costs");
         entity.Property(x => x.DesiredRate).HasColumnName("desired_rate");
+        entity.Property(x => x.LoanAmount).HasColumnName("loan_amount");
+        entity.Property(x => x.LoanTerm).HasColumnName("loan_term");
         entity.Property(x => x.UserEmail).HasColumnName("user_email").HasMaxLength(256);
         entity.Property(x => x.AutoSubmit).HasColumnName("auto_submit");
 

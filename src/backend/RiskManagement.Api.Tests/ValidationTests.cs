@@ -20,7 +20,9 @@ public class ValidationTests
             CustomerId = 1,
             Income = 4000,
             FixedCosts = 1500,
-            DesiredRate = 500
+            DesiredRate = 500,
+            LoanAmount = 25000,
+            LoanTerm = 48
         };
 
         var result = _applicationValidator.Validate(model);
@@ -35,7 +37,9 @@ public class ValidationTests
             CustomerId = 0,
             Income = 4000,
             FixedCosts = 1500,
-            DesiredRate = 500
+            DesiredRate = 500,
+            LoanAmount = 25000,
+            LoanTerm = 48
         };
 
         var result = _applicationValidator.Validate(model);
@@ -50,7 +54,9 @@ public class ValidationTests
             CustomerId = -1,
             Income = 4000,
             FixedCosts = 1500,
-            DesiredRate = 500
+            DesiredRate = 500,
+            LoanAmount = 25000,
+            LoanTerm = 48
         };
 
         var result = _applicationValidator.Validate(model);
@@ -66,7 +72,9 @@ public class ValidationTests
             CustomerId = 1,
             Income = -100,
             FixedCosts = 1500,
-            DesiredRate = 500
+            DesiredRate = 500,
+            LoanAmount = 25000,
+            LoanTerm = 48
         };
 
         var result = _applicationValidator.Validate(model);
@@ -82,7 +90,9 @@ public class ValidationTests
             CustomerId = 1,
             Income = 0,
             FixedCosts = 1500,
-            DesiredRate = 500
+            DesiredRate = 500,
+            LoanAmount = 25000,
+            LoanTerm = 48
         };
 
         var result = _applicationValidator.Validate(model);
@@ -97,7 +107,9 @@ public class ValidationTests
             CustomerId = 1,
             Income = 4000,
             FixedCosts = -500,
-            DesiredRate = 500
+            DesiredRate = 500,
+            LoanAmount = 25000,
+            LoanTerm = 48
         };
 
         var result = _applicationValidator.Validate(model);
@@ -113,7 +125,9 @@ public class ValidationTests
             CustomerId = 1,
             Income = 4000,
             FixedCosts = 0,
-            DesiredRate = 500
+            DesiredRate = 500,
+            LoanAmount = 25000,
+            LoanTerm = 48
         };
 
         var result = _applicationValidator.Validate(model);
@@ -128,7 +142,9 @@ public class ValidationTests
             CustomerId = 1,
             Income = 4000,
             FixedCosts = 1500,
-            DesiredRate = -100
+            DesiredRate = -100,
+            LoanAmount = 25000,
+            LoanTerm = 48
         };
 
         var result = _applicationValidator.Validate(model);
@@ -146,7 +162,9 @@ public class ValidationTests
             CustomerId = 1,
             Income = 3000,
             FixedCosts = 2000,
-            DesiredRate = 1500
+            DesiredRate = 1500,
+            LoanAmount = 25000,
+            LoanTerm = 48
         };
 
         var result = _applicationUpdateValidator.Validate(model);
@@ -162,7 +180,9 @@ public class ValidationTests
             CustomerId = 1,
             Income = 4000,
             FixedCosts = 1500,
-            DesiredRate = 500
+            DesiredRate = 500,
+            LoanAmount = 25000,
+            LoanTerm = 48
         };
 
         var result = _applicationUpdateValidator.Validate(model);
@@ -177,7 +197,9 @@ public class ValidationTests
             CustomerId = 1,
             Income = 3000,
             FixedCosts = 2000,
-            DesiredRate = 1000
+            DesiredRate = 1000,
+            LoanAmount = 25000,
+            LoanTerm = 48
         };
 
         var result = _applicationUpdateValidator.Validate(model);

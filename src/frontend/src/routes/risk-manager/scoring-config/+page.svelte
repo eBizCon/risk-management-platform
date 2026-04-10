@@ -35,6 +35,20 @@
 	let penaltyUnemployed = $state(initialConfig?.penaltyUnemployed ?? 35);
 	let penaltyPaymentDefault = $state(initialConfig?.penaltyPaymentDefault ?? 25);
 
+	let loanToIncomeRatioGood = $state(initialConfig?.loanToIncomeRatioGood ?? 2.0);
+	let loanToIncomeRatioModerate = $state(initialConfig?.loanToIncomeRatioModerate ?? 4.0);
+	let loanToIncomeRatioHigh = $state(initialConfig?.loanToIncomeRatioHigh ?? 6.0);
+	let penaltyModerateLoanToIncome = $state(initialConfig?.penaltyModerateLoanToIncome ?? 10);
+	let penaltyHighLoanToIncome = $state(initialConfig?.penaltyHighLoanToIncome ?? 20);
+	let penaltyCriticalLoanToIncome = $state(initialConfig?.penaltyCriticalLoanToIncome ?? 35);
+
+	let loanTermShort = $state(initialConfig?.loanTermShort ?? 24);
+	let loanTermMedium = $state(initialConfig?.loanTermMedium ?? 60);
+	let loanTermLong = $state(initialConfig?.loanTermLong ?? 120);
+	let penaltyMediumLoanTerm = $state(initialConfig?.penaltyMediumLoanTerm ?? 5);
+	let penaltyLongLoanTerm = $state(initialConfig?.penaltyLongLoanTerm ?? 15);
+	let penaltyVeryLongLoanTerm = $state(initialConfig?.penaltyVeryLongLoanTerm ?? 25);
+
 	function clearMessages() {
 		successMessage = '';
 		errorMessage = '';
@@ -66,7 +80,19 @@
 					penaltySelfEmployed,
 					penaltyRetired,
 					penaltyUnemployed,
-					penaltyPaymentDefault
+					penaltyPaymentDefault,
+					loanToIncomeRatioGood,
+					loanToIncomeRatioModerate,
+					loanToIncomeRatioHigh,
+					penaltyModerateLoanToIncome,
+					penaltyHighLoanToIncome,
+					penaltyCriticalLoanToIncome,
+					loanTermShort,
+					loanTermMedium,
+					loanTermLong,
+					penaltyMediumLoanTerm,
+					penaltyLongLoanTerm,
+					penaltyVeryLongLoanTerm
 				})
 			});
 
@@ -452,8 +478,199 @@
 				</div>
 			</div>
 
+				<div class="card rounded-lg shadow-sm p-6 space-y-6">
+					<h2 class="text-lg font-semibold text-primary">Kreditbetrag / Jahreseinkommen</h2>
+					<p class="text-sm text-secondary">
+						Schwellen für das Verhältnis zwischen Kreditbetrag und Jahreseinkommen, sowie
+						zugehörige Abzüge.
+					</p>
+					<div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+						<div>
+							<label for="loanToIncomeRatioGood" class="block text-sm font-medium text-primary mb-1"
+								>Gut (Ratio ≤)</label
+							>
+							<input
+								id="loanToIncomeRatioGood"
+								type="number"
+								step="0.1"
+								min="0"
+								bind:value={loanToIncomeRatioGood}
+								class="input w-full"
+								data-testid="scoring-config-loan-to-income-ratio-good"
+							/>
+						</div>
+						<div>
+							<label for="loanToIncomeRatioModerate" class="block text-sm font-medium text-primary mb-1"
+								>Moderat (Ratio ≤)</label
+							>
+							<input
+								id="loanToIncomeRatioModerate"
+								type="number"
+								step="0.1"
+								min="0"
+								bind:value={loanToIncomeRatioModerate}
+								class="input w-full"
+								data-testid="scoring-config-loan-to-income-ratio-moderate"
+							/>
+						</div>
+						<div>
+							<label for="loanToIncomeRatioHigh" class="block text-sm font-medium text-primary mb-1"
+								>Hoch (Ratio ≤)</label
+							>
+							<input
+								id="loanToIncomeRatioHigh"
+								type="number"
+								step="0.1"
+								min="0"
+								bind:value={loanToIncomeRatioHigh}
+								class="input w-full"
+								data-testid="scoring-config-loan-to-income-ratio-high"
+							/>
+						</div>
+					</div>
+					<div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+						<div>
+							<label for="penaltyModerateLoanToIncome" class="block text-sm font-medium text-primary mb-1"
+								>Abzug moderat</label
+							>
+							<input
+								id="penaltyModerateLoanToIncome"
+								type="number"
+								min="0"
+								max="100"
+								bind:value={penaltyModerateLoanToIncome}
+								class="input w-full"
+								data-testid="scoring-config-penalty-moderate-loan-to-income"
+							/>
+						</div>
+						<div>
+							<label for="penaltyHighLoanToIncome" class="block text-sm font-medium text-primary mb-1"
+								>Abzug hoch</label
+							>
+							<input
+								id="penaltyHighLoanToIncome"
+								type="number"
+								min="0"
+								max="100"
+								bind:value={penaltyHighLoanToIncome}
+								class="input w-full"
+								data-testid="scoring-config-penalty-high-loan-to-income"
+							/>
+						</div>
+						<div>
+							<label for="penaltyCriticalLoanToIncome" class="block text-sm font-medium text-primary mb-1"
+								>Abzug kritisch</label
+							>
+							<input
+								id="penaltyCriticalLoanToIncome"
+								type="number"
+								min="0"
+								max="100"
+								bind:value={penaltyCriticalLoanToIncome}
+								class="input w-full"
+								data-testid="scoring-config-penalty-critical-loan-to-income"
+							/>
+						</div>
+					</div>
+				</div>
+
+				<div class="card rounded-lg shadow-sm p-6 space-y-6">
+					<h2 class="text-lg font-semibold text-primary">Laufzeit-Risiko</h2>
+					<p class="text-sm text-secondary">
+						Schwellen für die Laufzeit in Monaten und zugehörige Abzüge.
+					</p>
+					<div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+						<div>
+							<label for="loanTermShort" class="block text-sm font-medium text-primary mb-1"
+								>Kurz (≤ Monate)</label
+							>
+							<input
+								id="loanTermShort"
+								type="number"
+								min="1"
+								max="360"
+								bind:value={loanTermShort}
+								class="input w-full"
+								data-testid="scoring-config-loan-term-short"
+							/>
+						</div>
+						<div>
+							<label for="loanTermMedium" class="block text-sm font-medium text-primary mb-1"
+								>Mittel (≤ Monate)</label
+							>
+							<input
+								id="loanTermMedium"
+								type="number"
+								min="1"
+								max="360"
+								bind:value={loanTermMedium}
+								class="input w-full"
+								data-testid="scoring-config-loan-term-medium"
+							/>
+						</div>
+						<div>
+							<label for="loanTermLong" class="block text-sm font-medium text-primary mb-1"
+								>Lang (≤ Monate)</label
+							>
+							<input
+								id="loanTermLong"
+								type="number"
+								min="1"
+								max="360"
+								bind:value={loanTermLong}
+								class="input w-full"
+								data-testid="scoring-config-loan-term-long"
+							/>
+						</div>
+					</div>
+					<div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+						<div>
+							<label for="penaltyMediumLoanTerm" class="block text-sm font-medium text-primary mb-1"
+								>Abzug mittel</label
+							>
+							<input
+								id="penaltyMediumLoanTerm"
+								type="number"
+								min="0"
+								max="100"
+								bind:value={penaltyMediumLoanTerm}
+								class="input w-full"
+								data-testid="scoring-config-penalty-medium-loan-term"
+							/>
+						</div>
+						<div>
+							<label for="penaltyLongLoanTerm" class="block text-sm font-medium text-primary mb-1"
+								>Abzug lang</label
+							>
+							<input
+								id="penaltyLongLoanTerm"
+								type="number"
+								min="0"
+								max="100"
+								bind:value={penaltyLongLoanTerm}
+								class="input w-full"
+								data-testid="scoring-config-penalty-long-loan-term"
+							/>
+						</div>
+						<div>
+							<label for="penaltyVeryLongLoanTerm" class="block text-sm font-medium text-primary mb-1"
+								>Abzug sehr lang</label
+							>
+							<input
+								id="penaltyVeryLongLoanTerm"
+								type="number"
+								min="0"
+								max="100"
+								bind:value={penaltyVeryLongLoanTerm}
+								class="input w-full"
+								data-testid="scoring-config-penalty-very-long-loan-term"
+							/>
+						</div>
+					</div>
+				</div>
+
 			<div class="card rounded-lg shadow-sm p-6 space-y-6">
-				<h2 class="text-lg font-semibold text-primary">Zahlungsverzug</h2>
+					<h2 class="text-lg font-semibold text-primary">Zahlungsverzug</h2>
 				<div>
 					<label for="penaltyPaymentDefault" class="block text-sm font-medium text-primary mb-1"
 						>Abzug bei Zahlungsverzug</label

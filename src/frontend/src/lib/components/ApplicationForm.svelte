@@ -49,7 +49,9 @@
 			customerId: parseInt(fd.get('customerId') as string, 10),
 			income: parseFloat(fd.get('income') as string),
 			fixedCosts: parseFloat(fd.get('fixedCosts') as string),
-			desiredRate: parseFloat(fd.get('desiredRate') as string)
+			desiredRate: parseFloat(fd.get('desiredRate') as string),
+			loanAmount: parseFloat(fd.get('loanAmount') as string),
+			loanTerm: parseInt(fd.get('loanTerm') as string, 10)
 		};
 	}
 
@@ -244,6 +246,45 @@
 			/>
 			{#if errors.desiredRate}
 				<p class="mt-1 error-text">{errors.desiredRate[0]}</p>
+			{/if}
+		</div>
+
+		<div>
+			<label for="loanAmount" class="form-label block">Kreditbetrag (EUR)</label>
+			<input
+				type="number"
+				id="loanAmount"
+				name="loanAmount"
+				value={application?.loanAmount ?? ''}
+				required
+				min="1"
+				step="0.01"
+				class="mt-1 block w-full rounded-md border-default shadow-sm sm:text-sm"
+				placeholder="z.B. 25000"
+				data-testid="input-loan-amount"
+			/>
+			{#if errors.loanAmount}
+				<p class="mt-1 error-text">{errors.loanAmount[0]}</p>
+			{/if}
+		</div>
+
+		<div>
+			<label for="loanTerm" class="form-label block">Laufzeit (Monate)</label>
+			<input
+				type="number"
+				id="loanTerm"
+				name="loanTerm"
+				value={application?.loanTerm ?? ''}
+				required
+				min="1"
+				max="360"
+				step="1"
+				class="mt-1 block w-full rounded-md border-default shadow-sm sm:text-sm"
+				placeholder="z.B. 48"
+				data-testid="input-loan-term"
+			/>
+			{#if errors.loanTerm}
+				<p class="mt-1 error-text">{errors.loanTerm[0]}</p>
 			{/if}
 		</div>
 	</div>

@@ -54,6 +54,25 @@ public class ScoringConfigVersionConfiguration : IEntityTypeConfiguration<Scorin
             config.Property(c => c.CreditScoreModerate).HasColumnName("credit_score_moderate").IsRequired();
             config.Property(c => c.PenaltyModerateCreditScore).HasColumnName("penalty_moderate_credit_score").IsRequired();
             config.Property(c => c.PenaltyLowCreditScore).HasColumnName("penalty_low_credit_score").IsRequired();
+
+            config.Property(c => c.LoanToIncomeRatioGood).HasColumnName("loan_to_income_ratio_good")
+                .HasColumnType("numeric(5,2)").IsRequired();
+            config.Property(c => c.LoanToIncomeRatioModerate).HasColumnName("loan_to_income_ratio_moderate")
+                .HasColumnType("numeric(5,2)").IsRequired();
+            config.Property(c => c.LoanToIncomeRatioHigh).HasColumnName("loan_to_income_ratio_high")
+                .HasColumnType("numeric(5,2)").IsRequired();
+            config.Property(c => c.PenaltyModerateLoanToIncome).HasColumnName("penalty_moderate_loan_to_income")
+                .IsRequired();
+            config.Property(c => c.PenaltyHighLoanToIncome).HasColumnName("penalty_high_loan_to_income").IsRequired();
+            config.Property(c => c.PenaltyCriticalLoanToIncome).HasColumnName("penalty_critical_loan_to_income")
+                .IsRequired();
+
+            config.Property(c => c.LoanTermShort).HasColumnName("loan_term_short").IsRequired();
+            config.Property(c => c.LoanTermMedium).HasColumnName("loan_term_medium").IsRequired();
+            config.Property(c => c.LoanTermLong).HasColumnName("loan_term_long").IsRequired();
+            config.Property(c => c.PenaltyMediumLoanTerm).HasColumnName("penalty_medium_loan_term").IsRequired();
+            config.Property(c => c.PenaltyLongLoanTerm).HasColumnName("penalty_long_loan_term").IsRequired();
+            config.Property(c => c.PenaltyVeryLongLoanTerm).HasColumnName("penalty_very_long_loan_term").IsRequired();
         });
 
         entity.Property(e => e.CreatedBy)

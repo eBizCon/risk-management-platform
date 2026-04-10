@@ -45,7 +45,19 @@ public class UpdateScoringConfigHandler : ICommandHandler<UpdateScoringConfigCom
             command.Dto.CreditScoreGood,
             command.Dto.CreditScoreModerate,
             command.Dto.PenaltyModerateCreditScore,
-            command.Dto.PenaltyLowCreditScore);
+            command.Dto.PenaltyLowCreditScore,
+            command.Dto.LoanToIncomeRatioGood,
+            command.Dto.LoanToIncomeRatioModerate,
+            command.Dto.LoanToIncomeRatioHigh,
+            command.Dto.PenaltyModerateLoanToIncome,
+            command.Dto.PenaltyHighLoanToIncome,
+            command.Dto.PenaltyCriticalLoanToIncome,
+            command.Dto.LoanTermShort,
+            command.Dto.LoanTermMedium,
+            command.Dto.LoanTermLong,
+            command.Dto.PenaltyMediumLoanTerm,
+            command.Dto.PenaltyLongLoanTerm,
+            command.Dto.PenaltyVeryLongLoanTerm);
 
         var version = ScoringConfigVersion.Create(
             nextVersion,

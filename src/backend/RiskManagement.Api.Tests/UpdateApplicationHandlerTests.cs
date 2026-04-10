@@ -48,6 +48,8 @@ public class UpdateApplicationHandlerTests
             Money.Create(5000),
             Money.Create(2000),
             Money.CreatePositive(500),
+            Money.CreatePositive(25000),
+            48,
             EmploymentStatus.Employed,
             CreditReport.Create(false, 420, DateTime.UtcNow, "schufa_mock"),
             EmailAddress.Create(UserEmail),
@@ -63,7 +65,9 @@ public class UpdateApplicationHandlerTests
             CustomerId = 1,
             Income = 6000,
             FixedCosts = 2500,
-            DesiredRate = 600
+            DesiredRate = 600,
+            LoanAmount = 30000,
+            LoanTerm = 60
         };
     }
 

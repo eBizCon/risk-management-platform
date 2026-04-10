@@ -46,6 +46,8 @@ public class SubmitApplicationHandler : ICommandHandler<SubmitApplicationCommand
             (double)application.Income.Amount,
             (double)application.FixedCosts.Amount,
             (double)application.DesiredRate.Amount,
+            application.LoanAmount != null ? (double)application.LoanAmount.Amount : 0,
+            application.LoanTerm ?? 0,
             command.UserEmail,
             true), ct);
 

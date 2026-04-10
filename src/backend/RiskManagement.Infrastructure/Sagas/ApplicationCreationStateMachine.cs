@@ -139,6 +139,8 @@ public class ApplicationCreationStateMachine : MassTransitStateMachine<Applicati
                 Income = ctx.Message.Income,
                 FixedCosts = ctx.Message.FixedCosts,
                 DesiredRate = ctx.Message.DesiredRate,
+                LoanAmount = ctx.Message.LoanAmount,
+                LoanTerm = ctx.Message.LoanTerm,
                 UserEmail = ctx.Message.UserEmail,
                 AutoSubmit = ctx.Message.AutoSubmit,
                 OperationType = "Create",
@@ -158,6 +160,8 @@ public class ApplicationCreationStateMachine : MassTransitStateMachine<Applicati
                 Income = ctx.Message.Income,
                 FixedCosts = ctx.Message.FixedCosts,
                 DesiredRate = ctx.Message.DesiredRate,
+                LoanAmount = ctx.Message.LoanAmount,
+                LoanTerm = ctx.Message.LoanTerm,
                 UserEmail = ctx.Message.UserEmail,
                 AutoSubmit = ctx.Message.AutoSubmit,
                 OperationType = "Update",
@@ -198,6 +202,8 @@ public class ApplicationCreationStateMachine : MassTransitStateMachine<Applicati
                     ctx.Saga.Income = ctx.Message.Income;
                     ctx.Saga.FixedCosts = ctx.Message.FixedCosts;
                     ctx.Saga.DesiredRate = ctx.Message.DesiredRate;
+                    ctx.Saga.LoanAmount = ctx.Message.LoanAmount;
+                    ctx.Saga.LoanTerm = ctx.Message.LoanTerm;
                     ctx.Saga.UserEmail = ctx.Message.UserEmail;
                     ctx.Saga.AutoSubmit = ctx.Message.AutoSubmit;
                     ctx.Saga.OperationType = "Create";
@@ -217,6 +223,8 @@ public class ApplicationCreationStateMachine : MassTransitStateMachine<Applicati
                     ctx.Saga.Income = ctx.Message.Income;
                     ctx.Saga.FixedCosts = ctx.Message.FixedCosts;
                     ctx.Saga.DesiredRate = ctx.Message.DesiredRate;
+                    ctx.Saga.LoanAmount = ctx.Message.LoanAmount;
+                    ctx.Saga.LoanTerm = ctx.Message.LoanTerm;
                     ctx.Saga.UserEmail = ctx.Message.UserEmail;
                     ctx.Saga.AutoSubmit = ctx.Message.AutoSubmit;
                     ctx.Saga.OperationType = "Update";
@@ -288,6 +296,8 @@ public class ApplicationCreationStateMachine : MassTransitStateMachine<Applicati
                         ctx.Saga.Income,
                         ctx.Saga.FixedCosts,
                         ctx.Saga.DesiredRate,
+                        ctx.Saga.LoanAmount,
+                        ctx.Saga.LoanTerm,
                         ctx.Saga.UserEmail,
                         ctx.Saga.EmploymentStatus!,
                         ctx.Saga.HasPaymentDefault!.Value,
@@ -303,6 +313,8 @@ public class ApplicationCreationStateMachine : MassTransitStateMachine<Applicati
                         ctx.Saga.Income,
                         ctx.Saga.FixedCosts,
                         ctx.Saga.DesiredRate,
+                        ctx.Saga.LoanAmount,
+                        ctx.Saga.LoanTerm,
                         ctx.Saga.UserEmail,
                         ctx.Saga.EmploymentStatus!,
                         ctx.Saga.HasPaymentDefault!.Value,

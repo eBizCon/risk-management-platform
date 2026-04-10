@@ -33,7 +33,19 @@ public class UpdateScoringConfigHandlerTests
         400,
         250,
         10,
-        20);
+        20,
+        2.0m,
+        4.0m,
+        6.0m,
+        10,
+        20,
+        35,
+        24,
+        60,
+        120,
+        5,
+        15,
+        25);
 
     [Fact]
     public async Task HandleAsync_NoExistingConfig_ShouldCreateVersion1()
@@ -83,7 +95,11 @@ public class UpdateScoringConfigHandlerTests
             5, 15, 30,
             8, 3, 30,
             20,
-            450, 300, 15, 25);
+            450, 300, 15, 25,
+            2.0m, 4.0m, 6.0m,
+            10, 20, 35,
+            24, 60, 120,
+            5, 15, 25);
 
         var handler = new UpdateScoringConfigHandler(_repoMock.Object);
         var command = new UpdateScoringConfigCommand(customDto, "admin@test.com");

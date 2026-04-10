@@ -46,6 +46,17 @@ public class ApplicationConfiguration : IEntityTypeConfiguration<ApplicationEnti
                 v => (double)v.Amount,
                 v => Money.Create((decimal)v));
 
+        entity.Property(e => e.LoanAmount)
+            .HasColumnName("loan_amount")
+            .IsRequired(false)
+            .HasConversion(
+                v => v != null ? (double)v.Amount : (double?)null,
+                v => v != null ? Money.Create((decimal)v.Value) : null);
+
+        entity.Property(e => e.LoanTerm)
+            .HasColumnName("loan_term")
+            .IsRequired(false);
+
         entity.Property(e => e.EmploymentStatus)
             .HasColumnName("employment_status")
             .HasMaxLength(30)

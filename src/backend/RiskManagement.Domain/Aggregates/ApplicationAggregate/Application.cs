@@ -15,6 +15,8 @@ public class Application : AggregateRoot<ApplicationId>
     public Money Income { get; private set; } = Money.Zero;
     public Money FixedCosts { get; private set; } = Money.Zero;
     public Money DesiredRate { get; private set; } = Money.Zero;
+    public Money? LoanAmount { get; private set; }
+    public int? LoanTerm { get; private set; }
     public EmploymentStatus EmploymentStatus { get; private set; } = EmploymentStatus.Employed;
     public CreditReport CreditReport { get; private set; } = null!;
     public ApplicationStatus Status { get; private set; } = ApplicationStatus.Draft;
@@ -41,6 +43,8 @@ public class Application : AggregateRoot<ApplicationId>
         Money income,
         Money fixedCosts,
         Money desiredRate,
+        Money loanAmount,
+        int loanTerm,
         EmploymentStatus employmentStatus,
         CreditReport creditReport,
         EmailAddress createdBy,
@@ -57,6 +61,12 @@ public class Application : AggregateRoot<ApplicationId>
         if (desiredRate <= Money.Zero)
             throw new DomainException("Gewünschte Rate muss positiv sein");
 
+        if (loanAmount <= Money.Zero)
+            throw new DomainException("Kreditbetrag muss positiv sein");
+
+        if (loanTerm <= 0 || loanTerm > 360)
+            throw new DomainException("Laufzeit muss zwischen 1 und 360 Monaten liegen");
+
         if (fixedCosts >= income)
             throw new DomainException("Fixkosten müssen geringer als das Einkommen sein");
 
@@ -69,6 +79,8 @@ public class Application : AggregateRoot<ApplicationId>
             Income = income,
             FixedCosts = fixedCosts,
             DesiredRate = desiredRate,
+            LoanAmount = loanAmount,
+            LoanTerm = loanTerm,
             EmploymentStatus = employmentStatus,
             CreditReport = creditReport,
             Status = ApplicationStatus.Draft,
@@ -85,6 +97,8 @@ public class Application : AggregateRoot<ApplicationId>
         Money income,
         Money fixedCosts,
         Money desiredRate,
+        Money loanAmount,
+        int loanTerm,
         EmailAddress createdBy)
     {
         if (customerId <= 0)
@@ -95,6 +109,12 @@ public class Application : AggregateRoot<ApplicationId>
 
         if (desiredRate <= Money.Zero)
             throw new DomainException("Gewünschte Rate muss positiv sein");
+
+        if (loanAmount <= Money.Zero)
+            throw new DomainException("Kreditbetrag muss positiv sein");
+
+        if (loanTerm <= 0 || loanTerm > 360)
+            throw new DomainException("Laufzeit muss zwischen 1 und 360 Monaten liegen");
 
         if (fixedCosts >= income)
             throw new DomainException("Fixkosten müssen geringer als das Einkommen sein");
@@ -108,6 +128,8 @@ public class Application : AggregateRoot<ApplicationId>
             Income = income,
             FixedCosts = fixedCosts,
             DesiredRate = desiredRate,
+            LoanAmount = loanAmount,
+            LoanTerm = loanTerm,
             Status = ApplicationStatus.Processing,
             CreatedAt = DateTime.UtcNow,
             CreatedBy = createdBy
@@ -195,6 +217,8 @@ public class Application : AggregateRoot<ApplicationId>
         Money income,
         Money fixedCosts,
         Money desiredRate,
+        Money loanAmount,
+        int loanTerm,
         EmploymentStatus employmentStatus,
         CreditReport creditReport,
         IScoringService scoringService,
@@ -213,6 +237,12 @@ public class Application : AggregateRoot<ApplicationId>
         if (desiredRate <= Money.Zero)
             throw new DomainException("Gewünschte Rate muss positiv sein");
 
+        if (loanAmount <= Money.Zero)
+            throw new DomainException("Kreditbetrag muss positiv sein");
+
+        if (loanTerm <= 0 || loanTerm > 360)
+            throw new DomainException("Laufzeit muss zwischen 1 und 360 Monaten liegen");
+
         if (fixedCosts >= income)
             throw new DomainException("Fixkosten müssen geringer als das Einkommen sein");
 
@@ -223,6 +253,8 @@ public class Application : AggregateRoot<ApplicationId>
         Income = income;
         FixedCosts = fixedCosts;
         DesiredRate = desiredRate;
+        LoanAmount = loanAmount;
+        LoanTerm = loanTerm;
         EmploymentStatus = employmentStatus;
         CreditReport = creditReport;
 
@@ -289,7 +321,7 @@ public class Application : AggregateRoot<ApplicationId>
         var creditScore = CreditReport?.CreditScore;
         var result =
             scoringService.CalculateScore(Income, FixedCosts, DesiredRate, EmploymentStatus,
-                hasPaymentDefault, creditScore, scoringConfig);
+                hasPaymentDefault, creditScore, scoringConfig, LoanAmount, LoanTerm);
         Score = result.Score;
         TrafficLight = result.TrafficLight;
         ScoringReasons = JsonSerializer.Serialize(result.Reasons);

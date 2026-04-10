@@ -60,6 +60,8 @@ public class UpdateApplicationHandler : ICommandHandler<UpdateApplicationCommand
             command.Dto.Income,
             command.Dto.FixedCosts,
             command.Dto.DesiredRate,
+            command.Dto.LoanAmount,
+            command.Dto.LoanTerm,
             command.UserEmail,
             false), ct);
 

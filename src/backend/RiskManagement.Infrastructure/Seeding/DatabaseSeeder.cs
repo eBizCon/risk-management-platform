@@ -112,6 +112,8 @@ public class DatabaseSeeder
                 Money.Create((decimal)template.Income),
                 Money.Create((decimal)template.FixedCosts),
                 Money.CreatePositive((decimal)template.DesiredRate),
+                Money.CreatePositive(25000m),
+                48,
                 template.EmploymentStatus,
                 creditReport,
                 createdBy,

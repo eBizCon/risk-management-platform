@@ -61,6 +61,7 @@ public class RescoreOpenApplicationsHandlerTests
 
         var app1 = ApplicationEntity.Create(
             1, Money.Create(5000), Money.Create(2000), Money.CreatePositive(500),
+            Money.CreatePositive(25000), 48,
             EmploymentStatus.Employed, creditReport,
             EmailAddress.Create("user@test.com"),
             _scoringService, ScoringConfig.Default, configVersion.Id);
@@ -68,6 +69,7 @@ public class RescoreOpenApplicationsHandlerTests
 
         var app2 = ApplicationEntity.Create(
             2, Money.Create(3000), Money.Create(1000), Money.CreatePositive(300),
+            Money.CreatePositive(15000), 24,
             EmploymentStatus.SelfEmployed, creditReport,
             EmailAddress.Create("user@test.com"),
             _scoringService, ScoringConfig.Default, configVersion.Id);
