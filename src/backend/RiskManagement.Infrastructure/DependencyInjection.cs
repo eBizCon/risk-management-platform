@@ -71,6 +71,12 @@ public static class DependencyInjection
     {
         services.AddMassTransit(x =>
         {
+            x.AddEntityFrameworkOutbox<ApplicationDbContext>(o =>
+            {
+                o.UsePostgres();
+                o.UseBusOutbox();
+            });
+
             x.AddConsumer<FetchCustomerProfileConsumer>();
             x.AddConsumer<FetchCustomerProfileFaultConsumer>();
             x.AddConsumer<PerformCreditCheckConsumer>();
