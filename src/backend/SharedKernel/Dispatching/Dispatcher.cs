@@ -47,13 +47,4 @@ public class Dispatcher : IDispatcher
         var method = handlerType.GetMethod("HandleAsync")!;
         foreach (var handler in handlers) await (Task)method.Invoke(handler, new object[] { domainEvent, ct })!;
     }
-
-    public async Task PublishDomainEventsAsync(IHasDomainEvents aggregate, CancellationToken ct = default)
-    {
-        var events = aggregate.DomainEvents.ToList();
-        aggregate.ClearDomainEvents();
-
-        foreach (var domainEvent in events)
-            await PublishAsync(domainEvent, ct);
-    }
 }

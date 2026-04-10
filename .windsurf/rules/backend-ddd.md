@@ -30,7 +30,7 @@ Common base classes and interfaces are centralized in the SharedKernel project t
 - **ValueObject**: Abstract base class with equality based on GetEqualityComponents() - NEVER implement IEquatable manually
 - **Entity**: Base class for all entities with ID
 - **Result**: Record type for operation results (Success, Failure with error message)
-- **IDispatcher**: CQRS dispatcher interface with SendAsync, QueryAsync, PublishAsync, PublishDomainEventsAsync
+- **IDispatcher**: CQRS dispatcher interface with SendAsync, QueryAsync, PublishAsync
 - **ICommand<TResult>, IQuery<TResult>, IDomainEventHandler**: Marker interfaces for CQRS pattern
 - **IHasDomainEvents**: Interface for aggregates that raise domain events
 
@@ -57,7 +57,7 @@ Two types of events exist with different purposes and lifecycles:
 
 ### Domain Events (Intra-Context)
 - Raised within aggregates via `AddDomainEvent()` in the Domain layer
-- Dispatched via `IDispatcher.PublishDomainEventsAsync(aggregate)` after `SaveChangesAsync()`
+- Automatically dispatched via `DomainEventDispatchInterceptor` before `SaveChangesAsync()`
 - Handled by `IDomainEventHandler<TEvent>` implementations within the same bounded context
 - Used for side-effects within the same context (audit logging, notifications, process triggers)
 - Stored in-memory on the aggregate until published, then cleared
@@ -174,9 +174,9 @@ Sagas are defined in Infrastructure/Sagas and registered via MassTransit configu
 
 - Controllers MUST inject only `IDispatcher` — never individual handlers.
 - Use `dispatcher.SendAsync()` for commands, `dispatcher.QueryAsync()` for queries.
-- Domain events MUST be dispatched explicitly after `SaveChangesAsync()` via `dispatcher.PublishDomainEventsAsync(aggregate)`.
-- Pattern: business logic → (policies) → save → publish events → clear events.
-- Domain events are NOT auto-dispatched by DbContext or repository.
+- Domain events are automatically dispatched via `DomainEventDispatchInterceptor` before `SaveChangesAsync()`.
+- Pattern: business logic → (policies) → save (interceptor publishes events automatically).
+- Domain events are NOT manually dispatched by handlers.
 
 ## Handler Auto-Registration
 

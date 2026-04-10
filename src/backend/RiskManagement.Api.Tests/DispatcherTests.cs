@@ -31,14 +31,6 @@ public class TestQueryHandler : IQueryHandler<TestQuery, string>
     }
 }
 
-public class TestAggregate : AggregateRoot
-{
-    public void RaiseEvent(IDomainEvent domainEvent)
-    {
-        AddDomainEvent(domainEvent);
-    }
-}
-
 public class DispatcherTests
 {
     private static Dispatcher CreateDispatcher(IServiceCollection services)
@@ -120,25 +112,4 @@ public class DispatcherTests
         await Assert.ThrowsAsync<InvalidOperationException>(() => dispatcher.QueryAsync(new TestQuery("missing")));
     }
 
-    [Fact]
-    public async Task PublishDomainEventsAsync_Publishes_All_Events_And_Clears()
-    {
-        var handler = new Mock<IDomainEventHandler<TestEvent>>();
-
-        var services = new ServiceCollection();
-        services.AddScoped(_ => handler.Object);
-        var dispatcher = CreateDispatcher(services);
-
-        var aggregate = new TestAggregate();
-        aggregate.RaiseEvent(new TestEvent("e1"));
-        aggregate.RaiseEvent(new TestEvent("e2"));
-
-        await dispatcher.PublishDomainEventsAsync(aggregate);
-
-        handler.Verify(h => h.HandleAsync(It.Is<TestEvent>(e => e.Value == "e1"), It.IsAny<CancellationToken>()),
-            Times.Once);
-        handler.Verify(h => h.HandleAsync(It.Is<TestEvent>(e => e.Value == "e2"), It.IsAny<CancellationToken>()),
-            Times.Once);
-        Assert.Empty(aggregate.DomainEvents);
-    }
 }
