@@ -40,7 +40,8 @@ public class FinalizeApplicationConsumerTests
             Money.Create(5000),
             Money.Create(2000),
             Money.CreatePositive(500),
-            EmailAddress.Create("user@test.com"));
+            EmailAddress.Create("user@test.com"),
+            false);
     }
 
     private static FinalizeApplication CreateMessage(Guid correlationId, bool autoSubmit = false)

@@ -29,7 +29,8 @@ public class ApplicationSagaMethodsTests
             Money.Create(5000),
             Money.Create(2000),
             Money.CreatePositive(500),
-            EmailAddress.Create("user@test.com"));
+            EmailAddress.Create("user@test.com"),
+            false);
     }
 
     [Fact]
@@ -74,7 +75,8 @@ public class ApplicationSagaMethodsTests
     {
         var act = () => ApplicationEntity.CreateProcessing(
             0, Money.Create(5000), Money.Create(2000), Money.CreatePositive(500),
-            EmailAddress.Create("user@test.com"));
+            EmailAddress.Create("user@test.com"),
+            false);
 
         act.Should().Throw<DomainException>();
     }

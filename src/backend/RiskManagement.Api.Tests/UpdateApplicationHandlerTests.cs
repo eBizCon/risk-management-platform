@@ -2,13 +2,12 @@ using FluentAssertions;
 using FluentValidation;
 using FluentValidation.Results;
 using FluentValidationResult = FluentValidation.Results.ValidationResult;
-using MassTransit;
 using Moq;
 using RiskManagement.Application.Commands;
 using RiskManagement.Application.DTOs;
-using RiskManagement.Application.Sagas.ApplicationCreation.Events;
 using RiskManagement.Domain.Aggregates.ApplicationAggregate;
 using RiskManagement.Domain.Aggregates.ScoringConfigAggregate;
+using RiskManagement.Domain.Events;
 using RiskManagement.Domain.Services;
 using RiskManagement.Domain.ValueObjects;
 using SharedKernel.ValueObjects;
@@ -21,7 +20,6 @@ public class UpdateApplicationHandlerTests
 {
     private readonly Mock<IApplicationRepository> _repositoryMock = new();
     private readonly Mock<IValidator<ApplicationUpdateDto>> _validatorMock = new();
-    private readonly Mock<IPublishEndpoint> _publishEndpointMock = new();
     private readonly UpdateApplicationHandler _handler;
 
     private const string UserEmail = "user@test.com";
@@ -30,8 +28,7 @@ public class UpdateApplicationHandlerTests
     {
         _handler = new UpdateApplicationHandler(
             _repositoryMock.Object,
-            _validatorMock.Object,
-            _publishEndpointMock.Object);
+            _validatorMock.Object);
 
         _validatorMock.Setup(v => v.ValidateAsync(It.IsAny<ApplicationUpdateDto>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new FluentValidationResult());
@@ -82,12 +79,10 @@ public class UpdateApplicationHandlerTests
         app.Status.Should().Be(ApplicationStatus.Processing);
 
         _repositoryMock.Verify(r => r.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
-        _publishEndpointMock.Verify(p => p.Publish(
-            It.Is<ApplicationUpdateStarted>(e =>
-                e.CustomerId == 1 &&
-                e.Income == 6000 &&
-                e.AutoSubmit == false),
-            It.IsAny<CancellationToken>()), Times.Once);
+
+        app.DomainEvents.Should().ContainSingle()
+            .Which.Should().BeOfType<ApplicationUpdateRequestedEvent>()
+            .Which.AutoSubmit.Should().BeFalse();
     }
 
     [Fact]
@@ -100,8 +95,6 @@ public class UpdateApplicationHandlerTests
         var result = await _handler.HandleAsync(command);
 
         result.IsSuccess.Should().BeFalse();
-        _publishEndpointMock.Verify(
-            p => p.Publish(It.IsAny<ApplicationUpdateStarted>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
@@ -115,8 +108,6 @@ public class UpdateApplicationHandlerTests
         var result = await _handler.HandleAsync(command);
 
         result.IsSuccess.Should().BeFalse();
-        _publishEndpointMock.Verify(
-            p => p.Publish(It.IsAny<ApplicationUpdateStarted>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
@@ -134,7 +125,5 @@ public class UpdateApplicationHandlerTests
         var result = await _handler.HandleAsync(command);
 
         result.IsSuccess.Should().BeFalse();
-        _publishEndpointMock.Verify(
-            p => p.Publish(It.IsAny<ApplicationUpdateStarted>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 }
