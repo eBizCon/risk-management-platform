@@ -22,6 +22,68 @@ Api → Application → Domain
 - **Infrastructure**: EF Core DbContext, Repository implementations, Dispatcher, DI registration. Implements interfaces from Domain/Application.
 - **Api**: Controllers, Middleware, Extensions. Thin transport layer.
 
+## SharedKernel Pattern
+
+Common base classes and interfaces are centralized in the SharedKernel project to avoid duplication across bounded contexts:
+
+- **AggregateRoot**: Base class for all aggregates with domain event management (AddDomainEvent, ClearDomainEvents, DomainEvents)
+- **ValueObject**: Abstract base class with equality based on GetEqualityComponents() - NEVER implement IEquatable manually
+- **Entity**: Base class for all entities with ID
+- **Result**: Record type for operation results (Success, Failure with error message)
+- **IDispatcher**: CQRS dispatcher interface with SendAsync, QueryAsync, PublishAsync, PublishDomainEventsAsync
+- **ICommand<TResult>, IQuery<TResult>, IDomainEventHandler**: Marker interfaces for CQRS pattern
+- **IHasDomainEvents**: Interface for aggregates that raise domain events
+
+All bounded contexts (CustomerManagement, RiskManagement) reference SharedKernel and use these common building blocks.
+
+## Multi-Bounded Context Architecture
+
+The system is organized into multiple bounded contexts, each with its own database and ubiquitous language:
+
+- **CustomerManagement**: Manages customer data (Customer aggregate). Has its own DbContext (CustomerDbContext) and database.
+- **RiskManagement**: Manages credit risk applications, scoring, and processing (Application, ScoringConfig aggregates). Has its own DbContext (ApplicationDbContext) and database.
+
+Cross-context communication happens through:
+- **MassTransit messaging** (RabbitMQ) for integration events
+- **Integration Event Publishers** in one context publish events to the message bus
+- **Consumers** in other contexts subscribe to integration events and react
+- **Internal API calls** with X-Api-Key header for synchronous service-to-service communication
+
+Each bounded context follows the same Clean Architecture pattern (Api → Application → Domain ← Infrastructure) and references SharedKernel for common building blocks.
+
+## Domain Events vs Integration Events
+
+Two types of events exist with different purposes and lifecycles:
+
+### Domain Events (Intra-Context)
+- Raised within aggregates via `AddDomainEvent()` in the Domain layer
+- Dispatched via `IDispatcher.PublishDomainEventsAsync(aggregate)` after `SaveChangesAsync()`
+- Handled by `IDomainEventHandler<TEvent>` implementations within the same bounded context
+- Used for side-effects within the same context (audit logging, notifications, process triggers)
+- Stored in-memory on the aggregate until published, then cleared
+
+### Integration Events (Inter-Context)
+- Published via MassTransit to RabbitMQ message bus
+- Implemented as `IntegrationEventPublisher` classes in Infrastructure
+- Consumed by MassTransit consumers in other bounded contexts
+- Used for cross-context communication (e.g., CustomerCreated → RiskManagement creates application read model)
+- Persisted in MassTransit Outbox table for reliable messaging
+- Support saga orchestration for long-running processes across contexts
+
+**Rule**: Never mix domain events and integration events. Domain events stay within the context; integration events cross context boundaries.
+
+## Saga Pattern
+
+Long-running processes that span multiple bounded contexts use the Saga pattern with MassTransit:
+
+- **State Machine**: `ApplicationCreationStateMachine` orchestrates the credit check process across CustomerManagement and RiskManagement
+- **Saga State**: Persisted state machine instance tracks progress (Created, CustomerFetched, CreditCheckPerformed, Finalized, Failed)
+- **Consumers**: Each saga step has a consumer that processes messages and advances the state
+- **Fault Handling**: Fault consumers handle errors and transition to failed state
+- **Correlation**: Messages are correlated by saga instance ID
+
+Sagas are defined in Infrastructure/Sagas and registered via MassTransit configuration. They provide eventual consistency across bounded contexts without distributed transactions.
+
 ## Domain Layer Rules
 
 ### Aggregates

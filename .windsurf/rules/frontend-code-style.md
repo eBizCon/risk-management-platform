@@ -31,6 +31,13 @@ Ensure consistent, clean, and idiomatic TypeScript/Svelte code across the fronte
 - Use generics for reusable, type-safe components.
 - Avoid using `any` — use `unknown` instead when type is not known.
 
+## Icons
+
+- Use **lucide-svelte** as the standard icon library.
+- Import icons from `lucide-svelte` (e.g., `import { Plus, Edit, Trash } from 'lucide-svelte'`).
+- Icons are Svelte components that accept size, color, and other props.
+- Use consistent icon sizing (typically `w-4 h-4`, `w-5 h-5`, or `w-6 h-6`).
+
 ## Code Quality
 
 - Follow SOLID principles.
@@ -44,3 +51,14 @@ Ensure consistent, clean, and idiomatic TypeScript/Svelte code across the fronte
 - The frontend determines navigation targets client-side after successful API mutations.
 - Use the response data (e.g., `application.id`) to build navigation paths.
 - Never rely on server-provided redirect paths.
+
+## Authentication & Authorization
+
+- **OIDC Login Flow**: Use openid-client for OIDC authentication with PKCE (Proof Key for Code Exchange).
+- **Login Handler**: Server endpoint sets PKCE state, nonce, and returnTo cookies, then redirects to Keycloak.
+- **Callback Handler**: Exchange authorization code for tokens, validate roles, create session, handle returnTo.
+- **Logout Handler**: Clear session and redirect to Keycloak logout or post-logout redirect URL.
+- **Role-Based Authorization**: Use RoleGuard component to protect routes based on user roles (applicant, processor, risk-manager).
+- **Session Management**: Session is stored in cookies; check session validity on protected routes.
+- **No Auto-Redirect**: For unauthorized access, show "Keine Berechtigung" message with link to login instead of auto-redirecting.
+- **Role Changes**: Role changes take effect on next login (not immediate).

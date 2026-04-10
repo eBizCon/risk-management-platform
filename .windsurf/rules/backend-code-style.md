@@ -42,3 +42,12 @@ Ensure consistent, clean, and idiomatic C# code across the backend.
 
 - Constructor injection only — no service locator pattern.
 - Register services with appropriate lifetimes: Scoped for handlers/repositories, Singleton for stateless services.
+
+## Authentication & Authorization
+
+- **OIDC/Keycloak**: Use JWT Bearer authentication with Keycloak as the identity provider.
+- **Role-based Authorization**: Define authorization policies for roles (Applicant, Processor, RiskManager) in Program.cs.
+- **Policy Attributes**: Use `[Authorize(Policy = AuthPolicies.Applicant)]` on controllers/actions to enforce role-based access.
+- **Internal API Authentication**: Service-to-service communication uses X-Api-Key header for authentication (e.g., RiskManagement → CustomerManagement).
+- **Claims Transformation**: Implement `IClaimsTransformation` to transform Keycloak role claims (e.g., `realm_access.roles`) into standard Role claims.
+- **Never auto-redirect**: API endpoints return 401/403 for unauthorized requests; never redirect to login from API.

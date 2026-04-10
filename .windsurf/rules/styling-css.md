@@ -29,3 +29,10 @@ Ensure consistent styling across the application using TailwindCSS 4.0 and Svelt
 - Use `@media` queries only when necessary for larger screens.
 - Use Tailwind's responsive modifiers (`md:`, `lg:`, etc.) for responsive design.
 
+## Mobile Responsive Patterns
+
+- **Minimum Supported Width**: Design for minimum width of 360px (small phones).
+- **Tabular Views on Mobile**: Tables should default to card layout on mobile with a toggle to switch between card and table views.
+- **Card/Table Toggle**: Every tabular view must have a toggle control available for switching between card and table layouts.
+- **Card Layout**: Use `.mobile-card` utility class for mobile card views (defined in app.css).
+- **Touch Targets**: Ensure minimum touch target size of 44x44px for buttons and interactive elements on mobile.

@@ -8,7 +8,10 @@ description: When changing or adding database access logic in the C# backend
 ## ORM & Provider
 
 - **Entity Framework Core** with **Npgsql** (PostgreSQL provider).
-- `ApplicationDbContext` is located in `RiskManagement.Infrastructure.Persistence`.
+- Each bounded context has its own DbContext:
+  - `CustomerDbContext` in `CustomerManagement.Infrastructure.Persistence` (CustomerManagement database)
+  - `ApplicationDbContext` in `RiskManagement.Infrastructure.Persistence` (RiskManagement database)
+- Each bounded context has a separate database following the multi-bounded context architecture.
 
 ## Repository Pattern
 
@@ -26,6 +29,14 @@ description: When changing or adding database access logic in the C# backend
 
 - Migrations are managed via EF Core in `Infrastructure/Persistence/Migrations/`.
 - Use `dev/add-migration.sh` to create new migrations.
+- Each DbContext has its own migration set (CustomerDbContext migrations, ApplicationDbContext migrations).
+
+## MassTransit Outbox
+
+- MassTransit Outbox table is added to each DbContext for reliable messaging.
+- Integration events are persisted to the outbox before publishing to RabbitMQ.
+- Outbox ensures at-least-once delivery even if the application crashes after saving but before publishing.
+- Outbox consumer processes pending messages and marks them as delivered.
 
 ## Seeding
 
