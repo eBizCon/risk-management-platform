@@ -7,5 +7,7 @@ public record ApplicationCreationStarted(
     double Income,
     double FixedCosts,
     double DesiredRate,
+    double LoanAmount,
+    int LoanTerm,
     string UserEmail,
     bool AutoSubmit);

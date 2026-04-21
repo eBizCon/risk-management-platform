@@ -27,6 +27,8 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await expect(authenticatedPage.getByTestId('input-income')).toBeVisible();
 			await expect(authenticatedPage.getByTestId('input-fixed-costs')).toBeVisible();
 			await expect(authenticatedPage.getByTestId('input-desired-rate')).toBeVisible();
+			await expect(authenticatedPage.getByTestId('input-loan-amount')).toBeVisible();
+			await expect(authenticatedPage.getByTestId('input-loan-term')).toBeVisible();
 			await expect(authenticatedPage.getByTestId('select-employment-status')).toBeVisible();
 			await expect(authenticatedPage.getByTestId('radio-payment-default-yes')).toBeVisible();
 			await expect(authenticatedPage.getByTestId('radio-payment-default-no')).toBeVisible();
@@ -41,6 +43,8 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await authenticatedPage.getByTestId('input-income').fill('1000');
 			await authenticatedPage.getByTestId('input-fixed-costs').fill('500');
 			await authenticatedPage.getByTestId('input-desired-rate').fill('200');
+			await authenticatedPage.getByTestId('input-loan-amount').fill('10000');
+			await authenticatedPage.getByTestId('input-loan-term').fill('24');
 			await authenticatedPage.getByTestId('select-employment-status').selectOption('employed');
 			await authenticatedPage.getByTestId('radio-payment-default-no').check();
 
@@ -57,6 +61,8 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await authenticatedPage.getByTestId('input-income').fill('0');
 			await authenticatedPage.getByTestId('input-fixed-costs').fill('0');
 			await authenticatedPage.getByTestId('input-desired-rate').fill('200');
+			await authenticatedPage.getByTestId('input-loan-amount').fill('10000');
+			await authenticatedPage.getByTestId('input-loan-term').fill('24');
 			await authenticatedPage.getByTestId('select-employment-status').selectOption('employed');
 			await authenticatedPage.getByTestId('radio-payment-default-no').check();
 
@@ -74,6 +80,8 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await authenticatedPage.getByTestId('input-income').fill('3000');
 			await authenticatedPage.getByTestId('input-fixed-costs').fill('2000');
 			await authenticatedPage.getByTestId('input-desired-rate').fill('1500');
+			await authenticatedPage.getByTestId('input-loan-amount').fill('10000');
+			await authenticatedPage.getByTestId('input-loan-term').fill('24');
 			await authenticatedPage.getByTestId('select-employment-status').selectOption('employed');
 			await authenticatedPage.getByTestId('radio-payment-default-no').check();
 
@@ -91,6 +99,8 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await authenticatedPage.getByTestId('input-income').fill('4000');
 			await authenticatedPage.getByTestId('input-fixed-costs').fill('1500');
 			await authenticatedPage.getByTestId('input-desired-rate').fill('500');
+			await authenticatedPage.getByTestId('input-loan-amount').fill('25000');
+			await authenticatedPage.getByTestId('input-loan-term').fill('48');
 			await authenticatedPage.getByTestId('select-employment-status').selectOption('employed');
 			await authenticatedPage.getByTestId('radio-payment-default-no').check();
 
@@ -109,6 +119,8 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await authenticatedPage.getByTestId('input-income').fill('5000');
 			await authenticatedPage.getByTestId('input-fixed-costs').fill('2000');
 			await authenticatedPage.getByTestId('input-desired-rate').fill('600');
+			await authenticatedPage.getByTestId('input-loan-amount').fill('30000');
+			await authenticatedPage.getByTestId('input-loan-term').fill('60');
 			await authenticatedPage.getByTestId('select-employment-status').selectOption('employed');
 			await authenticatedPage.getByTestId('radio-payment-default-no').check();
 
@@ -140,6 +152,8 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await authenticatedPage.getByTestId('input-income').fill('4500');
 			await authenticatedPage.getByTestId('input-fixed-costs').fill('1800');
 			await authenticatedPage.getByTestId('input-desired-rate').fill('500');
+			await authenticatedPage.getByTestId('input-loan-amount').fill('20000');
+			await authenticatedPage.getByTestId('input-loan-term').fill('36');
 			await authenticatedPage.getByTestId('select-employment-status').selectOption('employed');
 			await authenticatedPage.getByTestId('radio-payment-default-no').check();
 			await authenticatedPage.getByTestId('btn-save-draft').click();
@@ -158,6 +172,8 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await authenticatedPage.getByTestId('input-income').fill('4000');
 			await authenticatedPage.getByTestId('input-fixed-costs').fill('1500');
 			await authenticatedPage.getByTestId('input-desired-rate').fill('450');
+			await authenticatedPage.getByTestId('input-loan-amount').fill('15000');
+			await authenticatedPage.getByTestId('input-loan-term').fill('24');
 			await authenticatedPage.getByTestId('select-employment-status').selectOption('employed');
 			await authenticatedPage.getByTestId('radio-payment-default-no').check();
 			await authenticatedPage.getByTestId('btn-submit-application').click();
@@ -173,6 +189,8 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await page.getByTestId('input-income').fill('4500');
 			await page.getByTestId('input-fixed-costs').fill('1500');
 			await page.getByTestId('input-desired-rate').fill('500');
+			await page.getByTestId('input-loan-amount').fill('20000');
+			await page.getByTestId('input-loan-term').fill('36');
 			await page.getByTestId('select-employment-status').selectOption('employed');
 			await page.getByTestId('radio-payment-default-no').check();
 		}
@@ -253,6 +271,8 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await authenticatedPage.getByTestId('input-income').fill('5000');
 			await authenticatedPage.getByTestId('input-fixed-costs').fill('2000');
 			await authenticatedPage.getByTestId('input-desired-rate').fill('500');
+			await authenticatedPage.getByTestId('input-loan-amount').fill('25000');
+			await authenticatedPage.getByTestId('input-loan-term').fill('48');
 			await authenticatedPage.getByTestId('select-employment-status').selectOption('employed');
 			await authenticatedPage.getByTestId('radio-payment-default-no').check();
 			await authenticatedPage.getByTestId('btn-submit-application').click();
@@ -267,6 +287,8 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await authenticatedPage.getByTestId('input-income').fill('4000');
 			await authenticatedPage.getByTestId('input-fixed-costs').fill('1500');
 			await authenticatedPage.getByTestId('input-desired-rate').fill('400');
+			await authenticatedPage.getByTestId('input-loan-amount').fill('20000');
+			await authenticatedPage.getByTestId('input-loan-term').fill('36');
 			await authenticatedPage.getByTestId('select-employment-status').selectOption('employed');
 			await authenticatedPage.getByTestId('radio-payment-default-no').check();
 			await authenticatedPage.getByTestId('btn-submit-application').click();
@@ -280,6 +302,8 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await authenticatedPage.getByTestId('input-income').fill('6000');
 			await authenticatedPage.getByTestId('input-fixed-costs').fill('2000');
 			await authenticatedPage.getByTestId('input-desired-rate').fill('500');
+			await authenticatedPage.getByTestId('input-loan-amount').fill('25000');
+			await authenticatedPage.getByTestId('input-loan-term').fill('24');
 			await authenticatedPage.getByTestId('select-employment-status').selectOption('employed');
 			await authenticatedPage.getByTestId('radio-payment-default-no').check();
 			await authenticatedPage.getByTestId('btn-submit-application').click();
@@ -334,6 +358,8 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await authenticatedPage.getByTestId('input-income').fill('4000');
 			await authenticatedPage.getByTestId('input-fixed-costs').fill('1500');
 			await authenticatedPage.getByTestId('input-desired-rate').fill('400');
+			await authenticatedPage.getByTestId('input-loan-amount').fill('20000');
+			await authenticatedPage.getByTestId('input-loan-term').fill('36');
 			await authenticatedPage.getByTestId('select-employment-status').selectOption('employed');
 			await authenticatedPage.getByTestId('radio-payment-default-no').check();
 			await authenticatedPage.getByTestId('btn-save-draft').click();

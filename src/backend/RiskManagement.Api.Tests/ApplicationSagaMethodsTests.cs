@@ -29,6 +29,8 @@ public class ApplicationSagaMethodsTests
             Money.Create(5000),
             Money.Create(2000),
             Money.CreatePositive(500),
+            Money.CreatePositive(25000),
+            48,
             EmailAddress.Create("user@test.com"));
     }
 
@@ -74,6 +76,7 @@ public class ApplicationSagaMethodsTests
     {
         var act = () => ApplicationEntity.CreateProcessing(
             0, Money.Create(5000), Money.Create(2000), Money.CreatePositive(500),
+            Money.CreatePositive(25000), 48,
             EmailAddress.Create("user@test.com"));
 
         act.Should().Throw<DomainException>();
@@ -138,6 +141,7 @@ public class ApplicationSagaMethodsTests
         var configVersion = CreateConfigVersion();
         var app = ApplicationEntity.Create(
             1, Money.Create(5000), Money.Create(2000), Money.CreatePositive(500),
+            Money.CreatePositive(25000), 48,
             EmploymentStatus.Employed, CreateCreditReport(),
             EmailAddress.Create("user@test.com"),
             _scoringService, ScoringConfig.Default, configVersion.Id);
@@ -169,6 +173,7 @@ public class ApplicationSagaMethodsTests
         var configVersion = CreateConfigVersion();
         var app = ApplicationEntity.Create(
             1, Money.Create(5000), Money.Create(2000), Money.CreatePositive(500),
+            Money.CreatePositive(25000), 48,
             EmploymentStatus.Employed, CreateCreditReport(),
             EmailAddress.Create("user@test.com"),
             _scoringService, ScoringConfig.Default, configVersion.Id);

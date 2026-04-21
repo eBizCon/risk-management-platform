@@ -39,6 +39,8 @@ public class SubmitApplicationHandlerTests
             Money.Create(5000),
             Money.Create(2000),
             Money.CreatePositive(500),
+            Money.CreatePositive(25000),
+            48,
             EmploymentStatus.Employed,
             CreditReport.Create(false, 420, DateTime.UtcNow, "schufa_mock"),
             EmailAddress.Create(UserEmail),

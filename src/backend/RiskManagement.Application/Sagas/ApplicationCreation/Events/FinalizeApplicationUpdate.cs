@@ -7,6 +7,8 @@ public record FinalizeApplicationUpdate(
     double Income,
     double FixedCosts,
     double DesiredRate,
+    double LoanAmount,
+    int LoanTerm,
     string UserEmail,
     string EmploymentStatus,
     bool HasPaymentDefault,

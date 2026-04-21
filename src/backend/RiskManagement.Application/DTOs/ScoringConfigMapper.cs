@@ -31,6 +31,18 @@ public static class ScoringConfigMapper
             version.Config.CreditScoreModerate,
             version.Config.PenaltyModerateCreditScore,
             version.Config.PenaltyLowCreditScore,
+            version.Config.LoanToIncomeRatioGood,
+            version.Config.LoanToIncomeRatioModerate,
+            version.Config.LoanToIncomeRatioHigh,
+            version.Config.PenaltyModerateLoanToIncome,
+            version.Config.PenaltyHighLoanToIncome,
+            version.Config.PenaltyCriticalLoanToIncome,
+            version.Config.LoanTermShort,
+            version.Config.LoanTermMedium,
+            version.Config.LoanTermLong,
+            version.Config.PenaltyMediumLoanTerm,
+            version.Config.PenaltyLongLoanTerm,
+            version.Config.PenaltyVeryLongLoanTerm,
             version.CreatedBy.Value,
             version.CreatedAt);
     }

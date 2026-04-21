@@ -40,7 +40,9 @@ public class CreateApplicationHandlerTests
             CustomerId = 1,
             Income = 5000,
             FixedCosts = 2000,
-            DesiredRate = 500
+            DesiredRate = 500,
+            LoanAmount = 25000,
+            LoanTerm = 48
         };
     }
 

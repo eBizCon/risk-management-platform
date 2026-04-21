@@ -48,6 +48,8 @@ public class ApplicationDomainPolicyTests
             Money.Create(income),
             Money.Create(fixedCosts),
             Money.CreatePositive(desiredRate),
+            Money.CreatePositive(25000),
+            48,
             employmentStatus,
             CreateCreditReport(hasPaymentDefault, creditScore),
             EmailAddress.Create("user@test.com"),
@@ -67,6 +69,8 @@ public class ApplicationDomainPolicyTests
             Money.Create(6000),
             Money.Create(2000),
             Money.CreatePositive(500),
+            Money.CreatePositive(25000),
+            48,
             EmploymentStatus.Employed,
             CreateCreditReport(),
             EmailAddress.Create("user@test.com"),
@@ -108,6 +112,7 @@ public class ApplicationDomainPolicyTests
     {
         var app = ApplicationEntity.CreateProcessing(
             1, Money.Create(5000), Money.Create(2000), Money.CreatePositive(500),
+            Money.CreatePositive(25000), 48,
             EmailAddress.Create("user@test.com"));
         app.MarkFailed("some reason");
 
@@ -123,6 +128,7 @@ public class ApplicationDomainPolicyTests
     {
         var app = ApplicationEntity.CreateProcessing(
             1, Money.Create(5000), Money.Create(2000), Money.CreatePositive(500),
+            Money.CreatePositive(25000), 48,
             EmailAddress.Create("user@test.com"));
 
         var configVersion = CreateConfigVersion();

@@ -22,6 +22,18 @@ export interface ScoringConfig {
 	penaltyRetired: number;
 	penaltyUnemployed: number;
 	penaltyPaymentDefault: number;
+	loanToIncomeRatioGood: number;
+	loanToIncomeRatioModerate: number;
+	loanToIncomeRatioHigh: number;
+	penaltyModerateLoanToIncome: number;
+	penaltyHighLoanToIncome: number;
+	penaltyCriticalLoanToIncome: number;
+	loanTermShort: number;
+	loanTermMedium: number;
+	loanTermLong: number;
+	penaltyMediumLoanTerm: number;
+	penaltyLongLoanTerm: number;
+	penaltyVeryLongLoanTerm: number;
 	createdBy: string;
 	createdAt: string;
 }

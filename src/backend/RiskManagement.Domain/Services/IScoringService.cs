@@ -13,5 +13,7 @@ public interface IScoringService
         EmploymentStatus employmentStatus,
         bool hasPaymentDefault,
         int? creditScore,
-        ScoringConfig config);
+        ScoringConfig config,
+        Money? loanAmount = null,
+        int? loanTerm = null);
 }

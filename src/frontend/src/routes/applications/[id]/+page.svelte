@@ -76,7 +76,9 @@
 					customerId: app.customerId,
 					income: app.income,
 					fixedCosts: app.fixedCosts,
-					desiredRate: app.desiredRate
+					desiredRate: app.desiredRate,
+					loanAmount: app.loanAmount,
+					loanTerm: app.loanTerm
 				})
 			});
 
@@ -321,11 +323,19 @@
 								{formatCurrency(app.income - app.fixedCosts)}
 							</dd>
 						</div>
-						<div class="sm:col-span-2">
+							<div>
 							<dt class="dl-label">Gewünschte Rate</dt>
 							<dd class="mt-1 text-lg text-primary font-semibold">
 								{formatCurrency(app.desiredRate)}
 							</dd>
+						</div>
+						<div>
+							<dt class="dl-label">Kreditbetrag</dt>
+							<dd class="mt-1 dl-value">{app.loanAmount != null ? formatCurrency(app.loanAmount) : '-'}</dd>
+						</div>
+						<div>
+							<dt class="dl-label">Laufzeit</dt>
+							<dd class="mt-1 dl-value">{app.loanTerm != null ? `${app.loanTerm} Monate` : '-'}</dd>
 						</div>
 					</dl>
 				</div>

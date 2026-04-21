@@ -30,6 +30,14 @@ public class ApplicationValidator : AbstractValidator<ApplicationCreateDto>
             .Must((dto, desiredRate) => desiredRate <= dto.Income - dto.FixedCosts)
             .WithMessage(
                 "Gewünschte Rate kann nicht höher sein als das verfügbare Einkommen (Einkommen minus Fixkosten)");
+
+        RuleFor(x => x.LoanAmount)
+            .GreaterThan(0).WithMessage("Kreditbetrag muss positiv sein")
+            .LessThanOrEqualTo(100000000).WithMessage("Kreditbetrag scheint unrealistisch hoch");
+
+        RuleFor(x => x.LoanTerm)
+            .GreaterThan(0).WithMessage("Laufzeit muss positiv sein")
+            .LessThanOrEqualTo(360).WithMessage("Laufzeit darf maximal 360 Monate betragen");
     }
 }
 
@@ -60,5 +68,13 @@ public class ApplicationUpdateValidator : AbstractValidator<ApplicationUpdateDto
             .Must((dto, desiredRate) => desiredRate <= dto.Income - dto.FixedCosts)
             .WithMessage(
                 "Gewünschte Rate kann nicht höher sein als das verfügbare Einkommen (Einkommen minus Fixkosten)");
+
+        RuleFor(x => x.LoanAmount)
+            .GreaterThan(0).WithMessage("Kreditbetrag muss positiv sein")
+            .LessThanOrEqualTo(100000000).WithMessage("Kreditbetrag scheint unrealistisch hoch");
+
+        RuleFor(x => x.LoanTerm)
+            .GreaterThan(0).WithMessage("Laufzeit muss positiv sein")
+            .LessThanOrEqualTo(360).WithMessage("Laufzeit darf maximal 360 Monate betragen");
     }
 }
