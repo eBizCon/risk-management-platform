@@ -51,7 +51,6 @@ public class
             EmailAddress.Create(command.UserEmail));
 
         await _repository.AddAsync(application, ct);
-        await _repository.SaveChangesAsync(ct);
 
         await _publishEndpoint.Publish(new ApplicationCreationStarted(
             Guid.NewGuid(),
@@ -62,6 +61,8 @@ public class
             command.Dto.DesiredRate,
             command.UserEmail,
             true), ct);
+
+        await _repository.SaveChangesAsync(ct);
 
         return Result<CreateAndSubmitApplicationResult>.Success(new CreateAndSubmitApplicationResult(
             ApplicationMapper.ToResponse(application)));

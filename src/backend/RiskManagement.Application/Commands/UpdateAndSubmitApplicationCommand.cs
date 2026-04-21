@@ -53,7 +53,6 @@ public class
         }
 
         application.SetProcessing();
-        await _repository.SaveChangesAsync(ct);
 
         await _publishEndpoint.Publish(new ApplicationUpdateStarted(
             Guid.NewGuid(),
@@ -64,6 +63,8 @@ public class
             command.Dto.DesiredRate,
             command.UserEmail,
             true), ct);
+
+        await _repository.SaveChangesAsync(ct);
 
         return Result<UpdateAndSubmitApplicationResult>.Success(new UpdateAndSubmitApplicationResult(
             ApplicationMapper.ToResponse(application)));

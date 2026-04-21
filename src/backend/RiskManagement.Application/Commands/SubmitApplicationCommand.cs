@@ -37,7 +37,6 @@ public class SubmitApplicationHandler : ICommandHandler<SubmitApplicationCommand
             return Result<ApplicationResponse>.Failure("Nur Entwürfe können eingereicht werden");
 
         application.SetProcessing();
-        await _repository.SaveChangesAsync(ct);
 
         await _publishEndpoint.Publish(new ApplicationUpdateStarted(
             Guid.NewGuid(),
@@ -48,6 +47,8 @@ public class SubmitApplicationHandler : ICommandHandler<SubmitApplicationCommand
             (double)application.DesiredRate.Amount,
             command.UserEmail,
             true), ct);
+
+        await _repository.SaveChangesAsync(ct);
 
         return Result<ApplicationResponse>.Success(ApplicationMapper.ToResponse(application));
     }

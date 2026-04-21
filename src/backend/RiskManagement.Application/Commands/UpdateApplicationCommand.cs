@@ -51,7 +51,6 @@ public class UpdateApplicationHandler : ICommandHandler<UpdateApplicationCommand
         }
 
         application.SetProcessing();
-        await _repository.SaveChangesAsync(ct);
 
         await _publishEndpoint.Publish(new ApplicationUpdateStarted(
             Guid.NewGuid(),
@@ -62,6 +61,8 @@ public class UpdateApplicationHandler : ICommandHandler<UpdateApplicationCommand
             command.Dto.DesiredRate,
             command.UserEmail,
             false), ct);
+
+        await _repository.SaveChangesAsync(ct);
 
         return Result<UpdateApplicationResult>.Success(new UpdateApplicationResult(
             ApplicationMapper.ToResponse(application)));

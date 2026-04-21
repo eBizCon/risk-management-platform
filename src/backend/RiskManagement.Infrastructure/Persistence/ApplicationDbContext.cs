@@ -1,3 +1,4 @@
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using RiskManagement.Application.Sagas.ApplicationCreation;
 using RiskManagement.Domain.Aggregates.ApplicationAggregate;
@@ -24,6 +25,10 @@ public class ApplicationDbContext : DbContext
         modelBuilder.HasSequence<int>("application_id_seq").StartsAt(1000).IncrementsBy(10);
         modelBuilder.HasSequence<int>("inquiry_id_seq").StartsAt(1000).IncrementsBy(10);
         modelBuilder.HasSequence<int>("scoring_config_version_id_seq").StartsAt(100).IncrementsBy(10);
+
+        modelBuilder.AddInboxStateEntity();
+        modelBuilder.AddOutboxMessageEntity();
+        modelBuilder.AddOutboxStateEntity();
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
     }

@@ -48,7 +48,6 @@ public class CreateApplicationHandler : ICommandHandler<CreateApplicationCommand
             EmailAddress.Create(command.UserEmail));
 
         await _repository.AddAsync(application, ct);
-        await _repository.SaveChangesAsync(ct);
 
         await _publishEndpoint.Publish(new ApplicationCreationStarted(
             Guid.NewGuid(),
@@ -59,6 +58,8 @@ public class CreateApplicationHandler : ICommandHandler<CreateApplicationCommand
             command.Dto.DesiredRate,
             command.UserEmail,
             false), ct);
+
+        await _repository.SaveChangesAsync(ct);
 
         return Result<CreateApplicationResult>.Success(new CreateApplicationResult(
             ApplicationMapper.ToResponse(application)));
