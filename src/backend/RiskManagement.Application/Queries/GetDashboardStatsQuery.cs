@@ -28,6 +28,7 @@ public class GetDashboardStatsHandler : IQueryHandler<GetDashboardStatsQuery, Da
 
         return Result<DashboardStatsDto>.Success(new DashboardStatsDto
         {
+            Total = draft + submitted + approved + rejected,
             Draft = draft,
             Submitted = submitted,
             Approved = approved,

@@ -99,6 +99,7 @@ public class UserDto
 
 public class DashboardStatsDto
 {
+    public int Total { get; set; }
     public int Draft { get; set; }
     public int Submitted { get; set; }
     public int Approved { get; set; }

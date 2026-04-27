@@ -10,10 +10,10 @@
 	const total = $derived(stats.draft + stats.submitted + stats.approved + stats.rejected);
 
 	const cards = $derived([
-		{ label: 'Entwurf', count: stats.draft, icon: FileText, colorClass: 'status-draft', testId: 'dashboard-card-draft' },
-		{ label: 'Eingereicht', count: stats.submitted, icon: Send, colorClass: 'status-submitted', testId: 'dashboard-card-submitted' },
-		{ label: 'Genehmigt', count: stats.approved, icon: CheckCircle, colorClass: 'status-approved', testId: 'dashboard-card-approved' },
-		{ label: 'Abgelehnt', count: stats.rejected, icon: XCircle, colorClass: 'status-rejected', testId: 'dashboard-card-rejected' }
+		{ label: 'Entwurf', count: stats.draft, icon: FileText, colorClass: 'status-draft', testId: 'stat-card-draft' },
+		{ label: 'Eingereicht', count: stats.submitted, icon: Send, colorClass: 'status-submitted', testId: 'stat-card-submitted' },
+		{ label: 'Genehmigt', count: stats.approved, icon: CheckCircle, colorClass: 'status-approved', testId: 'stat-card-approved' },
+		{ label: 'Abgelehnt', count: stats.rejected, icon: XCircle, colorClass: 'status-rejected', testId: 'stat-card-rejected' }
 	]);
 
 	const chartColors = {
@@ -107,7 +107,7 @@
 		<p class="text-secondary mt-1" data-testid="dashboard-total">Gesamt: {total} Anträge</p>
 	</div>
 
-	<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+	<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" data-testid="dashboard-stats">
 		{#each cards as card}
 			<div class="card p-4 flex items-center gap-4" data-testid={card.testId}>
 				<div class="w-10 h-10 rounded-lg flex items-center justify-center {card.colorClass}">
@@ -115,15 +115,15 @@
 				</div>
 				<div>
 					<p class="text-sm text-secondary">{card.label}</p>
-					<p class="text-2xl font-bold text-primary">{card.count}</p>
+					<p class="text-2xl font-bold text-primary" data-testid="{card.testId}-value">{card.count}</p>
 				</div>
 			</div>
 		{/each}
 	</div>
 
-	<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+	<div class="grid grid-cols-1 md:grid-cols-2 gap-6" data-testid="dashboard-charts">
 		<div class="card p-4" data-testid="dashboard-bar-chart">
-			<h3 class="text-lg font-semibold text-primary mb-4">Anträge nach Status</h3>
+			<h3 class="text-lg font-semibold text-primary mb-4">Antrag nach Status</h3>
 			<div class="h-64">
 				<canvas bind:this={barCanvas}></canvas>
 			</div>
