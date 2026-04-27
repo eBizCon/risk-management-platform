@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
+	import ApplicationDashboard from '$lib/components/ApplicationDashboard.svelte';
 	import {
 		FileText,
 		ClipboardCheck,
@@ -13,6 +14,7 @@
 	const user = $derived($page.data.user ?? null);
 	const isApplicant = $derived(user?.role === 'applicant');
 	const isProcessor = $derived(user?.role === 'processor');
+	const dashboardStats = $derived($page.data.dashboardStats ?? null);
 </script>
 
 <svelte:head>
@@ -29,6 +31,10 @@
 			automatischer Risikobewertung.
 		</p>
 	</div>
+
+	{#if dashboardStats}
+		<ApplicationDashboard stats={dashboardStats} />
+	{/if}
 
 	<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6" data-testid="home-features">
 		<div class="card p-6" data-testid="home-feature-automation">
