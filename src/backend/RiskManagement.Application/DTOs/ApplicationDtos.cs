@@ -83,6 +83,15 @@ public class PaginationInfo
     public int TotalPages { get; set; }
 }
 
+public class ApplicationDashboardStatsDto
+{
+    public int Draft { get; set; }
+    public int Submitted { get; set; }
+    public int Approved { get; set; }
+    public int Rejected { get; set; }
+    public int Total { get; set; }
+}
+
 public class ValidationErrorResponse
 {
     public Dictionary<string, string[]> Errors { get; set; } = new();

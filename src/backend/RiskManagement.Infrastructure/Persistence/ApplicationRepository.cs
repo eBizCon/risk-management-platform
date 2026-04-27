@@ -135,4 +135,28 @@ public class ApplicationRepository : IApplicationRepository
     {
         return await _context.Applications.AnyAsync(a => a.CustomerId == customerId, ct);
     }
+
+    public async Task<(int Draft, int Submitted, int Approved, int Rejected)> GetDashboardStatsAsync(
+        CancellationToken ct = default)
+    {
+        var draft = await _context.Applications.CountAsync(a => a.Status == ApplicationStatus.Draft, ct);
+        var submitted = await _context.Applications.CountAsync(a => a.Status == ApplicationStatus.Submitted, ct);
+        var approved = await _context.Applications.CountAsync(a => a.Status == ApplicationStatus.Approved, ct);
+        var rejected = await _context.Applications.CountAsync(a => a.Status == ApplicationStatus.Rejected, ct);
+
+        return (draft, submitted, approved, rejected);
+    }
+
+    public async Task<(int Draft, int Submitted, int Approved, int Rejected)> GetUserDashboardStatsAsync(
+        EmailAddress userEmail, CancellationToken ct = default)
+    {
+        var userApps = _context.Applications.Where(a => a.CreatedBy == userEmail);
+
+        var draft = await userApps.CountAsync(a => a.Status == ApplicationStatus.Draft, ct);
+        var submitted = await userApps.CountAsync(a => a.Status == ApplicationStatus.Submitted, ct);
+        var approved = await userApps.CountAsync(a => a.Status == ApplicationStatus.Approved, ct);
+        var rejected = await userApps.CountAsync(a => a.Status == ApplicationStatus.Rejected, ct);
+
+        return (draft, submitted, approved, rejected);
+    }
 }
