@@ -132,6 +132,7 @@ module riskApi 'modules/containerApp.bicep' = {
       { name: 'ConnectionStrings__DefaultConnection', value: 'Host=${postgres.outputs.fqdn};Port=5432;Database=risk_management;Username=${postgres.outputs.adminUsername};Password=${postgresAdminPassword};Ssl Mode=Require;Trust Server Certificate=true' }
       { name: 'ConnectionStrings__messaging', value: 'amqp://risk:${rabbitmqPassword}@${prefix}-rabbitmq.internal.${containerAppsEnv.outputs.defaultDomain}:5672' }
       { name: 'OIDC_ISSUER', value: 'https://${keycloak.outputs.fqdn}/realms/risk-management' }
+      { name: 'OIDC_ROLES_CLAIM_PATH', value: 'resource_access.risk-management-app.roles' }
       { name: 'CUSTOMER_SERVICE_URL', value: 'https://${prefix}-customer-api.internal.${containerAppsEnv.outputs.defaultDomain}' }
       { name: 'SERVICE_API_KEY', value: serviceApiKey }
       { name: 'ASPNETCORE_FORWARDEDHEADERS_ENABLED', value: 'true' }
@@ -160,6 +161,7 @@ module customerApi 'modules/containerApp.bicep' = {
       { name: 'ConnectionStrings__DefaultConnection', value: 'Host=${postgres.outputs.fqdn};Port=5432;Database=customer_management;Username=${postgres.outputs.adminUsername};Password=${postgresAdminPassword};Ssl Mode=Require;Trust Server Certificate=true' }
       { name: 'ConnectionStrings__messaging', value: 'amqp://risk:${rabbitmqPassword}@${prefix}-rabbitmq.internal.${containerAppsEnv.outputs.defaultDomain}:5672' }
       { name: 'OIDC_ISSUER', value: 'https://${keycloak.outputs.fqdn}/realms/risk-management' }
+      { name: 'OIDC_ROLES_CLAIM_PATH', value: 'resource_access.risk-management-app.roles' }
       { name: 'APPLICATION_SERVICE_URL', value: 'https://${prefix}-risk-api.internal.${containerAppsEnv.outputs.defaultDomain}' }
       { name: 'SERVICE_API_KEY', value: serviceApiKey }
       { name: 'ASPNETCORE_FORWARDEDHEADERS_ENABLED', value: 'true' }
