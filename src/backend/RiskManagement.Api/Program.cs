@@ -6,7 +6,6 @@ using RiskManagement.Api.Middleware;
 using RiskManagement.Api.Models;
 using RiskManagement.Infrastructure;
 using RiskManagement.Infrastructure.Persistence;
-using RiskManagement.Infrastructure.Seeding;
 using RiskManagement.Infrastructure.Services;
 using SharedKernel.Middleware;
 
@@ -72,14 +71,11 @@ builder.Services.AddAuthorization(options =>
 
 var app = builder.Build();
 
-// Database migration and seeding
+// Database migration
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     await dbContext.Database.MigrateAsync();
-
-    var seeder = scope.ServiceProvider.GetRequiredService<DatabaseSeeder>();
-    await seeder.SeedAsync();
 }
 
 // Middleware pipeline

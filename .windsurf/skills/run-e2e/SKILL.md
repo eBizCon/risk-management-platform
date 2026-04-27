@@ -5,63 +5,57 @@ description: E2E Tests ausführen. Verwende diesen Skill wenn du End-to-End (e2e
 
 # Run E2E Tests
 
-Runs E2E tests against a locally running Aspire stack.
+Runs E2E tests with automatic startup/shutdown of backend and frontend via Playwright `webServer`.
 
-## Prerequisites: Start the Application Stack
+## Prerequisites
 
-The app must be running locally via Aspire before executing tests.
+No manual startup is required for the default workflow.
 
-### 1) Start Backend Stack with Aspire
+Playwright starts these services automatically from `src/frontend/playwright.config.ts`:
+- Backend: `dotnet run --project ../backend/AppHost/AppHost.csproj --launch-profile http-testmode`
+- Frontend: `npm run build && TEST=true npm run preview`
 
-```bash
-dotnet run --project ./src/backend/AppHost/AppHost.csproj
-```
+It waits for readiness URLs before running tests:
+- Backend health: `http://localhost:5627/health`
+- Frontend preview: `http://localhost:4173`
 
-Run this as a **non-blocking** command (the Aspire host runs continuously).
+Dedicated E2E ports are used to avoid collisions with other local Aspire instances:
+- Risk API: `5627`
+- Customer API: `5400`
+- Keycloak: `8181`
+- Aspire dashboard OTLP: `29032`
+- Aspire resource service: `30132`
 
-### 2) Start Frontend
+## E2E Test Commands
 
-In a second terminal:
-
-```bash
-cd ./src/frontend
-cp .env.test .env
-npm run dev -- --port 5173
-```
-
-Run this as a **non-blocking** command.
-
-### 3) Wait for Health Checks
-
-Wait until all services are healthy:
-- Keycloak is healthy (check Aspire dashboard)
-- Frontend on http://localhost:5173 is reachable
-- All APIs are healthy in Aspire dashboard
-
-## E2E Test Command
-
-Once the stack is running:
+Run from frontend directory:
 
 ```bash
 cd ./src/frontend
 npm run test:e2e:ci
 ```
 
-This runs `CI=true playwright test` which:
-- Runs tests headless in Chromium (2 workers, 2 retries on failure)
-- Uses `.env.test` for environment variables
-- Generates an HTML report in `playwright-report/`
+Alternative local command:
 
-**Always use `test:e2e:ci`** — without `:ci` Playwright launches a headed browser.
+```bash
+cd ./src/frontend
+npm run test:e2e
+```
 
-### Run a single test file
+This runs Playwright in Chromium and generates an HTML report in `playwright-report/`.
+
+`test:e2e:ci` runs `CI=true playwright test` and is preferred for deterministic CI-like behavior.
+
+## Run targeted tests
+
+### Single test file
 
 ```bash
 cd ./src/frontend
 CI=true npx playwright test e2e/applicant.test.ts
 ```
 
-### Run a single test by title
+### Single test by title
 
 ```bash
 cd ./src/frontend
@@ -76,15 +70,15 @@ For manual browser testing or debugging:
 
 ## Workflow Summary
 
-1. Start Aspire backend (**non-blocking**)
-2. Start frontend dev server (**non-blocking**)
-3. Wait for all services to be healthy
-4. Run E2E tests and wait for completion
-5. Report results to the user
+1. Run `npm run test:e2e:ci` from `src/frontend`
+2. Playwright starts backend AppHost automatically
+3. Playwright starts frontend preview automatically
+4. Playwright waits for health/readiness URLs
+5. Tests execute and services are shut down automatically
 
 ## Project Structure
 
-- **Config**: `playwright.config.ts` — baseURL `http://localhost:5173`, testDir `e2e/`
+- **Config**: `playwright.config.ts` — `webServer` starts backend + frontend, baseURL `http://localhost:4173`, testDir `e2e/`
 - **Tests**: `e2e/*.test.ts` — import `test` and `expect` from `e2e/fixtures.ts`
 - **Fixtures**: `e2e/fixtures.ts` — provides `authenticatedPage` and `authenticatedContext` fixtures
 - **Auth helper**: `e2e/helpers/auth.ts` — `createTestSession(page, role)` and `clearTestSessions(page)` via `/api/test/session`
@@ -92,9 +86,10 @@ For manual browser testing or debugging:
 
 ## Interpreting Failures
 
-- **Port 5173 already in use**: Another dev server is running. Kill it first: `lsof -ti:5173 | xargs kill -9`
-- **Aspire services not healthy**: Check the Aspire dashboard and wait for all services to start
+- **Backend startup timeout**: Check AppHost output and verify `http://localhost:5627/health` becomes reachable.
+- **Port conflict on E2E ports**: Free `5627`, `5400`, `8181`, `29032`, `30132`, `4173` or adjust `playwright.config.ts`.
+- **`reuseExistingServer` behavior**: Locally (`!CI`) Playwright may reuse existing processes; in CI it starts fresh.
 - **Session creation failed**: The `/api/test/session` endpoint is missing or broken. Check `src/routes/api/test/session/`
-- **Timeout on navigation**: The page did not load in time. Check if the frontend dev server started successfully
-- **`data-testid` not found**: A UI element is missing its `data-testid` attribute. Fix the component, not the test
-- **Flaky tests**: If a test passes on retry (shown as "flaky" in output), investigate the root cause rather than ignoring it
+- **Timeout on navigation**: Check that frontend preview startup completed (`npm run build && TEST=true npm run preview`).
+- **`data-testid` not found**: A UI element is missing its `data-testid` attribute. Fix the component, not the test.
+- **Flaky tests**: If a test passes on retry (shown as "flaky"), investigate the root cause instead of ignoring it.

@@ -360,6 +360,21 @@ docker compose -f dev/docker-compose.yml logs -f postgres
 
 **Admin-Zugang:** http://localhost:8081 mit `admin` / `admin`
 
+### Aspire AppHost starten
+
+```bash
+# Standard (wie bisher, mit persistenten Volumes)
+dotnet run --project src/backend/AppHost/AppHost.csproj --launch-profile http
+
+# TestMode (ohne persistente Volumes für Postgres, Keycloak, RabbitMQ)
+dotnet run --project src/backend/AppHost/AppHost.csproj --launch-profile http-testmode
+
+# Alternativ per Helper-Skript
+bash ./dev/aspire-testmode.sh
+```
+
+Im TestMode wird `ASPIRE_TEST_MODE=true` gesetzt. Dadurch werden die Container ohne `WithDataVolume()` gestartet und beginnen mit einem frischen Zustand.
+
 ---
 
 ## Konfiguration & Umgebungsvariablen

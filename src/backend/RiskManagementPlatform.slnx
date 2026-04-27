@@ -4,7 +4,9 @@
         <Platform Name="x64"/>
         <Platform Name="x86"/>
     </Configurations>
-    <Folder Name="/Services/"/>
+    <Folder Name="/Services/">
+        <Project Path="DatabaseSeeder/DatabaseSeeder.csproj"/>
+    </Folder>
     <Folder Name="/Services/CustomerManagement/">
         <Project Path="CustomerManagement.Api/CustomerManagement.Api.csproj"/>
         <Project Path="CustomerManagement.Application/CustomerManagement.Application.csproj"/>
