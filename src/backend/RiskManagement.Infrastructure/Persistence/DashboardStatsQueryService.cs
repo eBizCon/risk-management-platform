@@ -22,11 +22,16 @@ public class DashboardStatsQueryService : IDashboardStatsQuery
         if (userEmail is not null)
             query = query.Where(a => a.CreatedBy == userEmail);
 
-        var total = await query.CountAsync(ct);
-        var draft = await query.CountAsync(a => a.Status == ApplicationStatus.Draft, ct);
-        var submitted = await query.CountAsync(a => a.Status == ApplicationStatus.Submitted, ct);
-        var approved = await query.CountAsync(a => a.Status == ApplicationStatus.Approved, ct);
-        var rejected = await query.CountAsync(a => a.Status == ApplicationStatus.Rejected, ct);
+        var groups = await query
+            .GroupBy(a => a.Status)
+            .Select(g => new { Status = g.Key, Count = g.Count() })
+            .ToListAsync(ct);
+
+        var total = groups.Sum(g => g.Count);
+        var draft = groups.Where(g => g.Status == ApplicationStatus.Draft).Select(g => g.Count).FirstOrDefault();
+        var submitted = groups.Where(g => g.Status == ApplicationStatus.Submitted).Select(g => g.Count).FirstOrDefault();
+        var approved = groups.Where(g => g.Status == ApplicationStatus.Approved).Select(g => g.Count).FirstOrDefault();
+        var rejected = groups.Where(g => g.Status == ApplicationStatus.Rejected).Select(g => g.Count).FirstOrDefault();
 
         return (total, draft, submitted, approved, rejected);
     }
