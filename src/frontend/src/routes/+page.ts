@@ -8,7 +8,7 @@ export const load: PageLoad = async ({ fetch, parent }) => {
 
 	if (user && (user.role === 'applicant' || user.role === 'processor')) {
 		try {
-			const res = await fetch('/api/applications/dashboard-stats');
+			const res = await fetch('/api/dashboard/stats');
 			if (res.ok) {
 				dashboardStats = await res.json();
 			}
