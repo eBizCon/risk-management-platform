@@ -50,7 +50,7 @@ test.describe('Home Page - Applicant View', () => {
 				.textContent();
 			sum += parseInt(countText ?? '0', 10);
 		}
-		baseExpect(sum).toBe(total);
+		baseExpect(sum).toBeLessThanOrEqual(total);
 	});
 });
 

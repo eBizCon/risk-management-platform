@@ -97,14 +97,14 @@
 			}
 		});
 
-		const total = stats.total;
+		const displayedSum = data.reduce((a, b) => a + b, 0);
 		pieChart = new Chart(pieCanvas, {
 			type: 'pie',
 			data: {
-				labels: total > 0
+				labels: displayedSum > 0
 					? labels.map((l, i) => {
 						if (data[i] === 0) return l;
-						const pct = Math.round((data[i] / total) * 100);
+						const pct = Math.round((data[i] / displayedSum) * 100);
 						return `${l}: ${pct}%`;
 					  })
 					: labels,
@@ -133,8 +133,8 @@
 						callbacks: {
 							label: (ctx) => {
 								const value = ctx.raw as number;
-								if (total === 0) return `${ctx.label}: 0`;
-								const pct = Math.round((value / total) * 100);
+								if (displayedSum === 0) return `${ctx.label}: 0`;
+								const pct = Math.round((value / displayedSum) * 100);
 								return `${value} (${pct}%)`;
 							}
 						}
