@@ -20,6 +20,15 @@ public class ApplicationsController : ControllerBase
         _dispatcher = dispatcher;
     }
 
+    [HttpGet("dashboard-stats")]
+    [Authorize(Policy = AuthPolicies.ApplicantOrProcessor)]
+    public async Task<IActionResult> GetDashboardStats()
+    {
+        var userEmail = User.IsProcessor() ? null : User.GetEmail();
+        var result = await _dispatcher.QueryAsync(new GetDashboardStatsQuery(userEmail));
+        return result.ToActionResult();
+    }
+
     [HttpGet]
     public async Task<IActionResult> GetApplications([FromQuery] string? status)
     {
