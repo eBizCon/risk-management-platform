@@ -9,13 +9,10 @@
 		Users,
 		LogIn
 	} from 'lucide-svelte';
-	import DashboardStats from '$lib/components/charts/DashboardStats.svelte';
-	import DashboardCharts from '$lib/components/charts/DashboardCharts.svelte';
 
 	const user = $derived($page.data.user ?? null);
 	const isApplicant = $derived(user?.role === 'applicant');
 	const isProcessor = $derived(user?.role === 'processor');
-	const dashboardStats = $derived($page.data.dashboardStats ?? null);
 </script>
 
 <svelte:head>
@@ -33,14 +30,7 @@
 		</p>
 	</div>
 
-	{#if dashboardStats}
-		<div class="space-y-6" data-testid="dashboard-section">
-			<DashboardStats stats={dashboardStats} />
-			<DashboardCharts stats={dashboardStats} />
-		</div>
-	{/if}
-
-	<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-12">
+	<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
 		<div class="card p-6">
 			<div
 				class="w-12 h-12 rounded-lg flex items-center justify-center mb-4 bg-brand-primary-soft text-brand-primary"

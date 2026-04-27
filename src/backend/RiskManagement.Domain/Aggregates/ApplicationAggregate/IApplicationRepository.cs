@@ -22,9 +22,6 @@ public interface IApplicationRepository
     Task<(int Total, int Submitted, int Approved, int Rejected)> GetProcessorStatsAsync(
         CancellationToken ct = default);
 
-    Task<(int Draft, int Submitted, int Approved, int Rejected)> GetDashboardStatsAsync(EmailAddress? userEmail,
-        CancellationToken ct = default);
-
     Task<ApplicationInquiry?> GetInquiryByIdAsync(InquiryId inquiryId, CancellationToken ct = default);
 
     Task<bool> HasOpenInquiryAsync(ApplicationId applicationId, CancellationToken ct = default);

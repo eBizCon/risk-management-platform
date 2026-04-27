@@ -89,14 +89,6 @@ public class ValidationErrorResponse
     public object? Values { get; set; }
 }
 
-public class DashboardStatsDto
-{
-    public int Draft { get; set; }
-    public int Submitted { get; set; }
-    public int Approved { get; set; }
-    public int Rejected { get; set; }
-}
-
 public class UserDto
 {
     public string Id { get; set; } = string.Empty;

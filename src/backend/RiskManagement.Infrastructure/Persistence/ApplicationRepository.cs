@@ -85,24 +85,6 @@ public class ApplicationRepository : IApplicationRepository
         return (total, submitted, approved, rejected);
     }
 
-    public async Task<(int Draft, int Submitted, int Approved, int Rejected)> GetDashboardStatsAsync(
-        EmailAddress? userEmail = null, CancellationToken ct = default)
-    {
-        var query = _context.Applications.AsQueryable();
-        if (userEmail is not null)
-            query = query.Where(a => a.CreatedBy == userEmail);
-
-        var draft = await query.CountAsync(a => a.Status == ApplicationStatus.Draft, ct);
-        var submitted = await query.CountAsync(a =>
-            a.Status == ApplicationStatus.Submitted ||
-            a.Status == ApplicationStatus.NeedsInformation ||
-            a.Status == ApplicationStatus.Resubmitted, ct);
-        var approved = await query.CountAsync(a => a.Status == ApplicationStatus.Approved, ct);
-        var rejected = await query.CountAsync(a => a.Status == ApplicationStatus.Rejected, ct);
-
-        return (draft, submitted, approved, rejected);
-    }
-
     public async Task<List<ApplicationInquiry>> GetInquiriesAsync(AppId applicationId,
         CancellationToken ct = default)
     {
