@@ -62,15 +62,6 @@ resource customerManagementDb 'Microsoft.DBforPostgreSQL/flexibleServers/databas
   }
 }
 
-resource customerManagementDb 'Microsoft.DBforPostgreSQL/flexibleServers/databases@2022-12-01' = {
-  parent: postgresServer
-  name: 'customer_management'
-  properties: {
-    charset: 'UTF8'
-    collation: 'en_US.utf8'
-  }
-}
-
 resource keycloakDb 'Microsoft.DBforPostgreSQL/flexibleServers/databases@2022-12-01' = {
   parent: postgresServer
   name: 'keycloak'

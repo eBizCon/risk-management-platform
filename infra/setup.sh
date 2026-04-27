@@ -6,13 +6,12 @@ set -euo pipefail
 # Creates all infrastructure, builds and deploys the app, configures Keycloak
 # =============================================================================
 
-RESOURCE_GROUP="${1:?Usage: setup.sh <resource-group> <postgres-password> <keycloak-password> <rabbitmq-password> <session-secret> <service-api-key> [environment-name]}"
+RESOURCE_GROUP="${1:?Usage: setup.sh <resource-group> <postgres-password> <keycloak-password> <service-api-key> <rabbitmq-password> [environment-name]}"
 POSTGRES_PASSWORD="${2:?}"
 KEYCLOAK_PASSWORD="${3:?}"
-RABBITMQ_PASSWORD="${4:?}"
-SESSION_SECRET="${5:?}"
-SERVICE_API_KEY="${6:?}"
-ENVIRONMENT_NAME="${7:-dev}"
+SERVICE_API_KEY="${4:?}"
+RABBITMQ_PASSWORD="${5:?}"
+ENVIRONMENT_NAME="${6:-dev}"
 
 PREFIX="riskmgmt-${ENVIRONMENT_NAME}"
 ACR_NAME="${PREFIX//\-/}acr"
@@ -30,15 +29,14 @@ DEPLOY_OUTPUT=$(az deployment group create \
   --parameters environmentName="$ENVIRONMENT_NAME" \
   --parameters postgresAdminPassword="$POSTGRES_PASSWORD" \
   --parameters keycloakAdminPassword="$KEYCLOAK_PASSWORD" \
-  --parameters rabbitmqPassword="$RABBITMQ_PASSWORD" \
-  --parameters sessionSecret="$SESSION_SECRET" \
   --parameters serviceApiKey="$SERVICE_API_KEY" \
+  --parameters rabbitmqPassword="$RABBITMQ_PASSWORD" \
   --query 'properties.outputs' \
   --output json)
 
 ACR_LOGIN_SERVER=$(echo "$DEPLOY_OUTPUT" | jq -r '.acrLoginServer.value')
 KEYCLOAK_FQDN=$(echo "$DEPLOY_OUTPUT" | jq -r '.keycloakFqdn.value')
-FRONTEND_FQDN=$(echo "$DEPLOY_OUTPUT" | jq -r '.frontendFqdn.value')
+APP_FQDN=$(echo "$DEPLOY_OUTPUT" | jq -r '.appFqdn.value')
 RISK_API_FQDN=$(echo "$DEPLOY_OUTPUT" | jq -r '.riskApiFqdn.value')
 CUSTOMER_API_FQDN=$(echo "$DEPLOY_OUTPUT" | jq -r '.customerApiFqdn.value')
 POSTGRES_FQDN=$(echo "$DEPLOY_OUTPUT" | jq -r '.postgresFqdn.value')
@@ -46,7 +44,7 @@ POSTGRES_FQDN=$(echo "$DEPLOY_OUTPUT" | jq -r '.postgresFqdn.value')
 echo "Infrastructure deployed:"
 echo "  ACR:            $ACR_LOGIN_SERVER"
 echo "  Keycloak:       https://$KEYCLOAK_FQDN"
-echo "  Frontend:       https://$FRONTEND_FQDN"
+echo "  App:            https://$APP_FQDN"
 echo "  Risk API:       https://$RISK_API_FQDN"
 echo "  Customer API:   https://$CUSTOMER_API_FQDN"
 echo "  PostgreSQL:     $POSTGRES_FQDN"
@@ -60,43 +58,43 @@ echo "$ACR_PASSWORD" | docker login "$ACR_LOGIN_SERVER" -u "$ACR_USERNAME" --pas
 IMAGE_TAG="$(date +%s)"
 
 echo "  Building frontend..."
-docker build -t "${ACR_LOGIN_SERVER}/frontend:${IMAGE_TAG}" -t "${ACR_LOGIN_SERVER}/frontend:latest" \
+docker build -t "${ACR_LOGIN_SERVER}/risk-management-app:${IMAGE_TAG}" -t "${ACR_LOGIN_SERVER}/risk-management-app:latest" \
   -f src/frontend/Dockerfile src/frontend
-docker push "${ACR_LOGIN_SERVER}/frontend:${IMAGE_TAG}"
-docker push "${ACR_LOGIN_SERVER}/frontend:latest"
+docker push "${ACR_LOGIN_SERVER}/risk-management-app:${IMAGE_TAG}"
+docker push "${ACR_LOGIN_SERVER}/risk-management-app:latest"
 
 echo "  Building risk-api..."
-docker build -t "${ACR_LOGIN_SERVER}/risk-api:${IMAGE_TAG}" -t "${ACR_LOGIN_SERVER}/risk-api:latest" \
+docker build -t "${ACR_LOGIN_SERVER}/riskmanagement-api:${IMAGE_TAG}" -t "${ACR_LOGIN_SERVER}/riskmanagement-api:latest" \
   -f src/backend/RiskManagement.Api/Dockerfile src/backend
-docker push "${ACR_LOGIN_SERVER}/risk-api:${IMAGE_TAG}"
-docker push "${ACR_LOGIN_SERVER}/risk-api:latest"
+docker push "${ACR_LOGIN_SERVER}/riskmanagement-api:${IMAGE_TAG}"
+docker push "${ACR_LOGIN_SERVER}/riskmanagement-api:latest"
 
 echo "  Building customer-api..."
-docker build -t "${ACR_LOGIN_SERVER}/customer-api:${IMAGE_TAG}" -t "${ACR_LOGIN_SERVER}/customer-api:latest" \
+docker build -t "${ACR_LOGIN_SERVER}/customermanagement-api:${IMAGE_TAG}" -t "${ACR_LOGIN_SERVER}/customermanagement-api:latest" \
   -f src/backend/CustomerManagement.Api/Dockerfile src/backend
-docker push "${ACR_LOGIN_SERVER}/customer-api:${IMAGE_TAG}"
-docker push "${ACR_LOGIN_SERVER}/customer-api:latest"
+docker push "${ACR_LOGIN_SERVER}/customermanagement-api:${IMAGE_TAG}"
+docker push "${ACR_LOGIN_SERVER}/customermanagement-api:latest"
 
 echo "Images pushed with tag: ${IMAGE_TAG}"
 
 echo ""
 echo "=== Step 4/7: Updating Container Apps with new images ==="
 az containerapp update \
-  --name "${PREFIX}-frontend" \
+  --name "${PREFIX}-app" \
   --resource-group "$RESOURCE_GROUP" \
-  --image "${ACR_LOGIN_SERVER}/frontend:${IMAGE_TAG}" \
+  --image "${ACR_LOGIN_SERVER}/risk-management-app:${IMAGE_TAG}" \
   --output none
 
 az containerapp update \
   --name "${PREFIX}-risk-api" \
   --resource-group "$RESOURCE_GROUP" \
-  --image "${ACR_LOGIN_SERVER}/risk-api:${IMAGE_TAG}" \
+  --image "${ACR_LOGIN_SERVER}/riskmanagement-api:${IMAGE_TAG}" \
   --output none
 
 az containerapp update \
   --name "${PREFIX}-customer-api" \
   --resource-group "$RESOURCE_GROUP" \
-  --image "${ACR_LOGIN_SERVER}/customer-api:${IMAGE_TAG}" \
+  --image "${ACR_LOGIN_SERVER}/customermanagement-api:${IMAGE_TAG}" \
   --output none
 
 echo "All container apps updated."
@@ -154,11 +152,11 @@ curl -sf -X POST "${KEYCLOAK_URL}/admin/realms/risk-management/clients" \
     \"standardFlowEnabled\": true,
     \"directAccessGrantsEnabled\": true,
     \"serviceAccountsEnabled\": false,
-    \"redirectUris\": [\"https://${FRONTEND_FQDN}/*\"],
-    \"webOrigins\": [\"https://${FRONTEND_FQDN}\"],
+    \"redirectUris\": [\"https://${APP_FQDN}/*\"],
+    \"webOrigins\": [\"https://${APP_FQDN}\"],
     \"defaultClientScopes\": [\"profile\", \"roles\", \"email\"],
     \"attributes\": {
-      \"post.logout.redirect.uris\": \"https://${FRONTEND_FQDN}/*\"
+      \"post.logout.redirect.uris\": \"https://${APP_FQDN}/*\"
     }
   }" || true
 
@@ -226,9 +224,9 @@ create_user "applicant" "applicant@example.com" "Applicant" "User" "applicant" "
 create_user "processor" "processor@example.com" "Processor" "User" "processor" "$PROCESSOR_ROLE"
 
 echo ""
-echo "=== Step 7/7: Setting OIDC client secret on frontend ==="
+echo "=== Step 7/7: Setting OIDC client secret on app ==="
 az containerapp update \
-  --name "${PREFIX}-frontend" \
+  --name "${PREFIX}-app" \
   --resource-group "$RESOURCE_GROUP" \
   --set-env-vars "OIDC_CLIENT_SECRET=${CLIENT_SECRET}" \
   --output none
@@ -238,7 +236,7 @@ echo "============================================="
 echo "  Setup complete!"
 echo "============================================="
 echo ""
-echo "  Frontend URL:   https://${FRONTEND_FQDN}"
+echo "  App URL:        https://${APP_FQDN}"
 echo "  Keycloak URL:   https://${KEYCLOAK_FQDN}"
 echo "  Risk API:       https://${RISK_API_FQDN}"
 echo "  Customer API:   https://${CUSTOMER_API_FQDN}"
