@@ -27,6 +27,15 @@ public class ApplicationsController : ControllerBase
         return result.ToActionResult();
     }
 
+    [HttpGet("dashboard")]
+    [Authorize(Policy = AuthPolicies.ApplicantOrProcessor)]
+    public async Task<IActionResult> GetDashboardStats()
+    {
+        var role = User.IsProcessor() ? "processor" : "applicant";
+        var result = await _dispatcher.QueryAsync(new GetDashboardStatsQuery(User.GetEmail(), role));
+        return result.ToActionResult();
+    }
+
     [HttpGet("customers")]
     [Authorize(Policy = AuthPolicies.ApplicantOrProcessor)]
     public async Task<IActionResult> GetActiveCustomers()

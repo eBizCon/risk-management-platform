@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
+	import ApplicationDashboard from '$lib/components/ApplicationDashboard.svelte';
 	import {
 		FileText,
 		ClipboardCheck,
@@ -9,6 +10,9 @@
 		Users,
 		LogIn
 	} from 'lucide-svelte';
+	import type { PageData } from './$types';
+
+	let { data }: { data: PageData } = $props();
 
 	const user = $derived($page.data.user ?? null);
 	const isApplicant = $derived(user?.role === 'applicant');
@@ -29,6 +33,10 @@
 			automatischer Risikobewertung.
 		</p>
 	</div>
+
+	{#if data.dashboardStats}
+		<ApplicationDashboard stats={data.dashboardStats} />
+	{/if}
 
 	<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6" data-testid="home-features">
 		<div class="card p-6" data-testid="home-feature-automation">
