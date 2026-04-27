@@ -27,6 +27,7 @@ DEPLOY_OUTPUT=$(az deployment group create \
   --resource-group "$RESOURCE_GROUP" \
   --template-file infra/main.bicep \
   --parameters infra/parameters/dev.bicepparam \
+  --parameters environmentName="$ENVIRONMENT_NAME" \
   --parameters postgresAdminPassword="$POSTGRES_PASSWORD" \
   --parameters keycloakAdminPassword="$KEYCLOAK_PASSWORD" \
   --parameters rabbitmqPassword="$RABBITMQ_PASSWORD" \
