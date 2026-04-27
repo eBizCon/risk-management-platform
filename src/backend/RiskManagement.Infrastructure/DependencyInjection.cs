@@ -35,6 +35,7 @@ public static class DependencyInjection
         services.AddScoped<IApplicationRepository, ApplicationRepository>();
         services.AddScoped<IScoringConfigRepository, ScoringConfigRepository>();
         services.AddScoped<ICustomerReadModelRepository, CustomerReadModelRepository>();
+        services.AddScoped<IDashboardStatsQuery, DashboardStatsQueryService>();
         services.AddScoped<DatabaseSeeder>();
 
         return services;

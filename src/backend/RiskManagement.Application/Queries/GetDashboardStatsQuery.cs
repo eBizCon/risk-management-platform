@@ -1,5 +1,5 @@
 using RiskManagement.Application.DTOs;
-using RiskManagement.Domain.Aggregates.ApplicationAggregate;
+using RiskManagement.Domain.ReadModels;
 using RiskManagement.Domain.ValueObjects;
 using SharedKernel.Dispatching;
 using SharedKernel.Results;
@@ -10,11 +10,11 @@ public record GetDashboardStatsQuery(string UserEmail, string Role) : IQuery<Das
 
 public class GetDashboardStatsHandler : IQueryHandler<GetDashboardStatsQuery, DashboardStatsDto>
 {
-    private readonly IApplicationRepository _repository;
+    private readonly IDashboardStatsQuery _dashboardStats;
 
-    public GetDashboardStatsHandler(IApplicationRepository repository)
+    public GetDashboardStatsHandler(IDashboardStatsQuery dashboardStats)
     {
-        _repository = repository;
+        _dashboardStats = dashboardStats;
     }
 
     public async Task<Result<DashboardStatsDto>> HandleAsync(GetDashboardStatsQuery query,
@@ -24,12 +24,12 @@ public class GetDashboardStatsHandler : IQueryHandler<GetDashboardStatsQuery, Da
             ? EmailAddress.Create(query.UserEmail)
             : null;
 
-        var (draft, submitted, approved, rejected) =
-            await _repository.GetDashboardStatsAsync(userEmail, ct);
+        var (total, draft, submitted, approved, rejected) =
+            await _dashboardStats.GetStatsAsync(userEmail, ct);
 
         var dto = new DashboardStatsDto
         {
-            Total = draft + submitted + approved + rejected,
+            Total = total,
             Draft = draft,
             Submitted = submitted,
             Approved = approved,
