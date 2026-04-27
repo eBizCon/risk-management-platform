@@ -144,12 +144,22 @@
 		});
 	}
 
+	let mounted = false;
+
 	onMount(() => {
+		mounted = true;
 		createCharts();
 		return () => {
+			mounted = false;
 			barChart?.destroy();
 			pieChart?.destroy();
 		};
+	});
+
+	const chartData = $derived([stats.draft, stats.submitted, stats.approved, stats.rejected, stats.total]);
+
+	$effect(() => {
+		if (mounted && chartData) createCharts();
 	});
 </script>
 
