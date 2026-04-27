@@ -6,64 +6,102 @@ set -euo pipefail
 # Creates all infrastructure, builds and deploys the app, configures Keycloak
 # =============================================================================
 
-RESOURCE_GROUP="${1:?Usage: setup.sh <resource-group> <postgres-password> <keycloak-password>}"
+RESOURCE_GROUP="${1:?Usage: setup.sh <resource-group> <postgres-password> <keycloak-password> <rabbitmq-password> <session-secret> <service-api-key> [environment-name]}"
 POSTGRES_PASSWORD="${2:?}"
 KEYCLOAK_PASSWORD="${3:?}"
-ENVIRONMENT_NAME="${4:-dev}"
+RABBITMQ_PASSWORD="${4:?}"
+SESSION_SECRET="${5:?}"
+SERVICE_API_KEY="${6:?}"
+ENVIRONMENT_NAME="${7:-dev}"
 
 PREFIX="riskmgmt-${ENVIRONMENT_NAME}"
 ACR_NAME="${PREFIX//\-/}acr"
-IMAGE_NAME="risk-management-app"
 
-echo "=== Step 1/6: Creating Resource Group ==="
+echo "=== Step 1/7: Creating Resource Group ==="
 az group create --name "$RESOURCE_GROUP" --location northeurope --output none
 echo "Resource group '$RESOURCE_GROUP' created in northeurope."
 
 echo ""
-echo "=== Step 2/6: Deploying Infrastructure (Bicep) ==="
+echo "=== Step 2/7: Deploying Infrastructure (Bicep) ==="
 DEPLOY_OUTPUT=$(az deployment group create \
   --resource-group "$RESOURCE_GROUP" \
   --template-file infra/main.bicep \
   --parameters infra/parameters/dev.bicepparam \
   --parameters postgresAdminPassword="$POSTGRES_PASSWORD" \
   --parameters keycloakAdminPassword="$KEYCLOAK_PASSWORD" \
+  --parameters rabbitmqPassword="$RABBITMQ_PASSWORD" \
+  --parameters sessionSecret="$SESSION_SECRET" \
+  --parameters serviceApiKey="$SERVICE_API_KEY" \
   --query 'properties.outputs' \
   --output json)
 
 ACR_LOGIN_SERVER=$(echo "$DEPLOY_OUTPUT" | jq -r '.acrLoginServer.value')
 KEYCLOAK_FQDN=$(echo "$DEPLOY_OUTPUT" | jq -r '.keycloakFqdn.value')
-APP_FQDN=$(echo "$DEPLOY_OUTPUT" | jq -r '.appFqdn.value')
+FRONTEND_FQDN=$(echo "$DEPLOY_OUTPUT" | jq -r '.frontendFqdn.value')
+RISK_API_FQDN=$(echo "$DEPLOY_OUTPUT" | jq -r '.riskApiFqdn.value')
+CUSTOMER_API_FQDN=$(echo "$DEPLOY_OUTPUT" | jq -r '.customerApiFqdn.value')
 POSTGRES_FQDN=$(echo "$DEPLOY_OUTPUT" | jq -r '.postgresFqdn.value')
 
 echo "Infrastructure deployed:"
-echo "  ACR:        $ACR_LOGIN_SERVER"
-echo "  Keycloak:   https://$KEYCLOAK_FQDN"
-echo "  App:        https://$APP_FQDN"
-echo "  PostgreSQL:  $POSTGRES_FQDN"
+echo "  ACR:            $ACR_LOGIN_SERVER"
+echo "  Keycloak:       https://$KEYCLOAK_FQDN"
+echo "  Frontend:       https://$FRONTEND_FQDN"
+echo "  Risk API:       https://$RISK_API_FQDN"
+echo "  Customer API:   https://$CUSTOMER_API_FQDN"
+echo "  PostgreSQL:     $POSTGRES_FQDN"
 
 echo ""
-echo "=== Step 3/6: Building and Pushing Docker Image ==="
+echo "=== Step 3/7: Building and Pushing Docker Images ==="
 ACR_USERNAME=$(az acr credential show --name "$ACR_NAME" --resource-group "$RESOURCE_GROUP" --query 'username' -o tsv)
 ACR_PASSWORD=$(az acr credential show --name "$ACR_NAME" --resource-group "$RESOURCE_GROUP" --query 'passwords[0].value' -o tsv)
 
 echo "$ACR_PASSWORD" | docker login "$ACR_LOGIN_SERVER" -u "$ACR_USERNAME" --password-stdin
 IMAGE_TAG="$(date +%s)"
-docker build -t "${ACR_LOGIN_SERVER}/${IMAGE_NAME}:${IMAGE_TAG}" -t "${ACR_LOGIN_SERVER}/${IMAGE_NAME}:latest" .
-docker push "${ACR_LOGIN_SERVER}/${IMAGE_NAME}:${IMAGE_TAG}"
-docker push "${ACR_LOGIN_SERVER}/${IMAGE_NAME}:latest"
-echo "Image pushed: ${ACR_LOGIN_SERVER}/${IMAGE_NAME}:${IMAGE_TAG}"
+
+echo "  Building frontend..."
+docker build -t "${ACR_LOGIN_SERVER}/frontend:${IMAGE_TAG}" -t "${ACR_LOGIN_SERVER}/frontend:latest" \
+  -f src/frontend/Dockerfile src/frontend
+docker push "${ACR_LOGIN_SERVER}/frontend:${IMAGE_TAG}"
+docker push "${ACR_LOGIN_SERVER}/frontend:latest"
+
+echo "  Building risk-api..."
+docker build -t "${ACR_LOGIN_SERVER}/risk-api:${IMAGE_TAG}" -t "${ACR_LOGIN_SERVER}/risk-api:latest" \
+  -f src/backend/RiskManagement.Api/Dockerfile src/backend
+docker push "${ACR_LOGIN_SERVER}/risk-api:${IMAGE_TAG}"
+docker push "${ACR_LOGIN_SERVER}/risk-api:latest"
+
+echo "  Building customer-api..."
+docker build -t "${ACR_LOGIN_SERVER}/customer-api:${IMAGE_TAG}" -t "${ACR_LOGIN_SERVER}/customer-api:latest" \
+  -f src/backend/CustomerManagement.Api/Dockerfile src/backend
+docker push "${ACR_LOGIN_SERVER}/customer-api:${IMAGE_TAG}"
+docker push "${ACR_LOGIN_SERVER}/customer-api:latest"
+
+echo "Images pushed with tag: ${IMAGE_TAG}"
 
 echo ""
-echo "=== Step 4/6: Updating Container App with new image ==="
+echo "=== Step 4/7: Updating Container Apps with new images ==="
 az containerapp update \
-  --name "${PREFIX}-app" \
+  --name "${PREFIX}-frontend" \
   --resource-group "$RESOURCE_GROUP" \
-  --image "${ACR_LOGIN_SERVER}/${IMAGE_NAME}:${IMAGE_TAG}" \
+  --image "${ACR_LOGIN_SERVER}/frontend:${IMAGE_TAG}" \
   --output none
-echo "Container app updated."
+
+az containerapp update \
+  --name "${PREFIX}-risk-api" \
+  --resource-group "$RESOURCE_GROUP" \
+  --image "${ACR_LOGIN_SERVER}/risk-api:${IMAGE_TAG}" \
+  --output none
+
+az containerapp update \
+  --name "${PREFIX}-customer-api" \
+  --resource-group "$RESOURCE_GROUP" \
+  --image "${ACR_LOGIN_SERVER}/customer-api:${IMAGE_TAG}" \
+  --output none
+
+echo "All container apps updated."
 
 echo ""
-echo "=== Step 5/6: Waiting for Keycloak to be ready ==="
+echo "=== Step 5/7: Waiting for Keycloak to be ready ==="
 KEYCLOAK_URL="https://${KEYCLOAK_FQDN}"
 for i in $(seq 1 60); do
   if curl -sf "${KEYCLOAK_URL}/health/ready" > /dev/null 2>&1; then
@@ -79,7 +117,7 @@ for i in $(seq 1 60); do
 done
 
 echo ""
-echo "=== Step 6/6: Configuring Keycloak (Realm, Client, Users, Roles) ==="
+echo "=== Step 6/7: Configuring Keycloak (Realm, Client, Users, Roles) ==="
 
 # Get admin token
 TOKEN=$(curl -sf -X POST "${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token" \
@@ -115,11 +153,11 @@ curl -sf -X POST "${KEYCLOAK_URL}/admin/realms/risk-management/clients" \
     \"standardFlowEnabled\": true,
     \"directAccessGrantsEnabled\": true,
     \"serviceAccountsEnabled\": false,
-    \"redirectUris\": [\"https://${APP_FQDN}/*\"],
-    \"webOrigins\": [\"https://${APP_FQDN}\"],
+    \"redirectUris\": [\"https://${FRONTEND_FQDN}/*\"],
+    \"webOrigins\": [\"https://${FRONTEND_FQDN}\"],
     \"defaultClientScopes\": [\"profile\", \"roles\", \"email\"],
     \"attributes\": {
-      \"post.logout.redirect.uris\": \"https://${APP_FQDN}/*\"
+      \"post.logout.redirect.uris\": \"https://${FRONTEND_FQDN}/*\"
     }
   }" || true
 
@@ -186,10 +224,10 @@ create_user() {
 create_user "applicant" "applicant@example.com" "Applicant" "User" "applicant" "$APPLICANT_ROLE"
 create_user "processor" "processor@example.com" "Processor" "User" "processor" "$PROCESSOR_ROLE"
 
-# Update app container with OIDC client secret
-echo "  Setting OIDC_CLIENT_SECRET on app container..."
+echo ""
+echo "=== Step 7/7: Setting OIDC client secret on frontend ==="
 az containerapp update \
-  --name "${PREFIX}-app" \
+  --name "${PREFIX}-frontend" \
   --resource-group "$RESOURCE_GROUP" \
   --set-env-vars "OIDC_CLIENT_SECRET=${CLIENT_SECRET}" \
   --output none
@@ -199,8 +237,10 @@ echo "============================================="
 echo "  Setup complete!"
 echo "============================================="
 echo ""
-echo "  App URL:      https://${APP_FQDN}"
-echo "  Keycloak URL: https://${KEYCLOAK_FQDN}"
+echo "  Frontend URL:   https://${FRONTEND_FQDN}"
+echo "  Keycloak URL:   https://${KEYCLOAK_FQDN}"
+echo "  Risk API:       https://${RISK_API_FQDN}"
+echo "  Customer API:   https://${CUSTOMER_API_FQDN}"
 echo ""
 echo "  Test users:"
 echo "    applicant / applicant  (role: applicant)"
