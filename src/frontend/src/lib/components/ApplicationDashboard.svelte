@@ -64,7 +64,7 @@
 
 		if (pieChart) { pieChart.destroy(); pieChart = null; }
 		if (pieCanvas) {
-			const currentTotal = stats.total;
+			const displayedTotal = stats.draft + stats.submitted + stats.approved + stats.rejected;
 			pieChart = new Chart(pieCanvas, {
 				type: 'pie',
 				data: {
@@ -83,8 +83,8 @@
 							callbacks: {
 								label: (context) => {
 									const value = context.parsed;
-									if (currentTotal === 0 || value === 0) return context.label ?? '';
-									const pct = Math.round((value / currentTotal) * 100);
+									if (displayedTotal === 0 || value === 0) return context.label ?? '';
+									const pct = Math.round((value / displayedTotal) * 100);
 									return `${context.label}: ${pct}%`;
 								}
 							}
