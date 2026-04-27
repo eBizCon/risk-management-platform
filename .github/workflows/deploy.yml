@@ -57,7 +57,8 @@ jobs:
             --parameters keycloakAdminPassword="${{ secrets.KEYCLOAK_ADMIN_PASSWORD }}" \
             --parameters serviceApiKey="${{ secrets.SERVICE_API_KEY }}" \
             --parameters rabbitmqPassword="${{ secrets.RABBITMQ_PASSWORD }}" \
-            --parameters oidcClientSecret="${{ secrets.OIDC_CLIENT_SECRET }}"
+            --parameters oidcClientSecret="${{ secrets.OIDC_CLIENT_SECRET }}" \
+            --parameters sessionSecret="${{ secrets.SESSION_SECRET }}"
 
   deploy-apps:
     runs-on: ubuntu-latest
@@ -71,7 +72,7 @@ jobs:
       - name: Update Frontend
         run: |
           az containerapp update \
-            --name riskmgmt-dev-app \
+            --name riskmgmt-dev-frontend \
             --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
             --image ${{ secrets.ACR_LOGIN_SERVER }}/risk-management-app:${{ github.sha }}
 

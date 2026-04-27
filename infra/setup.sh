@@ -6,12 +6,13 @@ set -euo pipefail
 # Creates all infrastructure, builds and deploys the app, configures Keycloak
 # =============================================================================
 
-RESOURCE_GROUP="${1:?Usage: setup.sh <resource-group> <postgres-password> <keycloak-password> <service-api-key> <rabbitmq-password> [environment-name]}"
+RESOURCE_GROUP="${1:?Usage: setup.sh <resource-group> <postgres-password> <keycloak-password> <service-api-key> <rabbitmq-password> <session-secret> [environment-name]}"
 POSTGRES_PASSWORD="${2:?}"
 KEYCLOAK_PASSWORD="${3:?}"
 SERVICE_API_KEY="${4:?}"
 RABBITMQ_PASSWORD="${5:?}"
-ENVIRONMENT_NAME="${6:-dev}"
+SESSION_SECRET="${6:?}"
+ENVIRONMENT_NAME="${7:-dev}"
 
 PREFIX="riskmgmt-${ENVIRONMENT_NAME}"
 ACR_NAME="${PREFIX//\-/}acr"
@@ -31,12 +32,13 @@ DEPLOY_OUTPUT=$(az deployment group create \
   --parameters keycloakAdminPassword="$KEYCLOAK_PASSWORD" \
   --parameters serviceApiKey="$SERVICE_API_KEY" \
   --parameters rabbitmqPassword="$RABBITMQ_PASSWORD" \
+  --parameters sessionSecret="$SESSION_SECRET" \
   --query 'properties.outputs' \
   --output json)
 
 ACR_LOGIN_SERVER=$(echo "$DEPLOY_OUTPUT" | jq -r '.acrLoginServer.value')
 KEYCLOAK_FQDN=$(echo "$DEPLOY_OUTPUT" | jq -r '.keycloakFqdn.value')
-APP_FQDN=$(echo "$DEPLOY_OUTPUT" | jq -r '.appFqdn.value')
+APP_FQDN=$(echo "$DEPLOY_OUTPUT" | jq -r '.frontendFqdn.value')
 RISK_API_FQDN=$(echo "$DEPLOY_OUTPUT" | jq -r '.riskApiFqdn.value')
 CUSTOMER_API_FQDN=$(echo "$DEPLOY_OUTPUT" | jq -r '.customerApiFqdn.value')
 POSTGRES_FQDN=$(echo "$DEPLOY_OUTPUT" | jq -r '.postgresFqdn.value')
@@ -80,7 +82,7 @@ echo "Images pushed with tag: ${IMAGE_TAG}"
 echo ""
 echo "=== Step 4/7: Updating Container Apps with new images ==="
 az containerapp update \
-  --name "${PREFIX}-app" \
+  --name "${PREFIX}-frontend" \
   --resource-group "$RESOURCE_GROUP" \
   --image "${ACR_LOGIN_SERVER}/risk-management-app:${IMAGE_TAG}" \
   --output none
@@ -224,9 +226,9 @@ create_user "applicant" "applicant@example.com" "Applicant" "User" "applicant" "
 create_user "processor" "processor@example.com" "Processor" "User" "processor" "$PROCESSOR_ROLE"
 
 echo ""
-echo "=== Step 7/7: Setting OIDC client secret on app ==="
+echo "=== Step 7/7: Setting OIDC client secret on frontend ==="
 az containerapp update \
-  --name "${PREFIX}-app" \
+  --name "${PREFIX}-frontend" \
   --resource-group "$RESOURCE_GROUP" \
   --set-env-vars "OIDC_CLIENT_SECRET=${CLIENT_SECRET}" \
   --output none

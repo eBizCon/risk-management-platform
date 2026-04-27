@@ -6,13 +6,14 @@ set -euo pipefail
 # For initial setup use setup.sh instead
 # =============================================================================
 
-RESOURCE_GROUP="${1:?Usage: deploy.sh <resource-group> <postgres-password> <keycloak-password> <service-api-key> <rabbitmq-password> <oidc-client-secret> [environment-name]}"
+RESOURCE_GROUP="${1:?Usage: deploy.sh <resource-group> <postgres-password> <keycloak-password> <service-api-key> <rabbitmq-password> <oidc-client-secret> <session-secret> [environment-name]}"
 POSTGRES_PASSWORD="${2:?}"
 KEYCLOAK_PASSWORD="${3:?}"
 SERVICE_API_KEY="${4:?}"
 RABBITMQ_PASSWORD="${5:?}"
 OIDC_CLIENT_SECRET="${6:?}"
-ENVIRONMENT_NAME="${7:-dev}"
+SESSION_SECRET="${7:?}"
+ENVIRONMENT_NAME="${8:-dev}"
 
 PREFIX="riskmgmt-${ENVIRONMENT_NAME}"
 ACR_NAME="${PREFIX//\-/}acr"
@@ -27,7 +28,8 @@ az deployment group create \
   --parameters keycloakAdminPassword="$KEYCLOAK_PASSWORD" \
   --parameters serviceApiKey="$SERVICE_API_KEY" \
   --parameters rabbitmqPassword="$RABBITMQ_PASSWORD" \
-  --parameters oidcClientSecret="$OIDC_CLIENT_SECRET"
+  --parameters oidcClientSecret="$OIDC_CLIENT_SECRET" \
+  --parameters sessionSecret="$SESSION_SECRET"
 
 echo ""
 echo "=== Step 2/3: Building and Pushing Docker Images ==="
@@ -55,7 +57,7 @@ docker push "${ACR_LOGIN_SERVER}/customermanagement-api:latest"
 
 echo ""
 echo "=== Step 3/3: Updating Container Apps ==="
-az containerapp update --name "${PREFIX}-app" --resource-group "$RESOURCE_GROUP" --image "${ACR_LOGIN_SERVER}/risk-management-app:${IMAGE_TAG}" --output none
+az containerapp update --name "${PREFIX}-frontend" --resource-group "$RESOURCE_GROUP" --image "${ACR_LOGIN_SERVER}/risk-management-app:${IMAGE_TAG}" --output none
 az containerapp update --name "${PREFIX}-risk-api" --resource-group "$RESOURCE_GROUP" --image "${ACR_LOGIN_SERVER}/riskmanagement-api:${IMAGE_TAG}" --output none
 az containerapp update --name "${PREFIX}-customer-api" --resource-group "$RESOURCE_GROUP" --image "${ACR_LOGIN_SERVER}/customermanagement-api:${IMAGE_TAG}" --output none
 
