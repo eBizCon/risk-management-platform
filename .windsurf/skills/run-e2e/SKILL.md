@@ -5,43 +5,86 @@ description: E2E Tests ausführen. Verwende diesen Skill wenn du End-to-End (e2e
 
 # Run E2E Tests
 
-## Command
+Runs E2E tests against a locally running Aspire stack.
+
+## Prerequisites: Start the Application Stack
+
+The app must be running locally via Aspire before executing tests.
+
+### 1) Start Backend Stack with Aspire
 
 ```bash
+dotnet run --project ./src/backend/AppHost/AppHost.csproj
+```
+
+Run this as a **non-blocking** command (the Aspire host runs continuously).
+
+### 2) Start Frontend
+
+In a second terminal:
+
+```bash
+cd ./src/frontend
+cp .env.test .env
+npm run dev -- --port 5173
+```
+
+Run this as a **non-blocking** command.
+
+### 3) Wait for Health Checks
+
+Wait until all services are healthy:
+- Keycloak is healthy (check Aspire dashboard)
+- Frontend on http://localhost:5173 is reachable
+- All APIs are healthy in Aspire dashboard
+
+## E2E Test Command
+
+Once the stack is running:
+
+```bash
+cd ./src/frontend
 npm run test:e2e:ci
 ```
 
 This runs `CI=true playwright test` which:
-
-- Builds the app (`npm run build`) and starts a preview server on port 4173
 - Runs tests headless in Chromium (2 workers, 2 retries on failure)
 - Uses `.env.test` for environment variables
 - Generates an HTML report in `playwright-report/`
 
-**Always use `test:e2e:ci`** — without `:ci` Playwright launches a headed browser that Windsurf cannot control.
+**Always use `test:e2e:ci`** — without `:ci` Playwright launches a headed browser.
 
 ### Run a single test file
 
 ```bash
+cd ./src/frontend
 CI=true npx playwright test e2e/applicant.test.ts
 ```
 
 ### Run a single test by title
 
 ```bash
+cd ./src/frontend
 CI=true npx playwright test -g "should display the home page"
 ```
 
-## Workflow
+## Browser-Based Login Credentials
 
-1. Run the command as a **non-blocking** command (it takes 30-90 seconds)
-2. Wait for completion using `command_status` with `WaitDurationSeconds: 60`
-3. If still running, wait again
-4. Parse the output and report results to the user
+For manual browser testing or debugging:
+- **applicant** / `applicant`
+- **processor** / `processor`
+
+## Workflow Summary
+
+1. Start Aspire backend (**non-blocking**)
+2. Start frontend dev server (**non-blocking**)
+3. Wait for all services to be healthy
+4. Run E2E tests and wait for completion
+5. Report results to the user
 
 ## Project Structure
 
-- **Config**: `playwright.config.ts` — webServer, baseURL `http://localhost:4173`, testDir `e2e/`
+- **Config**: `playwright.config.ts` — baseURL `http://localhost:5173`, testDir `e2e/`
 - **Tests**: `e2e/*.test.ts` — import `test` and `expect` from `e2e/fixtures.ts`
 - **Fixtures**: `e2e/fixtures.ts` — provides `authenticatedPage` and `authenticatedContext` fixtures
 - **Auth helper**: `e2e/helpers/auth.ts` — `createTestSession(page, role)` and `clearTestSessions(page)` via `/api/test/session`
@@ -49,16 +92,9 @@ CI=true npx playwright test -g "should display the home page"
 
 ## Interpreting Failures
 
-- **Port 4173 already in use**: Another preview server is running. Kill it first: `lsof -ti:4173 | xargs kill -9`
+- **Port 5173 already in use**: Another dev server is running. Kill it first: `lsof -ti:5173 | xargs kill -9`
+- **Aspire services not healthy**: Check the Aspire dashboard and wait for all services to start
 - **Session creation failed**: The `/api/test/session` endpoint is missing or broken. Check `src/routes/api/test/session/`
-- **Timeout on navigation**: The page did not load in time. Check if the build succeeded (look for build errors above the test output)
+- **Timeout on navigation**: The page did not load in time. Check if the frontend dev server started successfully
 - **`data-testid` not found**: A UI element is missing its `data-testid` attribute. Fix the component, not the test
 - **Flaky tests**: If a test passes on retry (shown as "flaky" in output), investigate the root cause rather than ignoring it
-
-## Rules
-
-- Prefer `data-testid` selectors (`page.getByTestId(...)`)
-- Fall back to accessible roles/names (`getByRole`) only if `data-testid` is not feasible
-- Never use XPath or brittle CSS selectors
-- Never implement workarounds that make a test succeed — fix the actual functionality
-- Always add `data-testid` attributes to new interactive UI elements

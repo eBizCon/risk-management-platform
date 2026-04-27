@@ -37,12 +37,10 @@ test.describe('Antragsbearbeiter (Processor) Workflows', () => {
 			await createTestSession(page, 'applicant');
 
 			await page.goto('/applications/new');
-			await page.getByLabel(/Name/i).fill('Processor Review Test');
+			await page.getByTestId('select-customer').selectOption({ index: 1 });
 			await page.getByLabel(/Monatliches Einkommen/i).fill('4500');
 			await page.getByLabel(/Monatliche Fixkosten/i).fill('1800');
 			await page.getByLabel(/Gewünschte Rate/i).fill('500');
-			await page.getByLabel(/Beschäftigungsstatus/i).selectOption('employed');
-			await page.getByLabel(/Nein/i).check();
 			await page.getByRole('button', { name: /Antrag einreichen/i }).click();
 			await page.getByTestId('confirm-dialog-confirm').click();
 
@@ -90,12 +88,10 @@ test.describe('Antragsbearbeiter (Processor) Workflows', () => {
 			await createTestSession(page, 'applicant');
 
 			await page.goto('/applications/new');
-			await page.getByLabel(/Name/i).fill('Approve Test');
+			await page.getByTestId('select-customer').selectOption({ index: 1 });
 			await page.getByLabel(/Monatliches Einkommen/i).fill('5000');
 			await page.getByLabel(/Monatliche Fixkosten/i).fill('2000');
 			await page.getByLabel(/Gewünschte Rate/i).fill('500');
-			await page.getByLabel(/Beschäftigungsstatus/i).selectOption('employed');
-			await page.getByLabel(/Nein/i).check();
 			await page.getByRole('button', { name: /Antrag einreichen/i }).click();
 			await page.getByTestId('confirm-dialog-confirm').click();
 
@@ -117,12 +113,10 @@ test.describe('Antragsbearbeiter (Processor) Workflows', () => {
 			await createTestSession(page, 'applicant');
 
 			await page.goto('/applications/new');
-			await page.getByLabel(/Name/i).fill('Approve With Comment');
+			await page.getByTestId('select-customer').selectOption({ index: 1 });
 			await page.getByLabel(/Monatliches Einkommen/i).fill('5500');
 			await page.getByLabel(/Monatliche Fixkosten/i).fill('2000');
 			await page.getByLabel(/Gewünschte Rate/i).fill('500');
-			await page.getByLabel(/Beschäftigungsstatus/i).selectOption('employed');
-			await page.getByLabel(/Nein/i).check();
 			await page.getByRole('button', { name: /Antrag einreichen/i }).click();
 			await page.getByTestId('confirm-dialog-confirm').click();
 
@@ -159,12 +153,10 @@ test.describe('Antragsbearbeiter (Processor) Workflows', () => {
 			await createTestSession(page, 'applicant');
 
 			await page.goto('/applications/new');
-			await page.getByLabel(/Name/i).fill('Reject Test');
+			await page.getByTestId('select-customer').selectOption({ index: 1 });
 			await page.getByLabel(/Monatliches Einkommen/i).fill('2500');
 			await page.getByLabel(/Monatliche Fixkosten/i).fill('2000');
 			await page.getByLabel(/Gewünschte Rate/i).fill('300');
-			await page.getByLabel(/Beschäftigungsstatus/i).selectOption('unemployed');
-			await page.getByLabel(/Nein/i).check();
 			await page.getByRole('button', { name: /Antrag einreichen/i }).click();
 			await page.getByTestId('confirm-dialog-confirm').click();
 
@@ -196,12 +188,10 @@ test.describe('Antragsbearbeiter (Processor) Workflows', () => {
 			await createTestSession(page, 'applicant');
 
 			await page.goto('/applications/new');
-			await page.getByLabel(/Name/i).fill('Reject With Comment');
+			await page.getByTestId('select-customer').selectOption({ index: 1 });
 			await page.getByLabel(/Monatliches Einkommen/i).fill('2500');
 			await page.getByLabel(/Monatliche Fixkosten/i).fill('2000');
 			await page.getByLabel(/Gewünschte Rate/i).fill('300');
-			await page.getByLabel(/Beschäftigungsstatus/i).selectOption('unemployed');
-			await page.getByLabel(/Ja/i).check();
 			await page.getByRole('button', { name: /Antrag einreichen/i }).click();
 			await page.getByTestId('confirm-dialog-confirm').click();
 
@@ -250,12 +240,10 @@ test.describe('Antragsbearbeiter (Processor) Workflows', () => {
 			await createTestSession(page, 'applicant');
 
 			await page.goto('/applications/new');
-			await page.getByTestId('input-name').fill('Comment Display Test');
+			await page.getByTestId('select-customer').selectOption({ index: 1 });
 			await page.getByTestId('input-income').fill('5000');
 			await page.getByTestId('input-fixed-costs').fill('2000');
 			await page.getByTestId('input-desired-rate').fill('500');
-			await page.getByTestId('select-employment-status').selectOption('employed');
-			await page.getByTestId('radio-payment-default-no').check();
 			await page.getByTestId('btn-submit-application').click();
 			await page.getByTestId('confirm-dialog-confirm').click();
 

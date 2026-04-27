@@ -33,7 +33,7 @@
 		const labels = ['Entwurf', 'Eingereicht', 'Genehmigt', 'Abgelehnt'];
 		const colors = [chartColors.draft, chartColors.submitted, chartColors.approved, chartColors.rejected];
 
-		if (barChart) barChart.destroy();
+		if (barChart) { barChart.destroy(); barChart = null; }
 		if (barCanvas) {
 			barChart = new Chart(barCanvas, {
 				type: 'bar',
@@ -62,7 +62,7 @@
 			});
 		}
 
-		if (pieChart) pieChart.destroy();
+		if (pieChart) { pieChart.destroy(); pieChart = null; }
 		if (pieCanvas) {
 			const currentTotal = stats.total;
 			pieChart = new Chart(pieCanvas, {
@@ -95,8 +95,8 @@
 		}
 
 		return () => {
-			if (barChart) barChart.destroy();
-			if (pieChart) pieChart.destroy();
+			if (barChart) { barChart.destroy(); barChart = null; }
+			if (pieChart) { pieChart.destroy(); pieChart = null; }
 		};
 	});
 </script>

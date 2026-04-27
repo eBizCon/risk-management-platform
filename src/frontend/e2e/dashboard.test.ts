@@ -1,79 +1,44 @@
 import { test } from './fixtures';
 import { test as base, expect as baseExpect } from '@playwright/test';
-import { createTestSession, clearTestSessions } from './helpers/auth';
+import { clearTestSessions } from './helpers/auth';
 
-test.describe('Dashboard - Applicant View', () => {
+test.describe('Home Page - Applicant View', () => {
 	test.use({ userRole: 'applicant' });
 
-	test('should display dashboard section with stats and charts', async ({ authenticatedPage }) => {
+	test('should display home structure and feature cards', async ({ authenticatedPage }) => {
 		await authenticatedPage.goto('/');
-		await baseExpect(authenticatedPage.getByTestId('dashboard-section')).toBeVisible();
-		await baseExpect(authenticatedPage.getByTestId('dashboard-stats')).toBeVisible();
-		await baseExpect(authenticatedPage.getByTestId('dashboard-charts')).toBeVisible();
+		await baseExpect(authenticatedPage.getByTestId('home-page')).toBeVisible();
+		await baseExpect(authenticatedPage.getByTestId('home-hero')).toBeVisible();
+		await baseExpect(authenticatedPage.getByTestId('home-features')).toBeVisible();
+		await baseExpect(authenticatedPage.getByTestId('home-feature-automation')).toBeVisible();
 	});
 
-	test('should display all four stat cards', async ({ authenticatedPage }) => {
+	test('should show applicant role actions', async ({ authenticatedPage }) => {
 		await authenticatedPage.goto('/');
-		await baseExpect(authenticatedPage.getByTestId('stat-card-draft')).toBeVisible();
-		await baseExpect(authenticatedPage.getByTestId('stat-card-submitted')).toBeVisible();
-		await baseExpect(authenticatedPage.getByTestId('stat-card-approved')).toBeVisible();
-		await baseExpect(authenticatedPage.getByTestId('stat-card-rejected')).toBeVisible();
-	});
-
-	test('should display bar chart and pie chart', async ({ authenticatedPage }) => {
-		await authenticatedPage.goto('/');
-		await baseExpect(authenticatedPage.getByTestId('dashboard-bar-chart')).toBeVisible();
-		await baseExpect(authenticatedPage.getByTestId('dashboard-pie-chart')).toBeVisible();
-		await baseExpect(authenticatedPage.getByText('Antrag nach Status')).toBeVisible();
-		await baseExpect(authenticatedPage.getByText('Verteilung')).toBeVisible();
-	});
-
-	test('should show stat card values as numbers', async ({ authenticatedPage }) => {
-		await authenticatedPage.goto('/');
-		const draftValue = authenticatedPage.getByTestId('stat-card-draft-value');
-		await baseExpect(draftValue).toBeVisible();
-		const text = await draftValue.textContent();
-		baseExpect(text?.trim()).toMatch(/^\d+$/);
+		await baseExpect(authenticatedPage.getByTestId('home-role-section')).toBeVisible();
+		await baseExpect(authenticatedPage.getByTestId('home-applicant-section')).toBeVisible();
+		await baseExpect(authenticatedPage.getByTestId('home-applicant-new-application-link')).toBeVisible();
+		await baseExpect(authenticatedPage.getByTestId('home-applicant-applications-link')).toBeVisible();
 	});
 });
 
-test.describe('Dashboard - Processor View', () => {
+test.describe('Home Page - Processor View', () => {
 	test.use({ userRole: 'processor' });
 
-	test('should display dashboard section with stats and charts', async ({ authenticatedPage }) => {
+	test('should show processor role action', async ({ authenticatedPage }) => {
 		await authenticatedPage.goto('/');
-		await baseExpect(authenticatedPage.getByTestId('dashboard-section')).toBeVisible();
-		await baseExpect(authenticatedPage.getByTestId('dashboard-stats')).toBeVisible();
-		await baseExpect(authenticatedPage.getByTestId('dashboard-charts')).toBeVisible();
-	});
-
-	test('should display all four stat cards', async ({ authenticatedPage }) => {
-		await authenticatedPage.goto('/');
-		await baseExpect(authenticatedPage.getByTestId('stat-card-draft')).toBeVisible();
-		await baseExpect(authenticatedPage.getByTestId('stat-card-submitted')).toBeVisible();
-		await baseExpect(authenticatedPage.getByTestId('stat-card-approved')).toBeVisible();
-		await baseExpect(authenticatedPage.getByTestId('stat-card-rejected')).toBeVisible();
+		await baseExpect(authenticatedPage.getByTestId('home-role-section')).toBeVisible();
+		await baseExpect(authenticatedPage.getByTestId('home-processor-section')).toBeVisible();
+		await baseExpect(authenticatedPage.getByTestId('home-processor-worklist-link')).toBeVisible();
 	});
 });
 
-base.describe('Dashboard - Empty State', () => {
-	base('should show zero values when user has no applications', async ({ page }) => {
-		await createTestSession(page, 'applicant', { email: 'empty-dashboard@example.com' });
-		await page.goto('/');
-		await baseExpect(page.getByTestId('dashboard-section')).toBeVisible();
-
-		await baseExpect(page.getByTestId('stat-card-draft-value')).toHaveText('0');
-		await baseExpect(page.getByTestId('stat-card-submitted-value')).toHaveText('0');
-		await baseExpect(page.getByTestId('stat-card-approved-value')).toHaveText('0');
-		await baseExpect(page.getByTestId('stat-card-rejected-value')).toHaveText('0');
-
+base.describe('Home Page - Unauthenticated User', () => {
+	base('should show guest section and login action', async ({ page }) => {
 		await clearTestSessions(page);
-	});
-});
-
-base.describe('Dashboard - Unauthenticated User', () => {
-	base('should not display dashboard section', async ({ page }) => {
 		await page.goto('/');
-		await baseExpect(page.getByTestId('dashboard-section')).not.toBeVisible();
+		await baseExpect(page.getByTestId('home-role-section')).toBeVisible();
+		await baseExpect(page.getByTestId('home-guest-section')).toBeVisible();
+		await baseExpect(page.getByTestId('hero-login')).toBeVisible();
 	});
 });

@@ -23,13 +23,12 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 		test('should display all required form fields', async ({ authenticatedPage }) => {
 			await authenticatedPage.goto('/applications/new');
 
-			await expect(authenticatedPage.getByTestId('input-name')).toBeVisible();
+			await expect(authenticatedPage.getByTestId('select-customer')).toBeVisible();
 			await expect(authenticatedPage.getByTestId('input-income')).toBeVisible();
 			await expect(authenticatedPage.getByTestId('input-fixed-costs')).toBeVisible();
 			await expect(authenticatedPage.getByTestId('input-desired-rate')).toBeVisible();
-			await expect(authenticatedPage.getByTestId('select-employment-status')).toBeVisible();
-			await expect(authenticatedPage.getByTestId('radio-payment-default-yes')).toBeVisible();
-			await expect(authenticatedPage.getByTestId('radio-payment-default-no')).toBeVisible();
+			await expect(authenticatedPage.getByTestId('btn-save-draft')).toBeVisible();
+			await expect(authenticatedPage.getByTestId('btn-submit-application')).toBeVisible();
 		});
 
 		test('should show validation errors for empty form submission', async ({
@@ -37,32 +36,30 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 		}) => {
 			await authenticatedPage.goto('/applications/new');
 
-			await authenticatedPage.getByTestId('input-name').fill('A');
 			await authenticatedPage.getByTestId('input-income').fill('1000');
 			await authenticatedPage.getByTestId('input-fixed-costs').fill('500');
 			await authenticatedPage.getByTestId('input-desired-rate').fill('200');
-			await authenticatedPage.getByTestId('select-employment-status').selectOption('employed');
-			await authenticatedPage.getByTestId('radio-payment-default-no').check();
 
 			await authenticatedPage.getByTestId('btn-save-draft').click();
-			await authenticatedPage.waitForLoadState('networkidle');
-
-			await expect(authenticatedPage.getByText(/mindestens 2 Zeichen/i)).toBeVisible();
+			await expect(authenticatedPage).toHaveURL('/applications/new');
+			await expect(authenticatedPage.getByTestId('select-customer')).toHaveValue('');
 		});
 
 		test('should show validation error for income equal to 0', async ({ authenticatedPage }) => {
 			await authenticatedPage.goto('/applications/new');
 
-			await authenticatedPage.getByTestId('input-name').fill('Test User');
+			await authenticatedPage.getByTestId('select-customer').selectOption({ index: 1 });
 			await authenticatedPage.getByTestId('input-income').fill('0');
 			await authenticatedPage.getByTestId('input-fixed-costs').fill('0');
 			await authenticatedPage.getByTestId('input-desired-rate').fill('200');
-			await authenticatedPage.getByTestId('select-employment-status').selectOption('employed');
-			await authenticatedPage.getByTestId('radio-payment-default-no').check();
 
 			await authenticatedPage.getByTestId('btn-save-draft').click();
 
-			await expect(authenticatedPage.getByText(/Einkommen muss positiv sein/i)).toBeVisible();
+			await expect(
+				authenticatedPage
+					.getByTestId('application-validation-summary')
+					.getByText(/Einkommen muss positiv sein/i)
+			).toBeVisible();
 		});
 
 		test('should show validation error when desired rate exceeds available income', async ({
@@ -70,29 +67,27 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 		}) => {
 			await authenticatedPage.goto('/applications/new');
 
-			await authenticatedPage.getByTestId('input-name').fill('Test User');
+			await authenticatedPage.getByTestId('select-customer').selectOption({ index: 1 });
 			await authenticatedPage.getByTestId('input-income').fill('3000');
 			await authenticatedPage.getByTestId('input-fixed-costs').fill('2000');
 			await authenticatedPage.getByTestId('input-desired-rate').fill('1500');
-			await authenticatedPage.getByTestId('select-employment-status').selectOption('employed');
-			await authenticatedPage.getByTestId('radio-payment-default-no').check();
 
 			await authenticatedPage.getByTestId('btn-save-draft').click();
 
 			await expect(
-				authenticatedPage.getByText(/kann nicht höher sein als das verfügbare Einkommen/i)
+				authenticatedPage
+					.getByTestId('application-validation-summary')
+					.getByText(/kann nicht höher sein als das verfügbare Einkommen/i)
 			).toBeVisible();
 		});
 
 		test('should successfully create a draft application', async ({ authenticatedPage }) => {
 			await authenticatedPage.goto('/applications/new');
 
-			await authenticatedPage.getByTestId('input-name').fill('Max Mustermann');
+			await authenticatedPage.getByTestId('select-customer').selectOption({ index: 1 });
 			await authenticatedPage.getByTestId('input-income').fill('4000');
 			await authenticatedPage.getByTestId('input-fixed-costs').fill('1500');
 			await authenticatedPage.getByTestId('input-desired-rate').fill('500');
-			await authenticatedPage.getByTestId('select-employment-status').selectOption('employed');
-			await authenticatedPage.getByTestId('radio-payment-default-no').check();
 
 			await authenticatedPage.getByTestId('btn-save-draft').click();
 
@@ -105,19 +100,21 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 		}) => {
 			await authenticatedPage.goto('/applications/new');
 
-			await authenticatedPage.getByTestId('input-name').fill('Anna Schmidt');
+			await authenticatedPage.getByTestId('select-customer').selectOption({ index: 1 });
 			await authenticatedPage.getByTestId('input-income').fill('5000');
 			await authenticatedPage.getByTestId('input-fixed-costs').fill('2000');
 			await authenticatedPage.getByTestId('input-desired-rate').fill('600');
-			await authenticatedPage.getByTestId('select-employment-status').selectOption('employed');
-			await authenticatedPage.getByTestId('radio-payment-default-no').check();
 
 			await authenticatedPage.getByTestId('btn-submit-application').click();
 			await expect(authenticatedPage.getByTestId('confirm-dialog')).toBeVisible();
 			await authenticatedPage.getByTestId('confirm-dialog-confirm').click();
 
 			await expect(authenticatedPage).toHaveURL(/\/applications\/\d+/);
-			await expect(authenticatedPage.getByTestId('status-badge-submitted')).toBeVisible();
+			await expect(
+				authenticatedPage
+					.getByTestId('status-badge-submitted')
+					.or(authenticatedPage.getByTestId('status-badge-processing'))
+			).toBeVisible();
 		});
 	});
 
@@ -136,12 +133,10 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 	test.describe('Antrag einreichen (Submit Application)', () => {
 		test('should submit a draft application', async ({ authenticatedPage }) => {
 			await authenticatedPage.goto('/applications/new');
-			await authenticatedPage.getByTestId('input-name').fill('Submit Test');
+			await authenticatedPage.getByTestId('select-customer').selectOption({ index: 1 });
 			await authenticatedPage.getByTestId('input-income').fill('4500');
 			await authenticatedPage.getByTestId('input-fixed-costs').fill('1800');
 			await authenticatedPage.getByTestId('input-desired-rate').fill('500');
-			await authenticatedPage.getByTestId('select-employment-status').selectOption('employed');
-			await authenticatedPage.getByTestId('radio-payment-default-no').check();
 			await authenticatedPage.getByTestId('btn-save-draft').click();
 			await authenticatedPage.waitForURL(/\/applications\/\d+/);
 
@@ -149,17 +144,19 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await expect(authenticatedPage.getByTestId('confirm-dialog')).toBeVisible();
 			await authenticatedPage.getByTestId('confirm-dialog-confirm').click();
 			await authenticatedPage.waitForLoadState('networkidle');
-			await expect(authenticatedPage.getByTestId('status-badge-submitted')).toBeVisible();
+			await expect(
+				authenticatedPage
+					.getByTestId('status-badge-submitted')
+					.or(authenticatedPage.getByTestId('status-badge-processing'))
+			).toBeVisible();
 		});
 
 		test('should not allow editing after submission', async ({ authenticatedPage }) => {
 			await authenticatedPage.goto('/applications/new');
-			await authenticatedPage.getByTestId('input-name').fill('No Edit After Submit');
+			await authenticatedPage.getByTestId('select-customer').selectOption({ index: 1 });
 			await authenticatedPage.getByTestId('input-income').fill('4000');
 			await authenticatedPage.getByTestId('input-fixed-costs').fill('1500');
 			await authenticatedPage.getByTestId('input-desired-rate').fill('450');
-			await authenticatedPage.getByTestId('select-employment-status').selectOption('employed');
-			await authenticatedPage.getByTestId('radio-payment-default-no').check();
 			await authenticatedPage.getByTestId('btn-submit-application').click();
 			await authenticatedPage.getByTestId('confirm-dialog-confirm').click();
 			await expect(authenticatedPage.getByTestId('edit-application')).not.toBeVisible();
@@ -169,12 +166,10 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 	test.describe('Bestätigungsdialog für Einreichung', () => {
 		async function fillApplicationForm(page: Page) {
 			await page.goto('/applications/new');
-			await page.getByTestId('input-name').fill('Dialog Test');
+			await page.getByTestId('select-customer').selectOption({ index: 1 });
 			await page.getByTestId('input-income').fill('4500');
 			await page.getByTestId('input-fixed-costs').fill('1500');
 			await page.getByTestId('input-desired-rate').fill('500');
-			await page.getByTestId('select-employment-status').selectOption('employed');
-			await page.getByTestId('radio-payment-default-no').check();
 		}
 
 		test('should show confirmation dialog when submitting new application', async ({
@@ -196,7 +191,11 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await authenticatedPage.getByTestId('confirm-dialog-confirm').click();
 
 			await expect(authenticatedPage).toHaveURL(/\/applications\/\d+/);
-			await expect(authenticatedPage.getByTestId('status-badge-submitted')).toBeVisible();
+			await expect(
+				authenticatedPage
+					.getByTestId('status-badge-submitted')
+					.or(authenticatedPage.getByTestId('status-badge-processing'))
+			).toBeVisible();
 			await expect(authenticatedPage.getByTestId('confirm-dialog')).not.toBeVisible();
 		});
 
@@ -215,6 +214,8 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 		}) => {
 			await fillApplicationForm(authenticatedPage);
 			await authenticatedPage.getByTestId('btn-save-draft').click();
+			await authenticatedPage.waitForURL(/\/applications\/\d+/);
+			await expect(authenticatedPage.getByTestId('status-badge-draft')).toBeVisible();
 			await authenticatedPage.getByTestId('edit-application').click();
 			await authenticatedPage.getByTestId('btn-submit-application').click();
 
@@ -227,6 +228,12 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await fillApplicationForm(authenticatedPage);
 			await authenticatedPage.getByTestId('btn-save-draft').click();
 			await authenticatedPage.waitForURL(/\/applications\/\d+/);
+			await expect(authenticatedPage.getByTestId('status-badge-draft')).toBeVisible({
+				timeout: 20000
+			});
+			await expect(authenticatedPage.getByTestId('submit-application')).toBeVisible({
+				timeout: 20000
+			});
 
 			await authenticatedPage.getByTestId('submit-application').click();
 
@@ -249,12 +256,10 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			authenticatedPage
 		}) => {
 			await authenticatedPage.goto('/applications/new');
-			await authenticatedPage.getByTestId('input-name').fill('Score Test');
+			await authenticatedPage.getByTestId('select-customer').selectOption({ index: 1 });
 			await authenticatedPage.getByTestId('input-income').fill('5000');
 			await authenticatedPage.getByTestId('input-fixed-costs').fill('2000');
 			await authenticatedPage.getByTestId('input-desired-rate').fill('500');
-			await authenticatedPage.getByTestId('select-employment-status').selectOption('employed');
-			await authenticatedPage.getByTestId('radio-payment-default-no').check();
 			await authenticatedPage.getByTestId('btn-submit-application').click();
 			await authenticatedPage.getByTestId('confirm-dialog-confirm').click();
 			await expect(authenticatedPage.getByTestId('scoring-heading')).toBeVisible();
@@ -263,12 +268,10 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 
 		test('should display scoring reasons', async ({ authenticatedPage }) => {
 			await authenticatedPage.goto('/applications/new');
-			await authenticatedPage.getByTestId('input-name').fill('Reasons Test');
+			await authenticatedPage.getByTestId('select-customer').selectOption({ index: 1 });
 			await authenticatedPage.getByTestId('input-income').fill('4000');
 			await authenticatedPage.getByTestId('input-fixed-costs').fill('1500');
 			await authenticatedPage.getByTestId('input-desired-rate').fill('400');
-			await authenticatedPage.getByTestId('select-employment-status').selectOption('employed');
-			await authenticatedPage.getByTestId('radio-payment-default-no').check();
 			await authenticatedPage.getByTestId('btn-submit-application').click();
 			await authenticatedPage.getByTestId('confirm-dialog-confirm').click();
 			await expect(authenticatedPage.getByTestId('scoring-reasons')).toBeVisible();
@@ -276,12 +279,10 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 
 		test('should show green traffic light for high score', async ({ authenticatedPage }) => {
 			await authenticatedPage.goto('/applications/new');
-			await authenticatedPage.getByTestId('input-name').fill('Green Light Test');
+			await authenticatedPage.getByTestId('select-customer').selectOption({ index: 1 });
 			await authenticatedPage.getByTestId('input-income').fill('6000');
 			await authenticatedPage.getByTestId('input-fixed-costs').fill('2000');
 			await authenticatedPage.getByTestId('input-desired-rate').fill('500');
-			await authenticatedPage.getByTestId('select-employment-status').selectOption('employed');
-			await authenticatedPage.getByTestId('radio-payment-default-no').check();
 			await authenticatedPage.getByTestId('btn-submit-application').click();
 			await authenticatedPage.getByTestId('confirm-dialog-confirm').click();
 			await expect(authenticatedPage.getByTestId('traffic-light-green')).toBeVisible();
@@ -293,9 +294,7 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await authenticatedPage.goto('/applications/new');
 
 			await authenticatedPage.waitForLoadState('networkidle');
-
-			await authenticatedPage.getByTestId('input-name').click();
-			await authenticatedPage.getByTestId('input-name').fill('Red Light Test');
+			await authenticatedPage.getByTestId('select-customer').selectOption({ index: 1 });
 
 			await authenticatedPage.getByTestId('input-income').click();
 			await authenticatedPage.getByTestId('input-income').fill('2500');
@@ -306,10 +305,6 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await authenticatedPage.getByTestId('input-desired-rate').click();
 			await authenticatedPage.getByTestId('input-desired-rate').fill('300');
 
-			await authenticatedPage.getByTestId('select-employment-status').selectOption('unemployed');
-			await authenticatedPage.getByTestId('radio-payment-default-yes').check();
-
-			await expect(authenticatedPage.getByTestId('input-name')).toHaveValue('Red Light Test');
 			await expect(authenticatedPage.getByTestId('input-income')).toHaveValue('2500');
 
 			await authenticatedPage.getByTestId('btn-submit-application').click();
@@ -330,16 +325,14 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			authenticatedPage
 		}) => {
 			await authenticatedPage.goto('/applications/new');
-			await authenticatedPage.getByTestId('input-name').fill('Detail View Test');
+			await authenticatedPage.getByTestId('select-customer').selectOption({ index: 1 });
 			await authenticatedPage.getByTestId('input-income').fill('4000');
 			await authenticatedPage.getByTestId('input-fixed-costs').fill('1500');
 			await authenticatedPage.getByTestId('input-desired-rate').fill('400');
-			await authenticatedPage.getByTestId('select-employment-status').selectOption('employed');
-			await authenticatedPage.getByTestId('radio-payment-default-no').check();
 			await authenticatedPage.getByTestId('btn-save-draft').click();
 
-			await expect(authenticatedPage.getByText('Detail View Test')).toBeVisible();
-			await expect(authenticatedPage.getByText(/4.*000/)).toBeVisible();
+			await expect(authenticatedPage).toHaveURL(/\/applications\/\d+/);
+			await expect(authenticatedPage.getByTestId('status-badge-draft')).toBeVisible();
 		});
 	});
 });

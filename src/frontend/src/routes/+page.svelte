@@ -22,8 +22,8 @@
 	<title>Risikomanagement-Plattform</title>
 </svelte:head>
 
-<div class="space-y-8">
-	<div class="text-center">
+<div class="space-y-8" data-testid="home-page">
+	<div class="text-center" data-testid="home-hero">
 		<h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-primary mb-4">
 			Willkommen zur Risikomanagement-Plattform
 		</h1>
@@ -37,8 +37,8 @@
 		<ApplicationDashboard stats={data.dashboardStats} />
 	{/if}
 
-	<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-		<div class="card p-6">
+	<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6" data-testid="home-features">
+		<div class="card p-6" data-testid="home-feature-automation">
 			<div
 				class="w-12 h-12 rounded-lg flex items-center justify-center mb-4 bg-brand-primary-soft text-brand-primary"
 			>
@@ -74,8 +74,9 @@
 		</div>
 	</div>
 
-	<div class="card p-8 mt-8">
+	<div class="card p-8 mt-8" data-testid="home-role-section">
 		{#if isApplicant}
+			<div data-testid="home-applicant-section">
 			<h2 class="text-2xl font-bold text-primary mb-4">Als Antragsteller</h2>
 			<p class="text-secondary mb-6">
 				Erstellen Sie neue Kreditanträge, speichern Sie Entwürfe und verfolgen Sie den Status Ihrer
@@ -85,6 +86,7 @@
 				<a
 					href="/applications/new"
 					class="btn-primary inline-flex items-center px-6 py-3 w-full sm:w-auto"
+					data-testid="home-applicant-new-application-link"
 				>
 					<FileText class="w-5 h-5 mr-2" />
 					Neuen Antrag erstellen
@@ -93,11 +95,14 @@
 				<a
 					href="/applications"
 					class="btn-secondary inline-flex items-center px-6 py-3 w-full sm:w-auto"
+					data-testid="home-applicant-applications-link"
 				>
 					Meine Anträge ansehen
 				</a>
 			</div>
+			</div>
 		{:else if isProcessor}
+			<div data-testid="home-processor-section">
 			<h2 class="text-2xl font-bold text-primary mb-4">Als Antragsbearbeiter</h2>
 			<p class="text-secondary mb-6">
 				Prüfen Sie eingereichte Anträge, treffen Sie fundierte Entscheidungen und verfolgen Sie die
@@ -107,13 +112,16 @@
 				<a
 					href="/processor"
 					class="btn-primary inline-flex items-center px-6 py-3 w-full sm:w-auto"
+					data-testid="home-processor-worklist-link"
 				>
 					<ClipboardCheck class="w-5 h-5 mr-2" />
 					Anträge bearbeiten
 					<ArrowRight class="w-5 h-5 ml-2" />
 				</a>
 			</div>
+			</div>
 		{:else}
+			<div data-testid="home-guest-section">
 			<h2 class="text-2xl font-bold text-primary mb-4">Starten Sie jetzt</h2>
 			<p class="text-secondary mb-6">
 				Melden Sie sich an, um Anträge zu stellen oder zu bearbeiten.
@@ -127,6 +135,7 @@
 				Zum Login
 				<ArrowRight class="w-5 h-5 ml-2" />
 			</a>
+			</div>
 		{/if}
 	</div>
 </div>
