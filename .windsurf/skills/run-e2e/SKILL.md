@@ -9,7 +9,7 @@ Runs E2E tests with automatic startup/shutdown of backend and frontend via Playw
 
 ## Prerequisites
 
-No manual startup is required for the default workflow.
+**No manual startup is required for the default workflow.**
 
 Playwright starts these services automatically from `src/frontend/playwright.config.ts`:
 - Backend: `dotnet run --project ../backend/AppHost/AppHost.csproj --launch-profile http-testmode`
@@ -25,6 +25,9 @@ Dedicated E2E ports are used to avoid collisions with other local Aspire instanc
 - Keycloak: `8181`
 - Aspire dashboard OTLP: `29032`
 - Aspire resource service: `30132`
+
+Important: keep `src/frontend/.env.test` on local default ports for normal local usage.
+E2E-specific service URLs/ports are injected only at test runtime via `playwright.config.ts` (`webServer` command/env).
 
 ## E2E Test Commands
 
@@ -79,7 +82,7 @@ For manual browser testing or debugging:
 ## Project Structure
 
 - **Config**: `playwright.config.ts` — `webServer` starts backend + frontend, baseURL `http://localhost:4173`, testDir `e2e/`
-- **Tests**: `e2e/*.test.ts` — import `test` and `expect` from `e2e/fixtures.ts`
+- **Tests**: `e2e/*.test.ts` — usually import `test` and `expect` from `e2e/fixtures.ts`; direct `@playwright/test` imports are possible for special cases
 - **Fixtures**: `e2e/fixtures.ts` — provides `authenticatedPage` and `authenticatedContext` fixtures
 - **Auth helper**: `e2e/helpers/auth.ts` — `createTestSession(page, role)` and `clearTestSessions(page)` via `/api/test/session`
 - **Roles**: `applicant` (default) and `processor` — switch with `test.use({ userRole: 'processor' })`
