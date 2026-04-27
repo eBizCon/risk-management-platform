@@ -11,10 +11,14 @@ export default defineConfig({
 	},
 	testDir: 'e2e',
 	testMatch: /(.+\.)?(test|spec)\.[jt]s/,
+	timeout: 10000,
+	expect: {
+		timeout: 4000
+	},
 	fullyParallel: true,
 	forbidOnly: !!process.env.CI,
-	retries: process.env.CI ? 2 : 0,
-	workers: 2,
+	retries: process.env.CI ? 1 : 0,
+	workers: 4,
 	reporter: 'html',
 	use: {
 		baseURL: 'http://localhost:4173',

@@ -1,17 +1,21 @@
 import { test, expect } from './fixtures';
 import { clearTestSessions, createTestSession } from './helpers/auth';
 
-async function createSubmittedApplication(page: import('@playwright/test').Page, name: string) {
+async function createSubmittedApplication(page: import('@playwright/test').Page) {
 	await page.goto('/applications/new');
-	await page.getByTestId('input-name').fill(name);
+	await page.getByTestId('select-customer').selectOption({ index: 1 });
 	await page.getByTestId('input-income').fill('4500');
 	await page.getByTestId('input-fixed-costs').fill('1800');
 	await page.getByTestId('input-desired-rate').fill('500');
-	await page.getByTestId('select-employment-status').selectOption('employed');
-	await page.getByTestId('radio-payment-default-no').check();
 	await page.getByTestId('btn-submit-application').click();
 	await page.getByTestId('confirm-dialog-confirm').click();
 	await page.waitForURL(/\/applications\/\d+/);
+	await expect(
+		page.getByTestId('status-badge-submitted').or(page.getByTestId('status-badge-processing'))
+	).toBeVisible();
+	if (await page.getByTestId('status-badge-processing').isVisible()) {
+		await expect(page.getByTestId('status-badge-submitted')).toBeVisible({ timeout: 20000 });
+	}
 	const match = page.url().match(/\/applications\/(\d+)/);
 	if (!match) {
 		throw new Error('Application id not found in URL');
@@ -23,7 +27,7 @@ test.describe('Inquiry process', () => {
 	test('processor can create inquiry and applicant can answer it', async ({ page }) => {
 		await clearTestSessions(page);
 		await createTestSession(page, 'applicant');
-		const applicationId = await createSubmittedApplication(page, 'Inquiry Flow Test');
+		const applicationId = await createSubmittedApplication(page);
 
 		await clearTestSessions(page);
 		await createTestSession(page, 'processor');
@@ -53,7 +57,7 @@ test.describe('Inquiry process', () => {
 	}) => {
 		await clearTestSessions(page);
 		await createTestSession(page, 'applicant');
-		const applicationId = await createSubmittedApplication(page, 'Resubmitted Decision Test');
+		const applicationId = await createSubmittedApplication(page);
 
 		await clearTestSessions(page);
 		await createTestSession(page, 'processor');
@@ -85,7 +89,7 @@ test.describe('Inquiry process', () => {
 	test('applicant cannot answer inquiry for foreign application', async ({ page, browser }) => {
 		await clearTestSessions(page);
 		await createTestSession(page, 'applicant', { email: 'owner@example.com', name: 'Owner' });
-		const applicationId = await createSubmittedApplication(page, 'Foreign Inquiry Test');
+		const applicationId = await createSubmittedApplication(page);
 
 		await clearTestSessions(page);
 		await createTestSession(page, 'processor');
