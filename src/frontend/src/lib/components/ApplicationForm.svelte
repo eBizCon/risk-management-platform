@@ -250,12 +250,13 @@
 
 	<div class="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-default">
 		<button
-			type="submit"
+			type="button"
 			name="action"
 			value="save"
 			disabled={isSubmitting}
 			class="btn-secondary w-full sm:w-auto"
 			data-testid="btn-save-draft"
+			onclick={handleSaveClick}
 		>
 			Als Entwurf speichern
 		</button>
