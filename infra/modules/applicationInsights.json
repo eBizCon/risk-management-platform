@@ -1,0 +1,69 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.42.1.51946",
+      "templateHash": "5766514302769693143"
+    }
+  },
+  "parameters": {
+    "prefix": {
+      "type": "string",
+      "metadata": {
+        "description": "Name prefix for resources"
+      }
+    },
+    "location": {
+      "type": "string",
+      "metadata": {
+        "description": "Location for resources"
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces",
+      "apiVersion": "2023-09-01",
+      "name": "[format('{0}-logs', parameters('prefix'))]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "sku": {
+          "name": "PerGB2018"
+        },
+        "retentionInDays": 30
+      }
+    },
+    {
+      "type": "Microsoft.Insights/components",
+      "apiVersion": "2020-02-02",
+      "name": "[format('{0}-appinsights', parameters('prefix'))]",
+      "location": "[parameters('location')]",
+      "kind": "web",
+      "properties": {
+        "Application_Type": "web",
+        "WorkspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', format('{0}-logs', parameters('prefix')))]",
+        "publicNetworkAccessForIngestion": "Enabled",
+        "publicNetworkAccessForQuery": "Enabled"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.OperationalInsights/workspaces', format('{0}-logs', parameters('prefix')))]"
+      ]
+    }
+  ],
+  "outputs": {
+    "connectionString": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Insights/components', format('{0}-appinsights', parameters('prefix'))), '2020-02-02').ConnectionString]"
+    },
+    "instrumentationKey": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Insights/components', format('{0}-appinsights', parameters('prefix'))), '2020-02-02').InstrumentationKey]"
+    },
+    "logAnalyticsWorkspaceId": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.OperationalInsights/workspaces', format('{0}-logs', parameters('prefix')))]"
+    }
+  }
+}

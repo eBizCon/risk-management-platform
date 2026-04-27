@@ -46,7 +46,16 @@ resource firewallRuleAllowAzure 'Microsoft.DBforPostgreSQL/flexibleServers/firew
 
 resource riskManagementDb 'Microsoft.DBforPostgreSQL/flexibleServers/databases@2022-12-01' = {
   parent: postgresServer
-  name: 'risk_management'
+  name: 'risk-management'
+  properties: {
+    charset: 'UTF8'
+    collation: 'en_US.utf8'
+  }
+}
+
+resource customerManagementDb 'Microsoft.DBforPostgreSQL/flexibleServers/databases@2022-12-01' = {
+  parent: postgresServer
+  name: 'customer-management'
   properties: {
     charset: 'UTF8'
     collation: 'en_US.utf8'

@@ -16,6 +16,14 @@ param keycloakAdminPassword string
 @description('OIDC client secret for the SvelteKit app')
 param oidcClientSecret string = ''
 
+@secure()
+@description('Service API Key for internal service authentication')
+param serviceApiKey string
+
+@secure()
+@description('RabbitMQ administrator password')
+param rabbitmqPassword string
+
 var prefix = 'riskmgmt-${environmentName}'
 var acrName = replace('riskmgmt${environmentName}acr', '-', '')
 
@@ -36,6 +44,14 @@ module postgres 'modules/postgresql.bicep' = {
   }
 }
 
+module appInsights 'modules/applicationInsights.bicep' = {
+  name: 'application-insights'
+  params: {
+    prefix: prefix
+    location: location
+  }
+}
+
 module containerAppsEnv 'modules/containerAppsEnvironment.bicep' = {
   name: 'container-apps-env'
   params: {
@@ -44,31 +60,37 @@ module containerAppsEnv 'modules/containerAppsEnvironment.bicep' = {
   }
 }
 
-module keycloak 'modules/containerApp.bicep' = {
+module keycloak 'modules/keycloak.bicep' = {
   name: 'keycloak'
   params: {
     name: '${prefix}-keycloak'
     location: location
     environmentId: containerAppsEnv.outputs.environmentId
-    image: 'quay.io/keycloak/keycloak:26.0'
-    command: ['/opt/keycloak/bin/kc.sh', 'start']
-    ingressPort: 8080
-    ingressExternal: true
-    minReplicas: 1
-    maxReplicas: 1
-    envVars: [
-      { name: 'KC_DB', value: 'postgres' }
-      { name: 'KC_DB_URL', value: 'jdbc:postgresql://${postgres.outputs.fqdn}:5432/keycloak?sslmode=require' }
-      { name: 'KC_DB_USERNAME', value: postgres.outputs.adminUsername }
-      { name: 'KC_DB_PASSWORD', value: postgresAdminPassword }
-      { name: 'KC_HTTP_PORT', value: '8080' }
-      { name: 'KC_PROXY_HEADERS', value: 'xforwarded' }
-      { name: 'KC_HOSTNAME_STRICT', value: 'false' }
-      { name: 'KC_HTTP_ENABLED', value: 'true' }
-      { name: 'KEYCLOAK_ADMIN', value: 'admin' }
-      { name: 'KEYCLOAK_ADMIN_PASSWORD', value: keycloakAdminPassword }
-    ]
+    postgresFqdn: postgres.outputs.fqdn
+    postgresUsername: postgres.outputs.adminUsername
+    postgresPassword: postgresAdminPassword
+    keycloakAdminPassword: keycloakAdminPassword
+    realmImportJson: loadFileAsBase64('../dev/keycloak/import/risk-management-realm.json')
   }
+}
+
+module databaseSeeder 'modules/databaseSeeder.bicep' = {
+  name: 'database-seeder'
+  params: {
+    name: '${prefix}-seeder'
+    location: location
+    environmentId: containerAppsEnv.outputs.environmentId
+    image: '${acr.outputs.loginServer}/databaseseeder:latest'
+    registryServer: acr.outputs.loginServer
+    registryUsername: acr.outputs.adminUsername
+    registryPassword: acr.outputs.adminPassword
+    customerConnectionString: 'Host=${postgres.outputs.fqdn};Database=customer-management;Username=${postgres.outputs.adminUsername};Password=${postgresAdminPassword};SSL Mode=Require'
+    riskConnectionString: 'Host=${postgres.outputs.fqdn};Database=risk-management;Username=${postgres.outputs.adminUsername};Password=${postgresAdminPassword};SSL Mode=Require'
+  }
+  dependsOn: [
+    postgres
+    rabbitmq
+  ]
 }
 
 module app 'modules/containerApp.bicep' = {
@@ -99,7 +121,77 @@ module app 'modules/containerApp.bicep' = {
   }
 }
 
+module rabbitmq 'modules/rabbitmq.bicep' = {
+  name: 'rabbitmq'
+  params: {
+    name: '${prefix}-rabbitmq'
+    location: location
+    environmentId: containerAppsEnv.outputs.environmentId
+    adminPassword: rabbitmqPassword
+  }
+}
+
+module customerApi 'modules/containerApp.bicep' = {
+  name: 'customer-api'
+  params: {
+    name: '${prefix}-customer-api'
+    location: location
+    environmentId: containerAppsEnv.outputs.environmentId
+    image: '${acr.outputs.loginServer}/customermanagement-api:latest'
+    registryServer: acr.outputs.loginServer
+    registryUsername: acr.outputs.adminUsername
+    registryPassword: acr.outputs.adminPassword
+    ingressPort: 8080
+    ingressExternal: true
+    minReplicas: 0
+    maxReplicas: 5
+    envVars: [
+      { name: 'ConnectionStrings__DefaultConnection', value: 'Host=${postgres.outputs.fqdn};Database=customer-management;Username=${postgres.outputs.adminUsername};Password=${postgresAdminPassword};SSL Mode=Require' }
+      { name: 'ConnectionStrings__messaging', value: 'amqp://risk:${rabbitmqPassword}@${rabbitmq.outputs.fqdn}:5672' }
+      { name: 'RabbitMQ__ConnectionString', value: 'amqp://risk:${rabbitmqPassword}@${rabbitmq.outputs.fqdn}:5672' }
+      { name: 'APPLICATION_SERVICE_URL', value: 'https://${prefix}-risk-api.${containerAppsEnv.outputs.defaultDomain}' }
+      { name: 'SERVICE_API_KEY', value: serviceApiKey }
+      { name: 'OIDC_ISSUER', value: 'https://${keycloak.outputs.fqdn}/realms/risk-management' }
+      { name: 'OIDC_ROLES_CLAIM_PATH', value: 'resource_access.risk-management-app.roles' }
+      { name: 'APPLICATIONINSIGHTS_CONNECTION_STRING', value: appInsights.outputs.connectionString }
+    ]
+  }
+}
+
+module riskApi 'modules/containerApp.bicep' = {
+  name: 'risk-api'
+  params: {
+    name: '${prefix}-risk-api'
+    location: location
+    environmentId: containerAppsEnv.outputs.environmentId
+    image: '${acr.outputs.loginServer}/riskmanagement-api:latest'
+    registryServer: acr.outputs.loginServer
+    registryUsername: acr.outputs.adminUsername
+    registryPassword: acr.outputs.adminPassword
+    ingressPort: 8080
+    ingressExternal: true
+    minReplicas: 0
+    maxReplicas: 5
+    envVars: [
+      { name: 'ConnectionStrings__DefaultConnection', value: 'Host=${postgres.outputs.fqdn};Database=risk-management;Username=${postgres.outputs.adminUsername};Password=${postgresAdminPassword};SSL Mode=Require' }
+      { name: 'ConnectionStrings__messaging', value: 'amqp://risk:${rabbitmqPassword}@${rabbitmq.outputs.fqdn}:5672' }
+      { name: 'RabbitMQ__ConnectionString', value: 'amqp://risk:${rabbitmqPassword}@${rabbitmq.outputs.fqdn}:5672' }
+      { name: 'CUSTOMER_SERVICE_URL', value: 'https://${prefix}-customer-api.${containerAppsEnv.outputs.defaultDomain}' }
+      { name: 'SERVICE_API_KEY', value: serviceApiKey }
+      { name: 'OIDC_ISSUER', value: 'https://${keycloak.outputs.fqdn}/realms/risk-management' }
+      { name: 'OIDC_ROLES_CLAIM_PATH', value: 'resource_access.risk-management-app.roles' }
+      { name: 'APPLICATIONINSIGHTS_CONNECTION_STRING', value: appInsights.outputs.connectionString }
+    ]
+  }
+}
+
 output acrLoginServer string = acr.outputs.loginServer
 output keycloakFqdn string = keycloak.outputs.fqdn
+output keycloakAdminUsername string = keycloak.outputs.adminUsername
 output appFqdn string = app.outputs.fqdn
 output postgresFqdn string = postgres.outputs.fqdn
+output rabbitMqFqdn string = rabbitmq.outputs.fqdn
+output customerApiFqdn string = customerApi.outputs.fqdn
+output riskApiFqdn string = riskApi.outputs.fqdn
+output appInsightsConnectionString string = appInsights.outputs.connectionString
+output databaseSeederJobName string = databaseSeeder.outputs.jobName

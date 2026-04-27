@@ -1,0 +1,1731 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.42.1.51946",
+      "templateHash": "4435932669221482033"
+    }
+  },
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Location for all resources"
+      }
+    },
+    "environmentName": {
+      "type": "string",
+      "metadata": {
+        "description": "Environment name (e.g. dev, staging, prod)"
+      }
+    },
+    "postgresAdminPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "PostgreSQL administrator password"
+      }
+    },
+    "keycloakAdminPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Keycloak administrator password"
+      }
+    },
+    "oidcClientSecret": {
+      "type": "securestring",
+      "defaultValue": "",
+      "metadata": {
+        "description": "OIDC client secret for the SvelteKit app"
+      }
+    },
+    "serviceApiKey": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Service API Key for internal service authentication"
+      }
+    },
+    "rabbitmqPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "RabbitMQ administrator password"
+      }
+    }
+  },
+  "variables": {
+    "$fxv#0": "ewoJInJlYWxtIjogInJpc2stbWFuYWdlbWVudCIsCgkiZW5hYmxlZCI6IHRydWUsCgkicm9sZXMiOiB7CgkJInJlYWxtIjogWwoJCQl7CgkJCQkibmFtZSI6ICJhcHBsaWNhbnQiCgkJCX0sCgkJCXsKCQkJCSJuYW1lIjogInByb2Nlc3NvciIKCQkJfSwKCQkJewoJCQkJIm5hbWUiOiAicmlza19tYW5hZ2VyIgoJCQl9CgkJXQoJfSwKCSJjbGllbnRzIjogWwoJCXsKCQkJImNsaWVudElkIjogInJpc2stbWFuYWdlbWVudC1wbGF0Zm9ybSIsCgkJCSJuYW1lIjogInJpc2stbWFuYWdlbWVudC1wbGF0Zm9ybSIsCgkJCSJwcm90b2NvbCI6ICJvcGVuaWQtY29ubmVjdCIsCgkJCSJlbmFibGVkIjogdHJ1ZSwKCQkJInB1YmxpY0NsaWVudCI6IGZhbHNlLAoJCQkiY2xpZW50QXV0aGVudGljYXRvclR5cGUiOiAiY2xpZW50LXNlY3JldCIsCgkJCSJzZWNyZXQiOiAiZGV2LWNsaWVudC1zZWNyZXQiLAoJCQkic3RhbmRhcmRGbG93RW5hYmxlZCI6IHRydWUsCgkJCSJkaXJlY3RBY2Nlc3NHcmFudHNFbmFibGVkIjogdHJ1ZSwKCQkJInJlZGlyZWN0VXJpcyI6IFsiaHR0cDovL2xvY2FsaG9zdDo1MTczLyoiLCAiaHR0cDovL2xvY2FsaG9zdDo1MjI3LyoiXSwKCQkJIndlYk9yaWdpbnMiOiBbImh0dHA6Ly9sb2NhbGhvc3Q6NTE3MyIsICJodHRwOi8vbG9jYWxob3N0OjUyMjciXSwKCQkJImRlZmF1bHRDbGllbnRTY29wZXMiOiBbInByb2ZpbGUiLCAicm9sZXMiLCAiZW1haWwiXSwKCQkJImF0dHJpYnV0ZXMiOiB7CgkJCQkicG9zdC5sb2dvdXQucmVkaXJlY3QudXJpcyI6ICJodHRwOi8vbG9jYWxob3N0OjUxNzMvKiMjaHR0cDovL2xvY2FsaG9zdDo1MjI3LyoiCgkJCX0KCQl9CgldLAoJInVzZXJzIjogWwoJCXsKCQkJInVzZXJuYW1lIjogImFwcGxpY2FudCIsCgkJCSJlbmFibGVkIjogdHJ1ZSwKCQkJImVtYWlsIjogImFwcGxpY2FudEBleGFtcGxlLmNvbSIsCgkJCSJlbWFpbFZlcmlmaWVkIjogdHJ1ZSwKCQkJImZpcnN0TmFtZSI6ICJBcHBsaWNhbnQiLAoJCQkibGFzdE5hbWUiOiAiVXNlciIsCgkJCSJjcmVkZW50aWFscyI6IFsKCQkJCXsKCQkJCQkidHlwZSI6ICJwYXNzd29yZCIsCgkJCQkJInZhbHVlIjogImFwcGxpY2FudCIsCgkJCQkJInRlbXBvcmFyeSI6IGZhbHNlCgkJCQl9CgkJCV0sCgkJCSJyZWFsbVJvbGVzIjogWyJhcHBsaWNhbnQiXQoJCX0sCgkJewoJCQkidXNlcm5hbWUiOiAicHJvY2Vzc29yIiwKCQkJImVuYWJsZWQiOiB0cnVlLAoJCQkiZW1haWwiOiAicHJvY2Vzc29yQGV4YW1wbGUuY29tIiwKCQkJImVtYWlsVmVyaWZpZWQiOiB0cnVlLAoJCQkiZmlyc3ROYW1lIjogIlByb2Nlc3NvciIsCgkJCSJsYXN0TmFtZSI6ICJVc2VyIiwKCQkJImNyZWRlbnRpYWxzIjogWwoJCQkJewoJCQkJCSJ0eXBlIjogInBhc3N3b3JkIiwKCQkJCQkidmFsdWUiOiAicHJvY2Vzc29yIiwKCQkJCQkidGVtcG9yYXJ5IjogZmFsc2UKCQkJCX0KCQkJXSwKCQkJInJlYWxtUm9sZXMiOiBbInByb2Nlc3NvciJdCgkJfSwKCQl7CgkJCSJ1c2VybmFtZSI6ICJyaXNrbWFuYWdlciIsCgkJCSJlbmFibGVkIjogdHJ1ZSwKCQkJImVtYWlsIjogInJpc2ttYW5hZ2VyQGV4YW1wbGUuY29tIiwKCQkJImVtYWlsVmVyaWZpZWQiOiB0cnVlLAoJCQkiZmlyc3ROYW1lIjogIlJpc2siLAoJCQkibGFzdE5hbWUiOiAiTWFuYWdlciIsCgkJCSJjcmVkZW50aWFscyI6IFsKCQkJCXsKCQkJCQkidHlwZSI6ICJwYXNzd29yZCIsCgkJCQkJInZhbHVlIjogInJpc2ttYW5hZ2VyIiwKCQkJCQkidGVtcG9yYXJ5IjogZmFsc2UKCQkJCX0KCQkJXSwKCQkJInJlYWxtUm9sZXMiOiBbInJpc2tfbWFuYWdlciJdCgkJfQoJXQp9Cg==",
+    "prefix": "[format('riskmgmt-{0}', parameters('environmentName'))]",
+    "acrName": "[replace(format('riskmgmt{0}acr', parameters('environmentName')), '-', '')]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "container-registry",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "name": {
+            "value": "[variables('acrName')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.42.1.51946",
+              "templateHash": "13213113051594231479"
+            }
+          },
+          "parameters": {
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the Container Registry"
+              }
+            },
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "Location for the Container Registry"
+              }
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.ContainerRegistry/registries",
+              "apiVersion": "2023-07-01",
+              "name": "[parameters('name')]",
+              "location": "[parameters('location')]",
+              "sku": {
+                "name": "Basic"
+              },
+              "properties": {
+                "adminUserEnabled": true
+              }
+            }
+          ],
+          "outputs": {
+            "loginServer": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.ContainerRegistry/registries', parameters('name')), '2023-07-01').loginServer]"
+            },
+            "name": {
+              "type": "string",
+              "value": "[parameters('name')]"
+            },
+            "adminUsername": {
+              "type": "string",
+              "value": "[listCredentials(resourceId('Microsoft.ContainerRegistry/registries', parameters('name')), '2023-07-01').username]"
+            },
+            "adminPassword": {
+              "type": "string",
+              "value": "[listCredentials(resourceId('Microsoft.ContainerRegistry/registries', parameters('name')), '2023-07-01').passwords[0].value]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "postgresql",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "name": {
+            "value": "[format('{0}-pg', variables('prefix'))]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "adminPassword": {
+            "value": "[parameters('postgresAdminPassword')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.42.1.51946",
+              "templateHash": "8774350623080324116"
+            }
+          },
+          "parameters": {
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the PostgreSQL server"
+              }
+            },
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "Location for the PostgreSQL server"
+              }
+            },
+            "adminUsername": {
+              "type": "string",
+              "defaultValue": "pgadmin",
+              "metadata": {
+                "description": "Administrator login name"
+              }
+            },
+            "adminPassword": {
+              "type": "securestring",
+              "metadata": {
+                "description": "Administrator password"
+              }
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.DBforPostgreSQL/flexibleServers",
+              "apiVersion": "2022-12-01",
+              "name": "[parameters('name')]",
+              "location": "[parameters('location')]",
+              "sku": {
+                "name": "Standard_B1ms",
+                "tier": "Burstable"
+              },
+              "properties": {
+                "version": "17",
+                "administratorLogin": "[parameters('adminUsername')]",
+                "administratorLoginPassword": "[parameters('adminPassword')]",
+                "storage": {
+                  "storageSizeGB": 32
+                },
+                "backup": {
+                  "backupRetentionDays": 7,
+                  "geoRedundantBackup": "Disabled"
+                },
+                "highAvailability": {
+                  "mode": "Disabled"
+                }
+              }
+            },
+            {
+              "type": "Microsoft.DBforPostgreSQL/flexibleServers/firewallRules",
+              "apiVersion": "2022-12-01",
+              "name": "[format('{0}/{1}', parameters('name'), 'AllowAzureServices')]",
+              "properties": {
+                "startIpAddress": "0.0.0.0",
+                "endIpAddress": "0.0.0.0"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.DBforPostgreSQL/flexibleServers', parameters('name'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.DBforPostgreSQL/flexibleServers/databases",
+              "apiVersion": "2022-12-01",
+              "name": "[format('{0}/{1}', parameters('name'), 'risk-management')]",
+              "properties": {
+                "charset": "UTF8",
+                "collation": "en_US.utf8"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.DBforPostgreSQL/flexibleServers', parameters('name'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.DBforPostgreSQL/flexibleServers/databases",
+              "apiVersion": "2022-12-01",
+              "name": "[format('{0}/{1}', parameters('name'), 'customer-management')]",
+              "properties": {
+                "charset": "UTF8",
+                "collation": "en_US.utf8"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.DBforPostgreSQL/flexibleServers', parameters('name'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.DBforPostgreSQL/flexibleServers/databases",
+              "apiVersion": "2022-12-01",
+              "name": "[format('{0}/{1}', parameters('name'), 'keycloak')]",
+              "properties": {
+                "charset": "UTF8",
+                "collation": "en_US.utf8"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.DBforPostgreSQL/flexibleServers', parameters('name'))]"
+              ]
+            }
+          ],
+          "outputs": {
+            "fqdn": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.DBforPostgreSQL/flexibleServers', parameters('name')), '2022-12-01').fullyQualifiedDomainName]"
+            },
+            "adminUsername": {
+              "type": "string",
+              "value": "[parameters('adminUsername')]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "application-insights",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "prefix": {
+            "value": "[variables('prefix')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.42.1.51946",
+              "templateHash": "5766514302769693143"
+            }
+          },
+          "parameters": {
+            "prefix": {
+              "type": "string",
+              "metadata": {
+                "description": "Name prefix for resources"
+              }
+            },
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "Location for resources"
+              }
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.OperationalInsights/workspaces",
+              "apiVersion": "2023-09-01",
+              "name": "[format('{0}-logs', parameters('prefix'))]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "sku": {
+                  "name": "PerGB2018"
+                },
+                "retentionInDays": 30
+              }
+            },
+            {
+              "type": "Microsoft.Insights/components",
+              "apiVersion": "2020-02-02",
+              "name": "[format('{0}-appinsights', parameters('prefix'))]",
+              "location": "[parameters('location')]",
+              "kind": "web",
+              "properties": {
+                "Application_Type": "web",
+                "WorkspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', format('{0}-logs', parameters('prefix')))]",
+                "publicNetworkAccessForIngestion": "Enabled",
+                "publicNetworkAccessForQuery": "Enabled"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.OperationalInsights/workspaces', format('{0}-logs', parameters('prefix')))]"
+              ]
+            }
+          ],
+          "outputs": {
+            "connectionString": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Insights/components', format('{0}-appinsights', parameters('prefix'))), '2020-02-02').ConnectionString]"
+            },
+            "instrumentationKey": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Insights/components', format('{0}-appinsights', parameters('prefix'))), '2020-02-02').InstrumentationKey]"
+            },
+            "logAnalyticsWorkspaceId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.OperationalInsights/workspaces', format('{0}-logs', parameters('prefix')))]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "container-apps-env",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "name": {
+            "value": "[format('{0}-env', variables('prefix'))]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.42.1.51946",
+              "templateHash": "3490354066152250338"
+            }
+          },
+          "parameters": {
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the Container Apps Environment"
+              }
+            },
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "Location for the Container Apps Environment"
+              }
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.OperationalInsights/workspaces",
+              "apiVersion": "2022-10-01",
+              "name": "[format('{0}-logs', parameters('name'))]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "sku": {
+                  "name": "PerGB2018"
+                },
+                "retentionInDays": 30
+              }
+            },
+            {
+              "type": "Microsoft.App/managedEnvironments",
+              "apiVersion": "2023-05-01",
+              "name": "[parameters('name')]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "appLogsConfiguration": {
+                  "destination": "log-analytics",
+                  "logAnalyticsConfiguration": {
+                    "customerId": "[reference(resourceId('Microsoft.OperationalInsights/workspaces', format('{0}-logs', parameters('name'))), '2022-10-01').customerId]",
+                    "sharedKey": "[listKeys(resourceId('Microsoft.OperationalInsights/workspaces', format('{0}-logs', parameters('name'))), '2022-10-01').primarySharedKey]"
+                  }
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.OperationalInsights/workspaces', format('{0}-logs', parameters('name')))]"
+              ]
+            }
+          ],
+          "outputs": {
+            "environmentId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.App/managedEnvironments', parameters('name'))]"
+            },
+            "defaultDomain": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.App/managedEnvironments', parameters('name')), '2023-05-01').defaultDomain]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "keycloak",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "name": {
+            "value": "[format('{0}-keycloak', variables('prefix'))]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "environmentId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'container-apps-env'), '2025-04-01').outputs.environmentId.value]"
+          },
+          "postgresFqdn": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'postgresql'), '2025-04-01').outputs.fqdn.value]"
+          },
+          "postgresUsername": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'postgresql'), '2025-04-01').outputs.adminUsername.value]"
+          },
+          "postgresPassword": {
+            "value": "[parameters('postgresAdminPassword')]"
+          },
+          "keycloakAdminPassword": {
+            "value": "[parameters('keycloakAdminPassword')]"
+          },
+          "realmImportJson": {
+            "value": "[variables('$fxv#0')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.42.1.51946",
+              "templateHash": "12965915949789029085"
+            }
+          },
+          "parameters": {
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the Keycloak Container App"
+              }
+            },
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "Location for the Container App"
+              }
+            },
+            "environmentId": {
+              "type": "string",
+              "metadata": {
+                "description": "Container Apps Environment ID"
+              }
+            },
+            "postgresFqdn": {
+              "type": "string",
+              "metadata": {
+                "description": "PostgreSQL FQDN"
+              }
+            },
+            "postgresUsername": {
+              "type": "string",
+              "metadata": {
+                "description": "PostgreSQL admin username"
+              }
+            },
+            "postgresPassword": {
+              "type": "securestring",
+              "metadata": {
+                "description": "PostgreSQL admin password"
+              }
+            },
+            "keycloakAdminPassword": {
+              "type": "securestring",
+              "metadata": {
+                "description": "Keycloak administrator password"
+              }
+            },
+            "realmImportJson": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Keycloak realm import JSON (base64 encoded)"
+              }
+            }
+          },
+          "variables": {
+            "keycloakAdmin": "admin"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.App/containerApps",
+              "apiVersion": "2023-05-01",
+              "name": "[parameters('name')]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "managedEnvironmentId": "[parameters('environmentId')]",
+                "configuration": {
+                  "ingress": {
+                    "external": true,
+                    "targetPort": 8080,
+                    "transport": "auto",
+                    "allowInsecure": false
+                  },
+                  "secrets": [
+                    {
+                      "name": "keycloak-admin-password",
+                      "value": "[parameters('keycloakAdminPassword')]"
+                    },
+                    {
+                      "name": "postgres-password",
+                      "value": "[parameters('postgresPassword')]"
+                    },
+                    {
+                      "name": "realm-import-json",
+                      "value": "[parameters('realmImportJson')]"
+                    }
+                  ]
+                },
+                "template": {
+                  "containers": [
+                    {
+                      "name": "[parameters('name')]",
+                      "image": "quay.io/keycloak/keycloak:26.0",
+                      "command": "[if(not(empty(parameters('realmImportJson'))), createArray('/opt/keycloak/bin/kc.sh', 'start', '--import-realm'), createArray('/opt/keycloak/bin/kc.sh', 'start'))]",
+                      "env": [
+                        {
+                          "name": "KC_DB",
+                          "value": "postgres"
+                        },
+                        {
+                          "name": "KC_DB_URL",
+                          "value": "[format('jdbc:postgresql://{0}:5432/keycloak?sslmode=require', parameters('postgresFqdn'))]"
+                        },
+                        {
+                          "name": "KC_DB_USERNAME",
+                          "value": "[parameters('postgresUsername')]"
+                        },
+                        {
+                          "name": "KC_DB_PASSWORD",
+                          "secretRef": "postgres-password"
+                        },
+                        {
+                          "name": "KC_HTTP_PORT",
+                          "value": "8080"
+                        },
+                        {
+                          "name": "KC_PROXY_HEADERS",
+                          "value": "xforwarded"
+                        },
+                        {
+                          "name": "KC_HOSTNAME_STRICT",
+                          "value": "false"
+                        },
+                        {
+                          "name": "KC_HTTP_ENABLED",
+                          "value": "true"
+                        },
+                        {
+                          "name": "KEYCLOAK_ADMIN",
+                          "value": "[variables('keycloakAdmin')]"
+                        },
+                        {
+                          "name": "KEYCLOAK_ADMIN_PASSWORD",
+                          "secretRef": "keycloak-admin-password"
+                        }
+                      ],
+                      "resources": {
+                        "cpu": "[json('0.5')]",
+                        "memory": "1Gi"
+                      },
+                      "volumeMounts": "[if(not(empty(parameters('realmImportJson'))), createArray(createObject('mountPath', '/opt/keycloak/data/import', 'volumeName', 'realm-import')), createArray())]"
+                    }
+                  ],
+                  "volumes": "[if(not(empty(parameters('realmImportJson'))), createArray(createObject('name', 'realm-import', 'storageType', 'Secret', 'secrets', createArray(createObject('secretRef', 'realm-import-json', 'path', 'risk-management-realm.json')))), createArray())]",
+                  "scale": {
+                    "minReplicas": 1,
+                    "maxReplicas": 1
+                  }
+                }
+              }
+            }
+          ],
+          "outputs": {
+            "fqdn": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.App/containerApps', parameters('name')), '2023-05-01').configuration.ingress.fqdn]"
+            },
+            "adminUsername": {
+              "type": "string",
+              "value": "[variables('keycloakAdmin')]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'container-apps-env')]",
+        "[resourceId('Microsoft.Resources/deployments', 'postgresql')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "database-seeder",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "name": {
+            "value": "[format('{0}-seeder', variables('prefix'))]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "environmentId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'container-apps-env'), '2025-04-01').outputs.environmentId.value]"
+          },
+          "image": {
+            "value": "[format('{0}/databaseseeder:latest', reference(resourceId('Microsoft.Resources/deployments', 'container-registry'), '2025-04-01').outputs.loginServer.value)]"
+          },
+          "registryServer": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'container-registry'), '2025-04-01').outputs.loginServer.value]"
+          },
+          "registryUsername": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'container-registry'), '2025-04-01').outputs.adminUsername.value]"
+          },
+          "registryPassword": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'container-registry'), '2025-04-01').outputs.adminPassword.value]"
+          },
+          "customerConnectionString": {
+            "value": "[format('Host={0};Database=customer-management;Username={1};Password={2};SSL Mode=Require', reference(resourceId('Microsoft.Resources/deployments', 'postgresql'), '2025-04-01').outputs.fqdn.value, reference(resourceId('Microsoft.Resources/deployments', 'postgresql'), '2025-04-01').outputs.adminUsername.value, parameters('postgresAdminPassword'))]"
+          },
+          "riskConnectionString": {
+            "value": "[format('Host={0};Database=risk-management;Username={1};Password={2};SSL Mode=Require', reference(resourceId('Microsoft.Resources/deployments', 'postgresql'), '2025-04-01').outputs.fqdn.value, reference(resourceId('Microsoft.Resources/deployments', 'postgresql'), '2025-04-01').outputs.adminUsername.value, parameters('postgresAdminPassword'))]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.42.1.51946",
+              "templateHash": "9726443278538839531"
+            }
+          },
+          "parameters": {
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the Database Seeder Job"
+              }
+            },
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "Location for the Job"
+              }
+            },
+            "environmentId": {
+              "type": "string",
+              "metadata": {
+                "description": "Container Apps Environment ID"
+              }
+            },
+            "image": {
+              "type": "string",
+              "metadata": {
+                "description": "Container image to deploy"
+              }
+            },
+            "registryServer": {
+              "type": "string",
+              "metadata": {
+                "description": "Container Registry server"
+              }
+            },
+            "registryUsername": {
+              "type": "string",
+              "metadata": {
+                "description": "Container Registry username"
+              }
+            },
+            "registryPassword": {
+              "type": "securestring",
+              "metadata": {
+                "description": "Container Registry password"
+              }
+            },
+            "customerConnectionString": {
+              "type": "securestring",
+              "metadata": {
+                "description": "Customer database connection string"
+              }
+            },
+            "riskConnectionString": {
+              "type": "securestring",
+              "metadata": {
+                "description": "Risk database connection string"
+              }
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.App/jobs",
+              "apiVersion": "2023-05-01",
+              "name": "[parameters('name')]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "environmentId": "[parameters('environmentId')]",
+                "workloadProfileName": null,
+                "configuration": {
+                  "secrets": [
+                    {
+                      "name": "registry-password",
+                      "value": "[parameters('registryPassword')]"
+                    },
+                    {
+                      "name": "customer-connection",
+                      "value": "[parameters('customerConnectionString')]"
+                    },
+                    {
+                      "name": "risk-connection",
+                      "value": "[parameters('riskConnectionString')]"
+                    }
+                  ],
+                  "registries": [
+                    {
+                      "server": "[parameters('registryServer')]",
+                      "username": "[parameters('registryUsername')]",
+                      "passwordSecretRef": "registry-password"
+                    }
+                  ],
+                  "replicaTimeout": 600,
+                  "replicaRetryLimit": 2,
+                  "triggerType": "Manual"
+                },
+                "template": {
+                  "containers": [
+                    {
+                      "name": "[parameters('name')]",
+                      "image": "[parameters('image')]",
+                      "env": [
+                        {
+                          "name": "ConnectionStrings__CustomerConnection",
+                          "secretRef": "customer-connection"
+                        },
+                        {
+                          "name": "ConnectionStrings__RiskConnection",
+                          "secretRef": "risk-connection"
+                        }
+                      ],
+                      "resources": {
+                        "cpu": "[json('0.5')]",
+                        "memory": "1Gi"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ],
+          "outputs": {
+            "jobName": {
+              "type": "string",
+              "value": "[parameters('name')]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'container-registry')]",
+        "[resourceId('Microsoft.Resources/deployments', 'container-apps-env')]",
+        "[resourceId('Microsoft.Resources/deployments', 'postgresql')]",
+        "[resourceId('Microsoft.Resources/deployments', 'rabbitmq')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "risk-management-app",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "name": {
+            "value": "[format('{0}-app', variables('prefix'))]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "environmentId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'container-apps-env'), '2025-04-01').outputs.environmentId.value]"
+          },
+          "image": {
+            "value": "[format('{0}/risk-management-app:latest', reference(resourceId('Microsoft.Resources/deployments', 'container-registry'), '2025-04-01').outputs.loginServer.value)]"
+          },
+          "registryServer": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'container-registry'), '2025-04-01').outputs.loginServer.value]"
+          },
+          "registryUsername": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'container-registry'), '2025-04-01').outputs.adminUsername.value]"
+          },
+          "registryPassword": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'container-registry'), '2025-04-01').outputs.adminPassword.value]"
+          },
+          "ingressPort": {
+            "value": 3000
+          },
+          "ingressExternal": {
+            "value": true
+          },
+          "minReplicas": {
+            "value": 0
+          },
+          "maxReplicas": {
+            "value": 5
+          },
+          "envVars": {
+            "value": [
+              {
+                "name": "DATABASE_URL",
+                "value": "[format('postgresql://{0}:{1}@{2}:5432/risk_management?sslmode=require', reference(resourceId('Microsoft.Resources/deployments', 'postgresql'), '2025-04-01').outputs.adminUsername.value, parameters('postgresAdminPassword'), reference(resourceId('Microsoft.Resources/deployments', 'postgresql'), '2025-04-01').outputs.fqdn.value)]"
+              },
+              {
+                "name": "OIDC_ISSUER",
+                "value": "[format('https://{0}/realms/risk-management', reference(resourceId('Microsoft.Resources/deployments', 'keycloak'), '2025-04-01').outputs.fqdn.value)]"
+              },
+              {
+                "name": "OIDC_CLIENT_ID",
+                "value": "risk-management-app"
+              },
+              {
+                "name": "OIDC_CLIENT_SECRET",
+                "value": "[parameters('oidcClientSecret')]"
+              },
+              {
+                "name": "OIDC_REDIRECT_URI",
+                "value": "[format('https://{0}-app.{1}/auth/callback', variables('prefix'), reference(resourceId('Microsoft.Resources/deployments', 'container-apps-env'), '2025-04-01').outputs.defaultDomain.value)]"
+              },
+              {
+                "name": "OIDC_POST_LOGOUT_REDIRECT_URI",
+                "value": "[format('https://{0}-app.{1}', variables('prefix'), reference(resourceId('Microsoft.Resources/deployments', 'container-apps-env'), '2025-04-01').outputs.defaultDomain.value)]"
+              },
+              {
+                "name": "OIDC_SCOPE",
+                "value": "openid profile email"
+              },
+              {
+                "name": "OIDC_ROLES_CLAIM_PATH",
+                "value": "resource_access.risk-management-app.roles"
+              },
+              {
+                "name": "PORT",
+                "value": "3000"
+              }
+            ]
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.42.1.51946",
+              "templateHash": "13725298072363491666"
+            }
+          },
+          "parameters": {
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the Container App"
+              }
+            },
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "Location for the Container App"
+              }
+            },
+            "environmentId": {
+              "type": "string",
+              "metadata": {
+                "description": "Container Apps Environment ID"
+              }
+            },
+            "image": {
+              "type": "string",
+              "metadata": {
+                "description": "Container image to deploy"
+              }
+            },
+            "envVars": {
+              "type": "array",
+              "defaultValue": [],
+              "metadata": {
+                "description": "Environment variables for the container"
+              }
+            },
+            "ingressPort": {
+              "type": "int",
+              "metadata": {
+                "description": "Ingress target port"
+              }
+            },
+            "ingressExternal": {
+              "type": "bool",
+              "defaultValue": true,
+              "metadata": {
+                "description": "Whether ingress is external"
+              }
+            },
+            "minReplicas": {
+              "type": "int",
+              "defaultValue": 0,
+              "metadata": {
+                "description": "Minimum number of replicas"
+              }
+            },
+            "maxReplicas": {
+              "type": "int",
+              "defaultValue": 5,
+              "metadata": {
+                "description": "Maximum number of replicas"
+              }
+            },
+            "registryServer": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Container Registry server"
+              }
+            },
+            "registryUsername": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Container Registry username"
+              }
+            },
+            "registryPassword": {
+              "type": "securestring",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Container Registry password"
+              }
+            },
+            "command": {
+              "type": "array",
+              "defaultValue": [],
+              "metadata": {
+                "description": "Container command override"
+              }
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.App/containerApps",
+              "apiVersion": "2023-05-01",
+              "name": "[parameters('name')]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "managedEnvironmentId": "[parameters('environmentId')]",
+                "configuration": {
+                  "ingress": {
+                    "external": "[parameters('ingressExternal')]",
+                    "targetPort": "[parameters('ingressPort')]",
+                    "transport": "auto",
+                    "allowInsecure": false
+                  },
+                  "registries": "[if(not(empty(parameters('registryServer'))), createArray(createObject('server', parameters('registryServer'), 'username', parameters('registryUsername'), 'passwordSecretRef', 'registry-password')), createArray())]",
+                  "secrets": "[if(not(empty(parameters('registryServer'))), createArray(createObject('name', 'registry-password', 'value', parameters('registryPassword'))), createArray())]"
+                },
+                "template": {
+                  "containers": [
+                    {
+                      "name": "[parameters('name')]",
+                      "image": "[parameters('image')]",
+                      "env": "[parameters('envVars')]",
+                      "resources": {
+                        "cpu": "[json('0.5')]",
+                        "memory": "1Gi"
+                      },
+                      "command": "[if(not(empty(parameters('command'))), parameters('command'), null())]"
+                    }
+                  ],
+                  "scale": {
+                    "minReplicas": "[parameters('minReplicas')]",
+                    "maxReplicas": "[parameters('maxReplicas')]"
+                  }
+                }
+              }
+            }
+          ],
+          "outputs": {
+            "fqdn": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.App/containerApps', parameters('name')), '2023-05-01').configuration.ingress.fqdn]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'container-registry')]",
+        "[resourceId('Microsoft.Resources/deployments', 'container-apps-env')]",
+        "[resourceId('Microsoft.Resources/deployments', 'keycloak')]",
+        "[resourceId('Microsoft.Resources/deployments', 'postgresql')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "rabbitmq",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "name": {
+            "value": "[format('{0}-rabbitmq', variables('prefix'))]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "environmentId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'container-apps-env'), '2025-04-01').outputs.environmentId.value]"
+          },
+          "adminPassword": {
+            "value": "[parameters('rabbitmqPassword')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.42.1.51946",
+              "templateHash": "15796341167555015322"
+            }
+          },
+          "parameters": {
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the RabbitMQ Container App"
+              }
+            },
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "Location for the Container App"
+              }
+            },
+            "environmentId": {
+              "type": "string",
+              "metadata": {
+                "description": "Container Apps Environment ID"
+              }
+            },
+            "adminPassword": {
+              "type": "securestring",
+              "metadata": {
+                "description": "RabbitMQ administrator password"
+              }
+            }
+          },
+          "variables": {
+            "rabbitmqUsername": "risk"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.App/containerApps",
+              "apiVersion": "2023-05-01",
+              "name": "[parameters('name')]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "managedEnvironmentId": "[parameters('environmentId')]",
+                "configuration": {
+                  "ingress": {
+                    "external": true,
+                    "targetPort": 15672,
+                    "transport": "auto",
+                    "allowInsecure": false
+                  },
+                  "secrets": [
+                    {
+                      "name": "rabbitmq-password",
+                      "value": "[parameters('adminPassword')]"
+                    }
+                  ]
+                },
+                "template": {
+                  "containers": [
+                    {
+                      "name": "[parameters('name')]",
+                      "image": "docker.io/bitnami/rabbitmq:4.0",
+                      "env": [
+                        {
+                          "name": "RABBITMQ_USERNAME",
+                          "value": "[variables('rabbitmqUsername')]"
+                        },
+                        {
+                          "name": "RABBITMQ_PASSWORD",
+                          "secretRef": "rabbitmq-password"
+                        },
+                        {
+                          "name": "RABBITMQ_MANAGEMENT_ALLOW_WEB_ACCESS",
+                          "value": "yes"
+                        }
+                      ],
+                      "resources": {
+                        "cpu": "[json('0.5')]",
+                        "memory": "1Gi"
+                      }
+                    }
+                  ],
+                  "scale": {
+                    "minReplicas": 1,
+                    "maxReplicas": 1
+                  }
+                }
+              }
+            }
+          ],
+          "outputs": {
+            "fqdn": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.App/containerApps', parameters('name')), '2023-05-01').configuration.ingress.fqdn]"
+            },
+            "amqpConnectionString": {
+              "type": "string",
+              "value": "[format('amqp://{0}:{1}@{2}:{3}.internal:5672', variables('rabbitmqUsername'), parameters('adminPassword'), parameters('name'), uniqueString(resourceGroup().id))]"
+            },
+            "username": {
+              "type": "string",
+              "value": "[variables('rabbitmqUsername')]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'container-apps-env')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "customer-api",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "name": {
+            "value": "[format('{0}-customer-api', variables('prefix'))]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "environmentId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'container-apps-env'), '2025-04-01').outputs.environmentId.value]"
+          },
+          "image": {
+            "value": "[format('{0}/customermanagement-api:latest', reference(resourceId('Microsoft.Resources/deployments', 'container-registry'), '2025-04-01').outputs.loginServer.value)]"
+          },
+          "registryServer": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'container-registry'), '2025-04-01').outputs.loginServer.value]"
+          },
+          "registryUsername": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'container-registry'), '2025-04-01').outputs.adminUsername.value]"
+          },
+          "registryPassword": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'container-registry'), '2025-04-01').outputs.adminPassword.value]"
+          },
+          "ingressPort": {
+            "value": 8080
+          },
+          "ingressExternal": {
+            "value": true
+          },
+          "minReplicas": {
+            "value": 0
+          },
+          "maxReplicas": {
+            "value": 5
+          },
+          "envVars": {
+            "value": [
+              {
+                "name": "ConnectionStrings__DefaultConnection",
+                "value": "[format('Host={0};Database=customer-management;Username={1};Password={2};SSL Mode=Require', reference(resourceId('Microsoft.Resources/deployments', 'postgresql'), '2025-04-01').outputs.fqdn.value, reference(resourceId('Microsoft.Resources/deployments', 'postgresql'), '2025-04-01').outputs.adminUsername.value, parameters('postgresAdminPassword'))]"
+              },
+              {
+                "name": "ConnectionStrings__messaging",
+                "value": "[format('amqp://risk:{0}@{1}:5672', parameters('rabbitmqPassword'), reference(resourceId('Microsoft.Resources/deployments', 'rabbitmq'), '2025-04-01').outputs.fqdn.value)]"
+              },
+              {
+                "name": "RabbitMQ__ConnectionString",
+                "value": "[format('amqp://risk:{0}@{1}:5672', parameters('rabbitmqPassword'), reference(resourceId('Microsoft.Resources/deployments', 'rabbitmq'), '2025-04-01').outputs.fqdn.value)]"
+              },
+              {
+                "name": "APPLICATION_SERVICE_URL",
+                "value": "[format('https://{0}-risk-api.{1}', variables('prefix'), reference(resourceId('Microsoft.Resources/deployments', 'container-apps-env'), '2025-04-01').outputs.defaultDomain.value)]"
+              },
+              {
+                "name": "SERVICE_API_KEY",
+                "value": "[parameters('serviceApiKey')]"
+              },
+              {
+                "name": "OIDC_ISSUER",
+                "value": "[format('https://{0}/realms/risk-management', reference(resourceId('Microsoft.Resources/deployments', 'keycloak'), '2025-04-01').outputs.fqdn.value)]"
+              },
+              {
+                "name": "OIDC_ROLES_CLAIM_PATH",
+                "value": "resource_access.risk-management-app.roles"
+              },
+              {
+                "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
+                "value": "[reference(resourceId('Microsoft.Resources/deployments', 'application-insights'), '2025-04-01').outputs.connectionString.value]"
+              }
+            ]
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.42.1.51946",
+              "templateHash": "13725298072363491666"
+            }
+          },
+          "parameters": {
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the Container App"
+              }
+            },
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "Location for the Container App"
+              }
+            },
+            "environmentId": {
+              "type": "string",
+              "metadata": {
+                "description": "Container Apps Environment ID"
+              }
+            },
+            "image": {
+              "type": "string",
+              "metadata": {
+                "description": "Container image to deploy"
+              }
+            },
+            "envVars": {
+              "type": "array",
+              "defaultValue": [],
+              "metadata": {
+                "description": "Environment variables for the container"
+              }
+            },
+            "ingressPort": {
+              "type": "int",
+              "metadata": {
+                "description": "Ingress target port"
+              }
+            },
+            "ingressExternal": {
+              "type": "bool",
+              "defaultValue": true,
+              "metadata": {
+                "description": "Whether ingress is external"
+              }
+            },
+            "minReplicas": {
+              "type": "int",
+              "defaultValue": 0,
+              "metadata": {
+                "description": "Minimum number of replicas"
+              }
+            },
+            "maxReplicas": {
+              "type": "int",
+              "defaultValue": 5,
+              "metadata": {
+                "description": "Maximum number of replicas"
+              }
+            },
+            "registryServer": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Container Registry server"
+              }
+            },
+            "registryUsername": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Container Registry username"
+              }
+            },
+            "registryPassword": {
+              "type": "securestring",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Container Registry password"
+              }
+            },
+            "command": {
+              "type": "array",
+              "defaultValue": [],
+              "metadata": {
+                "description": "Container command override"
+              }
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.App/containerApps",
+              "apiVersion": "2023-05-01",
+              "name": "[parameters('name')]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "managedEnvironmentId": "[parameters('environmentId')]",
+                "configuration": {
+                  "ingress": {
+                    "external": "[parameters('ingressExternal')]",
+                    "targetPort": "[parameters('ingressPort')]",
+                    "transport": "auto",
+                    "allowInsecure": false
+                  },
+                  "registries": "[if(not(empty(parameters('registryServer'))), createArray(createObject('server', parameters('registryServer'), 'username', parameters('registryUsername'), 'passwordSecretRef', 'registry-password')), createArray())]",
+                  "secrets": "[if(not(empty(parameters('registryServer'))), createArray(createObject('name', 'registry-password', 'value', parameters('registryPassword'))), createArray())]"
+                },
+                "template": {
+                  "containers": [
+                    {
+                      "name": "[parameters('name')]",
+                      "image": "[parameters('image')]",
+                      "env": "[parameters('envVars')]",
+                      "resources": {
+                        "cpu": "[json('0.5')]",
+                        "memory": "1Gi"
+                      },
+                      "command": "[if(not(empty(parameters('command'))), parameters('command'), null())]"
+                    }
+                  ],
+                  "scale": {
+                    "minReplicas": "[parameters('minReplicas')]",
+                    "maxReplicas": "[parameters('maxReplicas')]"
+                  }
+                }
+              }
+            }
+          ],
+          "outputs": {
+            "fqdn": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.App/containerApps', parameters('name')), '2023-05-01').configuration.ingress.fqdn]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'container-registry')]",
+        "[resourceId('Microsoft.Resources/deployments', 'application-insights')]",
+        "[resourceId('Microsoft.Resources/deployments', 'container-apps-env')]",
+        "[resourceId('Microsoft.Resources/deployments', 'keycloak')]",
+        "[resourceId('Microsoft.Resources/deployments', 'postgresql')]",
+        "[resourceId('Microsoft.Resources/deployments', 'rabbitmq')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "risk-api",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "name": {
+            "value": "[format('{0}-risk-api', variables('prefix'))]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "environmentId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'container-apps-env'), '2025-04-01').outputs.environmentId.value]"
+          },
+          "image": {
+            "value": "[format('{0}/riskmanagement-api:latest', reference(resourceId('Microsoft.Resources/deployments', 'container-registry'), '2025-04-01').outputs.loginServer.value)]"
+          },
+          "registryServer": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'container-registry'), '2025-04-01').outputs.loginServer.value]"
+          },
+          "registryUsername": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'container-registry'), '2025-04-01').outputs.adminUsername.value]"
+          },
+          "registryPassword": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'container-registry'), '2025-04-01').outputs.adminPassword.value]"
+          },
+          "ingressPort": {
+            "value": 8080
+          },
+          "ingressExternal": {
+            "value": true
+          },
+          "minReplicas": {
+            "value": 0
+          },
+          "maxReplicas": {
+            "value": 5
+          },
+          "envVars": {
+            "value": [
+              {
+                "name": "ConnectionStrings__DefaultConnection",
+                "value": "[format('Host={0};Database=risk-management;Username={1};Password={2};SSL Mode=Require', reference(resourceId('Microsoft.Resources/deployments', 'postgresql'), '2025-04-01').outputs.fqdn.value, reference(resourceId('Microsoft.Resources/deployments', 'postgresql'), '2025-04-01').outputs.adminUsername.value, parameters('postgresAdminPassword'))]"
+              },
+              {
+                "name": "ConnectionStrings__messaging",
+                "value": "[format('amqp://risk:{0}@{1}:5672', parameters('rabbitmqPassword'), reference(resourceId('Microsoft.Resources/deployments', 'rabbitmq'), '2025-04-01').outputs.fqdn.value)]"
+              },
+              {
+                "name": "RabbitMQ__ConnectionString",
+                "value": "[format('amqp://risk:{0}@{1}:5672', parameters('rabbitmqPassword'), reference(resourceId('Microsoft.Resources/deployments', 'rabbitmq'), '2025-04-01').outputs.fqdn.value)]"
+              },
+              {
+                "name": "CUSTOMER_SERVICE_URL",
+                "value": "[format('https://{0}-customer-api.{1}', variables('prefix'), reference(resourceId('Microsoft.Resources/deployments', 'container-apps-env'), '2025-04-01').outputs.defaultDomain.value)]"
+              },
+              {
+                "name": "SERVICE_API_KEY",
+                "value": "[parameters('serviceApiKey')]"
+              },
+              {
+                "name": "OIDC_ISSUER",
+                "value": "[format('https://{0}/realms/risk-management', reference(resourceId('Microsoft.Resources/deployments', 'keycloak'), '2025-04-01').outputs.fqdn.value)]"
+              },
+              {
+                "name": "OIDC_ROLES_CLAIM_PATH",
+                "value": "resource_access.risk-management-app.roles"
+              },
+              {
+                "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
+                "value": "[reference(resourceId('Microsoft.Resources/deployments', 'application-insights'), '2025-04-01').outputs.connectionString.value]"
+              }
+            ]
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.42.1.51946",
+              "templateHash": "13725298072363491666"
+            }
+          },
+          "parameters": {
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the Container App"
+              }
+            },
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "Location for the Container App"
+              }
+            },
+            "environmentId": {
+              "type": "string",
+              "metadata": {
+                "description": "Container Apps Environment ID"
+              }
+            },
+            "image": {
+              "type": "string",
+              "metadata": {
+                "description": "Container image to deploy"
+              }
+            },
+            "envVars": {
+              "type": "array",
+              "defaultValue": [],
+              "metadata": {
+                "description": "Environment variables for the container"
+              }
+            },
+            "ingressPort": {
+              "type": "int",
+              "metadata": {
+                "description": "Ingress target port"
+              }
+            },
+            "ingressExternal": {
+              "type": "bool",
+              "defaultValue": true,
+              "metadata": {
+                "description": "Whether ingress is external"
+              }
+            },
+            "minReplicas": {
+              "type": "int",
+              "defaultValue": 0,
+              "metadata": {
+                "description": "Minimum number of replicas"
+              }
+            },
+            "maxReplicas": {
+              "type": "int",
+              "defaultValue": 5,
+              "metadata": {
+                "description": "Maximum number of replicas"
+              }
+            },
+            "registryServer": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Container Registry server"
+              }
+            },
+            "registryUsername": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Container Registry username"
+              }
+            },
+            "registryPassword": {
+              "type": "securestring",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Container Registry password"
+              }
+            },
+            "command": {
+              "type": "array",
+              "defaultValue": [],
+              "metadata": {
+                "description": "Container command override"
+              }
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.App/containerApps",
+              "apiVersion": "2023-05-01",
+              "name": "[parameters('name')]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "managedEnvironmentId": "[parameters('environmentId')]",
+                "configuration": {
+                  "ingress": {
+                    "external": "[parameters('ingressExternal')]",
+                    "targetPort": "[parameters('ingressPort')]",
+                    "transport": "auto",
+                    "allowInsecure": false
+                  },
+                  "registries": "[if(not(empty(parameters('registryServer'))), createArray(createObject('server', parameters('registryServer'), 'username', parameters('registryUsername'), 'passwordSecretRef', 'registry-password')), createArray())]",
+                  "secrets": "[if(not(empty(parameters('registryServer'))), createArray(createObject('name', 'registry-password', 'value', parameters('registryPassword'))), createArray())]"
+                },
+                "template": {
+                  "containers": [
+                    {
+                      "name": "[parameters('name')]",
+                      "image": "[parameters('image')]",
+                      "env": "[parameters('envVars')]",
+                      "resources": {
+                        "cpu": "[json('0.5')]",
+                        "memory": "1Gi"
+                      },
+                      "command": "[if(not(empty(parameters('command'))), parameters('command'), null())]"
+                    }
+                  ],
+                  "scale": {
+                    "minReplicas": "[parameters('minReplicas')]",
+                    "maxReplicas": "[parameters('maxReplicas')]"
+                  }
+                }
+              }
+            }
+          ],
+          "outputs": {
+            "fqdn": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.App/containerApps', parameters('name')), '2023-05-01').configuration.ingress.fqdn]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'container-registry')]",
+        "[resourceId('Microsoft.Resources/deployments', 'application-insights')]",
+        "[resourceId('Microsoft.Resources/deployments', 'container-apps-env')]",
+        "[resourceId('Microsoft.Resources/deployments', 'keycloak')]",
+        "[resourceId('Microsoft.Resources/deployments', 'postgresql')]",
+        "[resourceId('Microsoft.Resources/deployments', 'rabbitmq')]"
+      ]
+    }
+  ],
+  "outputs": {
+    "acrLoginServer": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'container-registry'), '2025-04-01').outputs.loginServer.value]"
+    },
+    "keycloakFqdn": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'keycloak'), '2025-04-01').outputs.fqdn.value]"
+    },
+    "keycloakAdminUsername": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'keycloak'), '2025-04-01').outputs.adminUsername.value]"
+    },
+    "appFqdn": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'risk-management-app'), '2025-04-01').outputs.fqdn.value]"
+    },
+    "postgresFqdn": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'postgresql'), '2025-04-01').outputs.fqdn.value]"
+    },
+    "rabbitMqFqdn": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'rabbitmq'), '2025-04-01').outputs.fqdn.value]"
+    },
+    "customerApiFqdn": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'customer-api'), '2025-04-01').outputs.fqdn.value]"
+    },
+    "riskApiFqdn": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'risk-api'), '2025-04-01').outputs.fqdn.value]"
+    },
+    "appInsightsConnectionString": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'application-insights'), '2025-04-01').outputs.connectionString.value]"
+    },
+    "databaseSeederJobName": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'database-seeder'), '2025-04-01').outputs.jobName.value]"
+    }
+  }
+}

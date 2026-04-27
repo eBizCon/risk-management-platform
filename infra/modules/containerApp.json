@@ -1,0 +1,144 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.42.1.51946",
+      "templateHash": "13725298072363491666"
+    }
+  },
+  "parameters": {
+    "name": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the Container App"
+      }
+    },
+    "location": {
+      "type": "string",
+      "metadata": {
+        "description": "Location for the Container App"
+      }
+    },
+    "environmentId": {
+      "type": "string",
+      "metadata": {
+        "description": "Container Apps Environment ID"
+      }
+    },
+    "image": {
+      "type": "string",
+      "metadata": {
+        "description": "Container image to deploy"
+      }
+    },
+    "envVars": {
+      "type": "array",
+      "defaultValue": [],
+      "metadata": {
+        "description": "Environment variables for the container"
+      }
+    },
+    "ingressPort": {
+      "type": "int",
+      "metadata": {
+        "description": "Ingress target port"
+      }
+    },
+    "ingressExternal": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Whether ingress is external"
+      }
+    },
+    "minReplicas": {
+      "type": "int",
+      "defaultValue": 0,
+      "metadata": {
+        "description": "Minimum number of replicas"
+      }
+    },
+    "maxReplicas": {
+      "type": "int",
+      "defaultValue": 5,
+      "metadata": {
+        "description": "Maximum number of replicas"
+      }
+    },
+    "registryServer": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Container Registry server"
+      }
+    },
+    "registryUsername": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Container Registry username"
+      }
+    },
+    "registryPassword": {
+      "type": "securestring",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Container Registry password"
+      }
+    },
+    "command": {
+      "type": "array",
+      "defaultValue": [],
+      "metadata": {
+        "description": "Container command override"
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.App/containerApps",
+      "apiVersion": "2023-05-01",
+      "name": "[parameters('name')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "managedEnvironmentId": "[parameters('environmentId')]",
+        "configuration": {
+          "ingress": {
+            "external": "[parameters('ingressExternal')]",
+            "targetPort": "[parameters('ingressPort')]",
+            "transport": "auto",
+            "allowInsecure": false
+          },
+          "registries": "[if(not(empty(parameters('registryServer'))), createArray(createObject('server', parameters('registryServer'), 'username', parameters('registryUsername'), 'passwordSecretRef', 'registry-password')), createArray())]",
+          "secrets": "[if(not(empty(parameters('registryServer'))), createArray(createObject('name', 'registry-password', 'value', parameters('registryPassword'))), createArray())]"
+        },
+        "template": {
+          "containers": [
+            {
+              "name": "[parameters('name')]",
+              "image": "[parameters('image')]",
+              "env": "[parameters('envVars')]",
+              "resources": {
+                "cpu": "[json('0.5')]",
+                "memory": "1Gi"
+              },
+              "command": "[if(not(empty(parameters('command'))), parameters('command'), null())]"
+            }
+          ],
+          "scale": {
+            "minReplicas": "[parameters('minReplicas')]",
+            "maxReplicas": "[parameters('maxReplicas')]"
+          }
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "fqdn": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.App/containerApps', parameters('name')), '2023-05-01').configuration.ingress.fqdn]"
+    }
+  }
+}

@@ -1,0 +1,109 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.42.1.51946",
+      "templateHash": "15796341167555015322"
+    }
+  },
+  "parameters": {
+    "name": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the RabbitMQ Container App"
+      }
+    },
+    "location": {
+      "type": "string",
+      "metadata": {
+        "description": "Location for the Container App"
+      }
+    },
+    "environmentId": {
+      "type": "string",
+      "metadata": {
+        "description": "Container Apps Environment ID"
+      }
+    },
+    "adminPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "RabbitMQ administrator password"
+      }
+    }
+  },
+  "variables": {
+    "rabbitmqUsername": "risk"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.App/containerApps",
+      "apiVersion": "2023-05-01",
+      "name": "[parameters('name')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "managedEnvironmentId": "[parameters('environmentId')]",
+        "configuration": {
+          "ingress": {
+            "external": true,
+            "targetPort": 15672,
+            "transport": "auto",
+            "allowInsecure": false
+          },
+          "secrets": [
+            {
+              "name": "rabbitmq-password",
+              "value": "[parameters('adminPassword')]"
+            }
+          ]
+        },
+        "template": {
+          "containers": [
+            {
+              "name": "[parameters('name')]",
+              "image": "docker.io/bitnami/rabbitmq:4.0",
+              "env": [
+                {
+                  "name": "RABBITMQ_USERNAME",
+                  "value": "[variables('rabbitmqUsername')]"
+                },
+                {
+                  "name": "RABBITMQ_PASSWORD",
+                  "secretRef": "rabbitmq-password"
+                },
+                {
+                  "name": "RABBITMQ_MANAGEMENT_ALLOW_WEB_ACCESS",
+                  "value": "yes"
+                }
+              ],
+              "resources": {
+                "cpu": "[json('0.5')]",
+                "memory": "1Gi"
+              }
+            }
+          ],
+          "scale": {
+            "minReplicas": 1,
+            "maxReplicas": 1
+          }
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "fqdn": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.App/containerApps', parameters('name')), '2023-05-01').configuration.ingress.fqdn]"
+    },
+    "amqpConnectionString": {
+      "type": "string",
+      "value": "[format('amqp://{0}:{1}@{2}:{3}.internal:5672', variables('rabbitmqUsername'), parameters('adminPassword'), parameters('name'), uniqueString(resourceGroup().id))]"
+    },
+    "username": {
+      "type": "string",
+      "value": "[variables('rabbitmqUsername')]"
+    }
+  }
+}
