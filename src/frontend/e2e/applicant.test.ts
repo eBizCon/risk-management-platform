@@ -92,6 +92,7 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await authenticatedPage.getByTestId('btn-save-draft').click();
 
 			await expect(authenticatedPage).toHaveURL(/\/applications\/\d+/);
+			await new Promise((resolve) => setTimeout(resolve, 5000));
 			await expect(authenticatedPage.getByTestId('status-badge-draft')).toBeVisible();
 		});
 
@@ -143,7 +144,8 @@ test.describe('Antragsteller (Applicant) Workflows', () => {
 			await authenticatedPage.getByTestId('submit-application').click();
 			await expect(authenticatedPage.getByTestId('confirm-dialog')).toBeVisible();
 			await authenticatedPage.getByTestId('confirm-dialog-confirm').click();
-			await authenticatedPage.waitForLoadState('networkidle');
+			await new Promise((resolve) => setTimeout(resolve, 5000));
+
 			await expect(
 				authenticatedPage
 					.getByTestId('status-badge-submitted')

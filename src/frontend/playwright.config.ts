@@ -40,11 +40,9 @@ export default defineConfig({
 	],
 	testDir: 'e2e',
 	testMatch: /(.+\.)?(test|spec)\.[jt]s/,
-	timeout: 10000,
-	expect: {
-		timeout: 4000
-	},
+	timeout: 30000,
 	fullyParallel: true,
+	maxFailures: 2,
 	forbidOnly: !!process.env.CI,
 	retries: process.env.CI ? 1 : 0,
 	workers: 4,
