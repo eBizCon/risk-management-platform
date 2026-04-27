@@ -23,12 +23,12 @@ public class GetDashboardStatsHandler : IQueryHandler<GetDashboardStatsQuery, Da
             ? EmailAddress.Create(query.UserEmail)
             : null;
 
-        var (draft, submitted, approved, rejected) =
+        var (total, draft, submitted, approved, rejected) =
             await _repository.GetDashboardStatsAsync(userEmail, ct);
 
         return Result<DashboardStatsDto>.Success(new DashboardStatsDto
         {
-            Total = draft + submitted + approved + rejected,
+            Total = total,
             Draft = draft,
             Submitted = submitted,
             Approved = approved,

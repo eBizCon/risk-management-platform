@@ -32,6 +32,6 @@ public interface IApplicationRepository
 
     Task<bool> ExistsForCustomerAsync(int customerId, CancellationToken ct = default);
 
-    Task<(int Draft, int Submitted, int Approved, int Rejected)> GetDashboardStatsAsync(
+    Task<(int Total, int Draft, int Submitted, int Approved, int Rejected)> GetDashboardStatsAsync(
         EmailAddress? userEmail, CancellationToken ct = default);
 }
