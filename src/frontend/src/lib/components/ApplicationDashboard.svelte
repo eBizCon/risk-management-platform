@@ -7,7 +7,7 @@
 
 	let { stats }: { stats: DashboardStats } = $props();
 
-	const total = $derived(stats.draft + stats.submitted + stats.approved + stats.rejected);
+	const total = $derived(stats.total);
 
 	const cards = $derived([
 		{ label: 'Entwurf', count: stats.draft, icon: FileText, colorClass: 'status-draft', testId: 'stat-card-draft' },
@@ -64,7 +64,7 @@
 
 		if (pieChart) pieChart.destroy();
 		if (pieCanvas) {
-			const currentTotal = stats.draft + stats.submitted + stats.approved + stats.rejected;
+			const currentTotal = stats.total;
 			pieChart = new Chart(pieCanvas, {
 				type: 'pie',
 				data: {
