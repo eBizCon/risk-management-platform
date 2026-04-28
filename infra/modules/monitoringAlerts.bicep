@@ -52,9 +52,8 @@ resource appInsightsExceptionAlert 'Microsoft.Insights/scheduledQueryRules@2023-
     criteria: {
       allOf: [
         {
-          query: 'AppExceptions | summarize AggregatedValue = count()'
+          query: 'AppExceptions'
           timeAggregation: 'Count'
-          metricMeasureColumn: 'AggregatedValue'
           operator: 'GreaterThan'
           threshold: 0
           failingPeriods: {
