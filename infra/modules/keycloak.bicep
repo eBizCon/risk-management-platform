@@ -59,9 +59,9 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
           name: name
           image: 'quay.io/keycloak/keycloak:26.0'
           command: !empty(realmImportJson) ? [
-            '/opt/keycloak/bin/kc.sh'
-            'start'
-            '--import-realm'
+            '/bin/sh'
+            '-c'
+            '/opt/keycloak/bin/kc.sh import --dir /opt/keycloak/data/import --override true && exec /opt/keycloak/bin/kc.sh start'
           ] : [
             '/opt/keycloak/bin/kc.sh'
             'start'
