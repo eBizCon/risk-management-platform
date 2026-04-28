@@ -21,6 +21,7 @@ param postgresPassword string
 @description('Keycloak administrator password')
 param keycloakAdminPassword string
 
+@secure()
 @description('Keycloak realm import JSON content')
 param realmImportJson string = ''
 
