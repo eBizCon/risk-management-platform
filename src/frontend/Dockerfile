@@ -15,7 +15,6 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/src/lib/server/db ./src/lib/server/db
 COPY --from=builder /app/src/lib/server/services ./src/lib/server/services
 COPY --from=builder /app/scripts ./scripts
-COPY --from=builder /app/drizzle.config.ts ./
 COPY --from=builder /app/tsconfig.json ./
 EXPOSE 3000
 CMD ["sh", "-c", "npx drizzle-kit push && npx tsx scripts/seed.ts && node build/index.js"]
