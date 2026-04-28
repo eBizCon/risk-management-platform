@@ -28,14 +28,16 @@ jobs:
     steps:
       - name: Determine image tag
         id: tag
+        env:
+          INPUT_TAG: ${{ inputs.image_tag }}
+          REF_NAME: ${{ github.ref_name }}
         run: |
-          INPUT_TAG="${{ inputs.image_tag }}"
           if [ -n "$INPUT_TAG" ]; then
             echo "tag=$INPUT_TAG" >> "$GITHUB_OUTPUT"
-          elif [ "${{ github.ref_name }}" = "main" ]; then
+          elif [ "$REF_NAME" = "main" ]; then
             echo "tag=latest" >> "$GITHUB_OUTPUT"
           else
-            BRANCH_TAG=$(echo "${{ github.ref_name }}" | sed 's/\//-/g')
+            BRANCH_TAG=$(echo "$REF_NAME" | sed 's/\//-/g')
             echo "tag=$BRANCH_TAG" >> "$GITHUB_OUTPUT"
           fi
 
