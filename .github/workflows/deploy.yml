@@ -54,7 +54,8 @@ jobs:
             --parameters rabbitmqPassword="${{ secrets.RABBITMQ_PASSWORD }}"
 
   deploy-apps:
-    if: ${{ inputs.deploy_apps }}
+    if: ${{ !failure() && !cancelled() && inputs.deploy_apps }}
+    needs: [deploy-infra]
     runs-on: ubuntu-latest
     steps:
       - name: Azure Login
