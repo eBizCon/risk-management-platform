@@ -83,7 +83,7 @@ public sealed class DevinSessionTrigger
         var prompt = BuildSessionPrompt(alertRule, severity, monitorCondition, firedDateTime, alertId, alertPayload);
         var title = $"[Alert:{severity}] {alertRule}";
         // var repos = ParseCsv(Environment.GetEnvironmentVariable("DEVIN_SESSION_REPOS"));
-        var repos = "risk-management-platform";
+        string[] repos = ["risk-management-platform"];
         var bypassApproval = ParseBool(Environment.GetEnvironmentVariable("DEVIN_BYPASS_APPROVAL"), true);
 
         var sessionRequestPayload = new Dictionary<string, object?>
