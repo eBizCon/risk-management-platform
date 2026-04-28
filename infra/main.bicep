@@ -28,6 +28,17 @@ param rabbitmqPassword string
 @description('GitHub Container Registry token (optional, for private images)')
 param ghcrToken string = ''
 
+@description('Devin organization ID used by the bridge function (optional)')
+param devinOrgId string = ''
+
+@secure()
+@description('Devin API key/token used by the bridge function (optional)')
+param devinApiKey string = ''
+
+@secure()
+@description('Shared webhook token used between Azure Monitor and bridge function (optional)')
+param alertWebhookToken string = ''
+
 @description('Container image tag to deploy (e.g. latest, branch-name)')
 param imageTag string = 'latest'
 
@@ -85,6 +96,32 @@ module appInsights 'modules/applicationInsights.bicep' = {
   params: {
     prefix: prefix
     location: location
+  }
+}
+
+module devinAlertBridge 'modules/devinAlertBridgeFunction.bicep' = if (!empty(devinOrgId) && !empty(alertWebhookToken)) {
+  name: 'devin-alert-bridge'
+  params: {
+    prefix: prefix
+    location: location
+    imageTag: imageTag
+    registryServer: !empty(ghcrToken) ? 'ghcr.io' : ''
+    registryUsername: !empty(ghcrToken) ? 'ebizcon' : ''
+    registryPassword: ghcrToken
+    devinOrgId: devinOrgId
+    appInsightsConnectionString: appInsights.outputs.connectionString
+    devinApiKey: devinApiKey
+    alertWebhookToken: alertWebhookToken
+  }
+}
+
+module monitoringAlerts 'modules/monitoringAlerts.bicep' = if (!empty(devinOrgId) && !empty(alertWebhookToken)) {
+  name: 'monitoring-alerts'
+  params: {
+    prefix: prefix
+    location: location
+    logAnalyticsWorkspaceId: appInsights.outputs.logAnalyticsWorkspaceId
+    devinSessionWebhookUrl: 'https://${prefix}-devin-bridge.azurewebsites.net/api/alerts/devin?token=${alertWebhookToken}'
   }
 }
 

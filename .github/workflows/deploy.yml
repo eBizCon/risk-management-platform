@@ -76,6 +76,9 @@ jobs:
             --parameters serviceApiKey="${{ secrets.SERVICE_API_KEY }}" \
             --parameters rabbitmqPassword="${{ secrets.RABBITMQ_PASSWORD }}" \
             --parameters ghcrToken="${{ secrets.GHCR_TOKEN }}" \
+            --parameters devinOrgId="${{ secrets.DEVIN_ORG_ID }}" \
+            --parameters devinApiKey="${{ secrets.DEVIN_API_KEY }}" \
+            --parameters alertWebhookToken="${{ secrets.ALERT_WEBHOOK_TOKEN }}" \
             --parameters imageTag="${IMAGE_TAG}"
 
   deploy-apps:
