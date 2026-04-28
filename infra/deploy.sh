@@ -7,20 +7,23 @@ set -euo pipefail
 # Docker image builds are handled by GitHub Actions (deploy.yml)
 # =============================================================================
 
-RESOURCE_GROUP="${1:?Usage: deploy.sh <resource-group> <postgres-password> <keycloak-password> <service-api-key> <rabbitmq-password> <session-secret> [ghcr-token]}"
+RESOURCE_GROUP="${1:?Usage: deploy.sh <resource-group> <postgres-password> <keycloak-password> <oidc-client-secret> <service-api-key> <rabbitmq-password> <session-secret> [ghcr-token]}"
 POSTGRES_PASSWORD="${2:?}"
 KEYCLOAK_PASSWORD="${3:?}"
-SERVICE_API_KEY="${4:?}"
-RABBITMQ_PASSWORD="${5:?}"
-SESSION_SECRET="${6:?}"
-GHCR_TOKEN="${7:-}"
+OIDC_CLIENT_SECRET="${4:?}"
+SERVICE_API_KEY="${5:?}"
+RABBITMQ_PASSWORD="${6:?}"
+SESSION_SECRET="${7:?}"
+GHCR_TOKEN="${8:-}"
 
 az deployment group create \
   --resource-group "$RESOURCE_GROUP" \
   --template-file infra/main.bicep \
-  --parameters infra/parameters/dev.bicepparam \
+  --parameters environmentName="dev" \
+  --parameters location="northeurope" \
   --parameters postgresAdminPassword="$POSTGRES_PASSWORD" \
   --parameters keycloakAdminPassword="$KEYCLOAK_PASSWORD" \
+  --parameters oidcClientSecret="$OIDC_CLIENT_SECRET" \
   --parameters serviceApiKey="$SERVICE_API_KEY" \
   --parameters rabbitmqPassword="$RABBITMQ_PASSWORD" \
   --parameters sessionSecret="$SESSION_SECRET" \
