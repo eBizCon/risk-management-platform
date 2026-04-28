@@ -76,6 +76,13 @@ jobs:
           auth-type: SERVICE_PRINCIPAL
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Ensure Resource Group
+        run: |
+          az group create \
+            --name ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --location northeurope \
+            --output none
+
       - name: Deploy Bicep
         run: |
           az deployment group create \
