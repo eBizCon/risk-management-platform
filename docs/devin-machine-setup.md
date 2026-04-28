@@ -53,3 +53,35 @@ Login for browser-based flows:
 - processor / processor
 
 ```
+
+# Playbook
+## Azure Monitor Alert Remediation
+## Overview
+
+Handle incoming Azure Monitor Alerts by following this logic to ensure rapid root cause analysis and resolution.
+
+## Procedure
+
+1. **Payload Parsing**: Parse the provided JSON payload to identify the failing service and the specific log query associated with the alert.
+
+2. **Log Extraction**: Use the Azure CLI to fetch the last 10 relevant exceptions surrounding the `firedDateTime`. Ensure the time window is accurately captured.
+
+3. **Source Mapping**: Cross-reference the extracted stack trace with the local source code in the repository to pinpoint the exact line and file causing the issue.
+
+4. **Root Cause Analysis (RCA)**: Identify the root cause. Distinguish clearly between a code bug, a configuration mismatch, or an infrastructure-related issue.
+
+5. **GitHub Documentation**: Create a GitHub Issue with a clear 'Root Cause Analysis' section and a 'Proposed Fix' section.
+
+6. **Automated Remediation**: If the fix is trivial (e.g., a simple configuration update or a one-line bug fix), offer to create a Pull Request immediately.
+
+## Advice & Pointers
+
+* **Context is Key**: When fetching logs, look for correlated events just before the exception to understand the state leading up to the crash.
+* **CLI Efficiency**: Use `az monitor app-insights query` for deep inspection if the standard alert log is insufficient.
+* **Local Env**: Check for environment variable mismatches in the local `.env` or config files compared to the identified root cause.
+
+## Forbidden actions
+
+* **No Manual Portal Changes**: Do not apply fixes directly via the Azure Portal. All changes must go through the repository/PR workflow.
+* **No Silent Failures**: Do not ignore an alert even if it seems transient; always document the RCA in an issue.
+* **No Destructive CLI commands**: Do not run any Azure CLI commands that delete resources or clear production logs.
