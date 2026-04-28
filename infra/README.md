@@ -58,7 +58,7 @@ az login
 az account set --subscription "Your Subscription"
 
 # Deploy
-./deploy.sh <resource-group> <postgres-password> <keycloak-password> <service-api-key> <rabbitmq-password>
+./deploy.sh <resource-group> <postgres-password> <keycloak-password> <service-api-key> <rabbitmq-password> [ghcr-token] [devin-org-id] [devin-api-key] [alert-webhook-token]
 ```
 
 Example:
@@ -92,6 +92,18 @@ GitHub Actions workflow (`.github/workflows/build-and-push.yml`) builds and push
 | `risk-management-app` | `src/frontend/Dockerfile` |
 
 Images are pushed to GitHub Container Registry (`ghcr.io`).
+
+If `DEVIN_ORG_ID` and `ALERT_WEBHOOK_TOKEN` are set, deployment provisions a dedicated Azure Function bridge (`<prefix>-devin-bridge`) and monitoring alerts:
+- an Azure Monitor Action Group with webhook receiver
+- an Application Insights (Log Analytics) scheduled query alert on `AppExceptions`
+- Alert webhook: `https://<prefix>-devin-bridge.azurewebsites.net/api/alerts/devin?token=<ALERT_WEBHOOK_TOKEN>`
+- Function constructs the Devin endpoint `https://api.devin.ai/v3/organizations/<DEVIN_ORG_ID>/sessions`
+- Function adds `Authorization: Bearer <DEVIN_API_KEY>` when `DEVIN_API_KEY` is configured
+
+Recommended GitHub secrets for bridge mode:
+- `DEVIN_ORG_ID`
+- `DEVIN_API_KEY`
+- `ALERT_WEBHOOK_TOKEN`
 
 ## Database Seeding
 

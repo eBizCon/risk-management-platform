@@ -6,6 +6,7 @@
     </Configurations>
     <Folder Name="/Services/">
         <Project Path="DatabaseSeeder/DatabaseSeeder.csproj"/>
+        <Project Path="DevinAlertBridge.Function/DevinAlertBridge.Function.csproj"/>
     </Folder>
     <Folder Name="/Services/CustomerManagement/">
         <Project Path="CustomerManagement.Api/CustomerManagement.Api.csproj"/>

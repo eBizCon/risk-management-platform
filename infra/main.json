@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.42.1.51946",
-      "templateHash": "4435932669221482033"
+      "templateHash": "597800587332845500"
     }
   },
   "parameters": {
@@ -52,12 +52,49 @@
       "metadata": {
         "description": "RabbitMQ administrator password"
       }
+    },
+    "ghcrToken": {
+      "type": "securestring",
+      "defaultValue": "",
+      "metadata": {
+        "description": "GitHub Container Registry token (optional, for private images)"
+      }
+    },
+    "devinOrgId": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Devin organization ID used by the bridge function (optional)"
+      }
+    },
+    "devinApiKey": {
+      "type": "securestring",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Devin API key/token used by the bridge function (optional)"
+      }
+    },
+    "alertWebhookToken": {
+      "type": "securestring",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Shared webhook token used between Azure Monitor and bridge function (optional)"
+      }
+    },
+    "imageTag": {
+      "type": "string",
+      "defaultValue": "latest",
+      "metadata": {
+        "description": "Container image tag to deploy (e.g. latest, branch-name)"
+      }
     }
   },
   "variables": {
-    "$fxv#0": "ewoJInJlYWxtIjogInJpc2stbWFuYWdlbWVudCIsCgkiZW5hYmxlZCI6IHRydWUsCgkicm9sZXMiOiB7CgkJInJlYWxtIjogWwoJCQl7CgkJCQkibmFtZSI6ICJhcHBsaWNhbnQiCgkJCX0sCgkJCXsKCQkJCSJuYW1lIjogInByb2Nlc3NvciIKCQkJfSwKCQkJewoJCQkJIm5hbWUiOiAicmlza19tYW5hZ2VyIgoJCQl9CgkJXQoJfSwKCSJjbGllbnRzIjogWwoJCXsKCQkJImNsaWVudElkIjogInJpc2stbWFuYWdlbWVudC1wbGF0Zm9ybSIsCgkJCSJuYW1lIjogInJpc2stbWFuYWdlbWVudC1wbGF0Zm9ybSIsCgkJCSJwcm90b2NvbCI6ICJvcGVuaWQtY29ubmVjdCIsCgkJCSJlbmFibGVkIjogdHJ1ZSwKCQkJInB1YmxpY0NsaWVudCI6IGZhbHNlLAoJCQkiY2xpZW50QXV0aGVudGljYXRvclR5cGUiOiAiY2xpZW50LXNlY3JldCIsCgkJCSJzZWNyZXQiOiAiZGV2LWNsaWVudC1zZWNyZXQiLAoJCQkic3RhbmRhcmRGbG93RW5hYmxlZCI6IHRydWUsCgkJCSJkaXJlY3RBY2Nlc3NHcmFudHNFbmFibGVkIjogdHJ1ZSwKCQkJInJlZGlyZWN0VXJpcyI6IFsiaHR0cDovL2xvY2FsaG9zdDo1MTczLyoiLCAiaHR0cDovL2xvY2FsaG9zdDo1MjI3LyoiXSwKCQkJIndlYk9yaWdpbnMiOiBbImh0dHA6Ly9sb2NhbGhvc3Q6NTE3MyIsICJodHRwOi8vbG9jYWxob3N0OjUyMjciXSwKCQkJImRlZmF1bHRDbGllbnRTY29wZXMiOiBbInByb2ZpbGUiLCAicm9sZXMiLCAiZW1haWwiXSwKCQkJImF0dHJpYnV0ZXMiOiB7CgkJCQkicG9zdC5sb2dvdXQucmVkaXJlY3QudXJpcyI6ICJodHRwOi8vbG9jYWxob3N0OjUxNzMvKiMjaHR0cDovL2xvY2FsaG9zdDo1MjI3LyoiCgkJCX0KCQl9CgldLAoJInVzZXJzIjogWwoJCXsKCQkJInVzZXJuYW1lIjogImFwcGxpY2FudCIsCgkJCSJlbmFibGVkIjogdHJ1ZSwKCQkJImVtYWlsIjogImFwcGxpY2FudEBleGFtcGxlLmNvbSIsCgkJCSJlbWFpbFZlcmlmaWVkIjogdHJ1ZSwKCQkJImZpcnN0TmFtZSI6ICJBcHBsaWNhbnQiLAoJCQkibGFzdE5hbWUiOiAiVXNlciIsCgkJCSJjcmVkZW50aWFscyI6IFsKCQkJCXsKCQkJCQkidHlwZSI6ICJwYXNzd29yZCIsCgkJCQkJInZhbHVlIjogImFwcGxpY2FudCIsCgkJCQkJInRlbXBvcmFyeSI6IGZhbHNlCgkJCQl9CgkJCV0sCgkJCSJyZWFsbVJvbGVzIjogWyJhcHBsaWNhbnQiXQoJCX0sCgkJewoJCQkidXNlcm5hbWUiOiAicHJvY2Vzc29yIiwKCQkJImVuYWJsZWQiOiB0cnVlLAoJCQkiZW1haWwiOiAicHJvY2Vzc29yQGV4YW1wbGUuY29tIiwKCQkJImVtYWlsVmVyaWZpZWQiOiB0cnVlLAoJCQkiZmlyc3ROYW1lIjogIlByb2Nlc3NvciIsCgkJCSJsYXN0TmFtZSI6ICJVc2VyIiwKCQkJImNyZWRlbnRpYWxzIjogWwoJCQkJewoJCQkJCSJ0eXBlIjogInBhc3N3b3JkIiwKCQkJCQkidmFsdWUiOiAicHJvY2Vzc29yIiwKCQkJCQkidGVtcG9yYXJ5IjogZmFsc2UKCQkJCX0KCQkJXSwKCQkJInJlYWxtUm9sZXMiOiBbInByb2Nlc3NvciJdCgkJfSwKCQl7CgkJCSJ1c2VybmFtZSI6ICJyaXNrbWFuYWdlciIsCgkJCSJlbmFibGVkIjogdHJ1ZSwKCQkJImVtYWlsIjogInJpc2ttYW5hZ2VyQGV4YW1wbGUuY29tIiwKCQkJImVtYWlsVmVyaWZpZWQiOiB0cnVlLAoJCQkiZmlyc3ROYW1lIjogIlJpc2siLAoJCQkibGFzdE5hbWUiOiAiTWFuYWdlciIsCgkJCSJjcmVkZW50aWFscyI6IFsKCQkJCXsKCQkJCQkidHlwZSI6ICJwYXNzd29yZCIsCgkJCQkJInZhbHVlIjogInJpc2ttYW5hZ2VyIiwKCQkJCQkidGVtcG9yYXJ5IjogZmFsc2UKCQkJCX0KCQkJXSwKCQkJInJlYWxtUm9sZXMiOiBbInJpc2tfbWFuYWdlciJdCgkJfQoJXQp9Cg==",
     "prefix": "[format('riskmgmt-{0}', parameters('environmentName'))]",
-    "acrName": "[replace(format('riskmgmt{0}acr', parameters('environmentName')), '-', '')]"
+    "acrName": "[replace(format('riskmgmt{0}acr', parameters('environmentName')), '-', '')]",
+    "rawRealmJson": "{\n\t\"realm\": \"risk-management\",\n\t\"enabled\": true,\n\t\"roles\": {\n\t\t\"realm\": [\n\t\t\t{\n\t\t\t\t\"name\": \"applicant\"\n\t\t\t},\n\t\t\t{\n\t\t\t\t\"name\": \"processor\"\n\t\t\t},\n\t\t\t{\n\t\t\t\t\"name\": \"risk_manager\"\n\t\t\t}\n\t\t]\n\t},\n\t\"clients\": [\n\t\t{\n\t\t\t\"clientId\": \"risk-management-platform\",\n\t\t\t\"name\": \"risk-management-platform\",\n\t\t\t\"protocol\": \"openid-connect\",\n\t\t\t\"enabled\": true,\n\t\t\t\"publicClient\": false,\n\t\t\t\"clientAuthenticatorType\": \"client-secret\",\n\t\t\t\"secret\": \"dev-client-secret\",\n\t\t\t\"standardFlowEnabled\": true,\n\t\t\t\"directAccessGrantsEnabled\": true,\n\t\t\t\"redirectUris\": [\"http://localhost:5173/*\", \"http://localhost:5227/*\"],\n\t\t\t\"webOrigins\": [\"http://localhost:5173\", \"http://localhost:5227\"],\n\t\t\t\"defaultClientScopes\": [\"profile\", \"roles\", \"email\"],\n\t\t\t\"attributes\": {\n\t\t\t\t\"post.logout.redirect.uris\": \"http://localhost:5173/*##http://localhost:5227/*\"\n\t\t\t}\n\t\t}\n\t],\n\t\"users\": [\n\t\t{\n\t\t\t\"username\": \"applicant\",\n\t\t\t\"enabled\": true,\n\t\t\t\"email\": \"applicant@example.com\",\n\t\t\t\"emailVerified\": true,\n\t\t\t\"firstName\": \"Applicant\",\n\t\t\t\"lastName\": \"User\",\n\t\t\t\"credentials\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"password\",\n\t\t\t\t\t\"value\": \"applicant\",\n\t\t\t\t\t\"temporary\": false\n\t\t\t\t}\n\t\t\t],\n\t\t\t\"realmRoles\": [\"applicant\"]\n\t\t},\n\t\t{\n\t\t\t\"username\": \"processor\",\n\t\t\t\"enabled\": true,\n\t\t\t\"email\": \"processor@example.com\",\n\t\t\t\"emailVerified\": true,\n\t\t\t\"firstName\": \"Processor\",\n\t\t\t\"lastName\": \"User\",\n\t\t\t\"credentials\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"password\",\n\t\t\t\t\t\"value\": \"processor\",\n\t\t\t\t\t\"temporary\": false\n\t\t\t\t}\n\t\t\t],\n\t\t\t\"realmRoles\": [\"processor\"]\n\t\t},\n\t\t{\n\t\t\t\"username\": \"riskmanager\",\n\t\t\t\"enabled\": true,\n\t\t\t\"email\": \"riskmanager@example.com\",\n\t\t\t\"emailVerified\": true,\n\t\t\t\"firstName\": \"Risk\",\n\t\t\t\"lastName\": \"Manager\",\n\t\t\t\"credentials\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"password\",\n\t\t\t\t\t\"value\": \"riskmanager\",\n\t\t\t\t\t\"temporary\": false\n\t\t\t\t}\n\t\t\t],\n\t\t\t\"realmRoles\": [\"risk_manager\"]\n\t\t}\n\t]\n}\n",
+    "effectiveOidcClientSecret": "[if(not(empty(parameters('oidcClientSecret'))), parameters('oidcClientSecret'), 'dev-client-secret')]",
+    "generatedSessionSecret": "[format('{0}-{1}-secret-key!!', uniqueString(resourceGroup().id, 'session-secret'), uniqueString(resourceGroup().id, variables('prefix')))]"
   },
   "resources": [
     {
@@ -370,6 +407,347 @@
       }
     },
     {
+      "condition": "[and(not(empty(parameters('devinOrgId'))), not(empty(parameters('alertWebhookToken'))))]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "devin-alert-bridge",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "name": {
+            "value": "[format('{0}-devin-bridge', variables('prefix'))]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "environmentId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'container-apps-env'), '2025-04-01').outputs.environmentId.value]"
+          },
+          "image": {
+            "value": "[format('ghcr.io/ebizcon/risk-management-platform/devin-alert-bridge:{0}', parameters('imageTag'))]"
+          },
+          "registryServer": "[if(not(empty(parameters('ghcrToken'))), createObject('value', 'ghcr.io'), createObject('value', ''))]",
+          "registryUsername": "[if(not(empty(parameters('ghcrToken'))), createObject('value', 'ebizcon'), createObject('value', ''))]",
+          "registryPassword": {
+            "value": "[parameters('ghcrToken')]"
+          },
+          "ingressPort": {
+            "value": 8080
+          },
+          "ingressExternal": {
+            "value": true
+          },
+          "minReplicas": {
+            "value": 0
+          },
+          "maxReplicas": {
+            "value": 1
+          },
+          "envVars": {
+            "value": [
+              {
+                "name": "DEVIN_ORG_ID",
+                "value": "[parameters('devinOrgId')]"
+              },
+              {
+                "name": "DEVIN_API_KEY",
+                "value": "[parameters('devinApiKey')]"
+              },
+              {
+                "name": "ALERT_WEBHOOK_TOKEN",
+                "value": "[parameters('alertWebhookToken')]"
+              },
+              {
+                "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
+                "value": "[reference(resourceId('Microsoft.Resources/deployments', 'application-insights'), '2025-04-01').outputs.connectionString.value]"
+              }
+            ]
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.42.1.51946",
+              "templateHash": "13725298072363491666"
+            }
+          },
+          "parameters": {
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the Container App"
+              }
+            },
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "Location for the Container App"
+              }
+            },
+            "environmentId": {
+              "type": "string",
+              "metadata": {
+                "description": "Container Apps Environment ID"
+              }
+            },
+            "image": {
+              "type": "string",
+              "metadata": {
+                "description": "Container image to deploy"
+              }
+            },
+            "envVars": {
+              "type": "array",
+              "defaultValue": [],
+              "metadata": {
+                "description": "Environment variables for the container"
+              }
+            },
+            "ingressPort": {
+              "type": "int",
+              "metadata": {
+                "description": "Ingress target port"
+              }
+            },
+            "ingressExternal": {
+              "type": "bool",
+              "defaultValue": true,
+              "metadata": {
+                "description": "Whether ingress is external"
+              }
+            },
+            "minReplicas": {
+              "type": "int",
+              "defaultValue": 0,
+              "metadata": {
+                "description": "Minimum number of replicas"
+              }
+            },
+            "maxReplicas": {
+              "type": "int",
+              "defaultValue": 5,
+              "metadata": {
+                "description": "Maximum number of replicas"
+              }
+            },
+            "registryServer": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Container Registry server"
+              }
+            },
+            "registryUsername": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Container Registry username"
+              }
+            },
+            "registryPassword": {
+              "type": "securestring",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Container Registry password"
+              }
+            },
+            "command": {
+              "type": "array",
+              "defaultValue": [],
+              "metadata": {
+                "description": "Container command override"
+              }
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.App/containerApps",
+              "apiVersion": "2023-05-01",
+              "name": "[parameters('name')]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "managedEnvironmentId": "[parameters('environmentId')]",
+                "configuration": {
+                  "ingress": {
+                    "external": "[parameters('ingressExternal')]",
+                    "targetPort": "[parameters('ingressPort')]",
+                    "transport": "auto",
+                    "allowInsecure": false
+                  },
+                  "registries": "[if(not(empty(parameters('registryServer'))), createArray(createObject('server', parameters('registryServer'), 'username', parameters('registryUsername'), 'passwordSecretRef', 'registry-password')), createArray())]",
+                  "secrets": "[if(not(empty(parameters('registryServer'))), createArray(createObject('name', 'registry-password', 'value', parameters('registryPassword'))), createArray())]"
+                },
+                "template": {
+                  "containers": [
+                    {
+                      "name": "[parameters('name')]",
+                      "image": "[parameters('image')]",
+                      "env": "[parameters('envVars')]",
+                      "resources": {
+                        "cpu": "[json('0.5')]",
+                        "memory": "1Gi"
+                      },
+                      "command": "[if(not(empty(parameters('command'))), parameters('command'), null())]"
+                    }
+                  ],
+                  "scale": {
+                    "minReplicas": "[parameters('minReplicas')]",
+                    "maxReplicas": "[parameters('maxReplicas')]"
+                  }
+                }
+              }
+            }
+          ],
+          "outputs": {
+            "fqdn": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.App/containerApps', parameters('name')), '2023-05-01').configuration.ingress.fqdn]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'application-insights')]",
+        "[resourceId('Microsoft.Resources/deployments', 'container-apps-env')]"
+      ]
+    },
+    {
+      "condition": "[and(not(empty(parameters('devinOrgId'))), not(empty(parameters('alertWebhookToken'))))]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "monitoring-alerts",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "prefix": {
+            "value": "[variables('prefix')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "logAnalyticsWorkspaceId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'application-insights'), '2025-04-01').outputs.logAnalyticsWorkspaceId.value]"
+          },
+          "devinSessionWebhookUrl": {
+            "value": "[format('https://{0}/api/alerts/devin?token={1}', reference(resourceId('Microsoft.Resources/deployments', 'devin-alert-bridge'), '2025-04-01').outputs.fqdn.value, parameters('alertWebhookToken'))]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.42.1.51946",
+              "templateHash": "10309027848633876001"
+            }
+          },
+          "parameters": {
+            "prefix": {
+              "type": "string",
+              "metadata": {
+                "description": "Name prefix for monitoring resources"
+              }
+            },
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "Location for resources"
+              }
+            },
+            "logAnalyticsWorkspaceId": {
+              "type": "string",
+              "metadata": {
+                "description": "Log Analytics workspace resource ID used by Application Insights"
+              }
+            },
+            "devinSessionWebhookUrl": {
+              "type": "securestring",
+              "metadata": {
+                "description": "Webhook URL of the Devin bridge that starts a session"
+              }
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Insights/actionGroups",
+              "apiVersion": "2023-01-01",
+              "name": "[format('{0}-devin-ag', parameters('prefix'))]",
+              "location": "global",
+              "properties": {
+                "groupShortName": "devinalert",
+                "enabled": true,
+                "webhookReceivers": [
+                  {
+                    "name": "devin-session-webhook",
+                    "serviceUri": "[parameters('devinSessionWebhookUrl')]",
+                    "useCommonAlertSchema": true
+                  }
+                ]
+              }
+            },
+            {
+              "type": "Microsoft.Insights/scheduledQueryRules",
+              "apiVersion": "2023-12-01",
+              "name": "[format('{0}-appinsights-exceptions', parameters('prefix'))]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "description": "Triggers Devin session webhook when Application Insights exceptions are detected.",
+                "displayName": "[format('{0} Application Insights exceptions', parameters('prefix'))]",
+                "enabled": true,
+                "severity": 2,
+                "scopes": [
+                  "[parameters('logAnalyticsWorkspaceId')]"
+                ],
+                "evaluationFrequency": "PT5M",
+                "windowSize": "PT5M",
+                "autoMitigate": true,
+                "criteria": {
+                  "allOf": [
+                    {
+                      "query": "AppExceptions",
+                      "timeAggregation": "Count",
+                      "operator": "GreaterThan",
+                      "threshold": 0,
+                      "failingPeriods": {
+                        "numberOfEvaluationPeriods": 1,
+                        "minFailingPeriodsToAlert": 1
+                      }
+                    }
+                  ]
+                },
+                "actions": {
+                  "actionGroups": [
+                    "[resourceId('Microsoft.Insights/actionGroups', format('{0}-devin-ag', parameters('prefix')))]"
+                  ],
+                  "customProperties": {
+                    "source": "application-insights",
+                    "trigger": "exceptions"
+                  }
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Insights/actionGroups', format('{0}-devin-ag', parameters('prefix')))]"
+              ]
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'application-insights')]",
+        "[resourceId('Microsoft.Resources/deployments', 'devin-alert-bridge')]"
+      ]
+    },
+    {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2025-04-01",
       "name": "container-apps-env",
@@ -487,7 +865,7 @@
             "value": "[parameters('keycloakAdminPassword')]"
           },
           "realmImportJson": {
-            "value": "[variables('$fxv#0')]"
+            "value": "[replace(replace(replace(replace(variables('rawRealmJson'), '\"http://localhost:5173/*\", \"http://localhost:5227/*\"', format('\"http://localhost:5173/*\", \"http://localhost:5227/*\", \"https://{0}/*\"', format('{0}-app.{1}', variables('prefix'), reference(resourceId('Microsoft.Resources/deployments', 'container-apps-env'), '2025-04-01').outputs.defaultDomain.value))), '\"http://localhost:5173\", \"http://localhost:5227\"', format('\"http://localhost:5173\", \"http://localhost:5227\", \"https://{0}\"', format('{0}-app.{1}', variables('prefix'), reference(resourceId('Microsoft.Resources/deployments', 'container-apps-env'), '2025-04-01').outputs.defaultDomain.value))), '\"http://localhost:5173/*##http://localhost:5227/*\"', format('\"http://localhost:5173/*##http://localhost:5227/*##https://{0}/*\"', format('{0}-app.{1}', variables('prefix'), reference(resourceId('Microsoft.Resources/deployments', 'container-apps-env'), '2025-04-01').outputs.defaultDomain.value))), '\"secret\": \"dev-client-secret\"', format('\"secret\": \"{0}\"', variables('effectiveOidcClientSecret')))]"
           }
         },
         "template": {
@@ -497,7 +875,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.42.1.51946",
-              "templateHash": "12965915949789029085"
+              "templateHash": "337918799758881287"
             }
           },
           "parameters": {
@@ -544,10 +922,10 @@
               }
             },
             "realmImportJson": {
-              "type": "string",
+              "type": "securestring",
               "defaultValue": "",
               "metadata": {
-                "description": "Keycloak realm import JSON (base64 encoded)"
+                "description": "Keycloak realm import JSON content"
               }
             }
           },
@@ -589,7 +967,7 @@
                     {
                       "name": "[parameters('name')]",
                       "image": "quay.io/keycloak/keycloak:26.0",
-                      "command": "[if(not(empty(parameters('realmImportJson'))), createArray('/opt/keycloak/bin/kc.sh', 'start', '--import-realm'), createArray('/opt/keycloak/bin/kc.sh', 'start'))]",
+                      "command": "[if(not(empty(parameters('realmImportJson'))), createArray('/bin/sh', '-c', '/opt/keycloak/bin/kc.sh import --dir /opt/keycloak/data/import --override true && exec /opt/keycloak/bin/kc.sh start'), createArray('/opt/keycloak/bin/kc.sh', 'start'))]",
                       "env": [
                         {
                           "name": "KC_DB",
@@ -630,6 +1008,10 @@
                         {
                           "name": "KEYCLOAK_ADMIN_PASSWORD",
                           "secretRef": "keycloak-admin-password"
+                        },
+                        {
+                          "name": "REALM_CONFIG_HASH",
+                          "value": "[uniqueString(parameters('realmImportJson'))]"
                         }
                       ],
                       "resources": {
@@ -685,16 +1067,12 @@
             "value": "[reference(resourceId('Microsoft.Resources/deployments', 'container-apps-env'), '2025-04-01').outputs.environmentId.value]"
           },
           "image": {
-            "value": "[format('{0}/databaseseeder:latest', reference(resourceId('Microsoft.Resources/deployments', 'container-registry'), '2025-04-01').outputs.loginServer.value)]"
+            "value": "[format('ghcr.io/ebizcon/risk-management-platform/databaseseeder:{0}', parameters('imageTag'))]"
           },
-          "registryServer": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'container-registry'), '2025-04-01').outputs.loginServer.value]"
-          },
-          "registryUsername": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'container-registry'), '2025-04-01').outputs.adminUsername.value]"
-          },
+          "registryServer": "[if(not(empty(parameters('ghcrToken'))), createObject('value', 'ghcr.io'), createObject('value', ''))]",
+          "registryUsername": "[if(not(empty(parameters('ghcrToken'))), createObject('value', 'ebizcon'), createObject('value', ''))]",
           "registryPassword": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'container-registry'), '2025-04-01').outputs.adminPassword.value]"
+            "value": "[parameters('ghcrToken')]"
           },
           "customerConnectionString": {
             "value": "[format('Host={0};Database=customer-management;Username={1};Password={2};SSL Mode=Require', reference(resourceId('Microsoft.Resources/deployments', 'postgresql'), '2025-04-01').outputs.fqdn.value, reference(resourceId('Microsoft.Resources/deployments', 'postgresql'), '2025-04-01').outputs.adminUsername.value, parameters('postgresAdminPassword'))]"
@@ -710,7 +1088,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.42.1.51946",
-              "templateHash": "9726443278538839531"
+              "templateHash": "3707623165688789266"
             }
           },
           "parameters": {
@@ -779,27 +1157,8 @@
                 "environmentId": "[parameters('environmentId')]",
                 "workloadProfileName": null,
                 "configuration": {
-                  "secrets": [
-                    {
-                      "name": "registry-password",
-                      "value": "[parameters('registryPassword')]"
-                    },
-                    {
-                      "name": "customer-connection",
-                      "value": "[parameters('customerConnectionString')]"
-                    },
-                    {
-                      "name": "risk-connection",
-                      "value": "[parameters('riskConnectionString')]"
-                    }
-                  ],
-                  "registries": [
-                    {
-                      "server": "[parameters('registryServer')]",
-                      "username": "[parameters('registryUsername')]",
-                      "passwordSecretRef": "registry-password"
-                    }
-                  ],
+                  "secrets": "[concat(if(not(empty(parameters('registryServer'))), createArray(createObject('name', 'registry-password', 'value', parameters('registryPassword'))), createArray()), createArray(createObject('name', 'customer-connection', 'value', parameters('customerConnectionString')), createObject('name', 'risk-connection', 'value', parameters('riskConnectionString'))))]",
+                  "registries": "[if(not(empty(parameters('registryServer'))), createArray(createObject('server', parameters('registryServer'), 'username', parameters('registryUsername'), 'passwordSecretRef', 'registry-password')), createArray())]",
                   "replicaTimeout": 600,
                   "replicaRetryLimit": 2,
                   "triggerType": "Manual"
@@ -838,7 +1197,6 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Resources/deployments', 'container-registry')]",
         "[resourceId('Microsoft.Resources/deployments', 'container-apps-env')]",
         "[resourceId('Microsoft.Resources/deployments', 'postgresql')]",
         "[resourceId('Microsoft.Resources/deployments', 'rabbitmq')]"
@@ -864,16 +1222,12 @@
             "value": "[reference(resourceId('Microsoft.Resources/deployments', 'container-apps-env'), '2025-04-01').outputs.environmentId.value]"
           },
           "image": {
-            "value": "[format('{0}/risk-management-app:latest', reference(resourceId('Microsoft.Resources/deployments', 'container-registry'), '2025-04-01').outputs.loginServer.value)]"
+            "value": "[format('ghcr.io/ebizcon/risk-management-platform/risk-management-app:{0}', parameters('imageTag'))]"
           },
-          "registryServer": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'container-registry'), '2025-04-01').outputs.loginServer.value]"
-          },
-          "registryUsername": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'container-registry'), '2025-04-01').outputs.adminUsername.value]"
-          },
+          "registryServer": "[if(not(empty(parameters('ghcrToken'))), createObject('value', 'ghcr.io'), createObject('value', ''))]",
+          "registryUsername": "[if(not(empty(parameters('ghcrToken'))), createObject('value', 'ebizcon'), createObject('value', ''))]",
           "registryPassword": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'container-registry'), '2025-04-01').outputs.adminPassword.value]"
+            "value": "[parameters('ghcrToken')]"
           },
           "ingressPort": {
             "value": 3000
@@ -894,24 +1248,28 @@
                 "value": "[format('postgresql://{0}:{1}@{2}:5432/risk_management?sslmode=require', reference(resourceId('Microsoft.Resources/deployments', 'postgresql'), '2025-04-01').outputs.adminUsername.value, parameters('postgresAdminPassword'), reference(resourceId('Microsoft.Resources/deployments', 'postgresql'), '2025-04-01').outputs.fqdn.value)]"
               },
               {
+                "name": "SESSION_SECRET",
+                "value": "[variables('generatedSessionSecret')]"
+              },
+              {
                 "name": "OIDC_ISSUER",
                 "value": "[format('https://{0}/realms/risk-management', reference(resourceId('Microsoft.Resources/deployments', 'keycloak'), '2025-04-01').outputs.fqdn.value)]"
               },
               {
                 "name": "OIDC_CLIENT_ID",
-                "value": "risk-management-app"
+                "value": "risk-management-platform"
               },
               {
                 "name": "OIDC_CLIENT_SECRET",
-                "value": "[parameters('oidcClientSecret')]"
+                "value": "[variables('effectiveOidcClientSecret')]"
               },
               {
                 "name": "OIDC_REDIRECT_URI",
-                "value": "[format('https://{0}-app.{1}/auth/callback', variables('prefix'), reference(resourceId('Microsoft.Resources/deployments', 'container-apps-env'), '2025-04-01').outputs.defaultDomain.value)]"
+                "value": "[format('https://{0}/auth/callback', format('{0}-app.{1}', variables('prefix'), reference(resourceId('Microsoft.Resources/deployments', 'container-apps-env'), '2025-04-01').outputs.defaultDomain.value))]"
               },
               {
                 "name": "OIDC_POST_LOGOUT_REDIRECT_URI",
-                "value": "[format('https://{0}-app.{1}', variables('prefix'), reference(resourceId('Microsoft.Resources/deployments', 'container-apps-env'), '2025-04-01').outputs.defaultDomain.value)]"
+                "value": "[format('https://{0}', format('{0}-app.{1}', variables('prefix'), reference(resourceId('Microsoft.Resources/deployments', 'container-apps-env'), '2025-04-01').outputs.defaultDomain.value))]"
               },
               {
                 "name": "OIDC_SCOPE",
@@ -919,7 +1277,19 @@
               },
               {
                 "name": "OIDC_ROLES_CLAIM_PATH",
-                "value": "resource_access.risk-management-app.roles"
+                "value": "realm_access.roles"
+              },
+              {
+                "name": "RISK_MANAGEMENT_API_URL",
+                "value": "[format('https://{0}-risk-api.{1}', variables('prefix'), reference(resourceId('Microsoft.Resources/deployments', 'container-apps-env'), '2025-04-01').outputs.defaultDomain.value)]"
+              },
+              {
+                "name": "CUSTOMER_SERVICE_URL",
+                "value": "[format('https://{0}-customer-api.{1}', variables('prefix'), reference(resourceId('Microsoft.Resources/deployments', 'container-apps-env'), '2025-04-01').outputs.defaultDomain.value)]"
+              },
+              {
+                "name": "SERVICE_API_KEY",
+                "value": "[parameters('serviceApiKey')]"
               },
               {
                 "name": "PORT",
@@ -1074,7 +1444,6 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Resources/deployments', 'container-registry')]",
         "[resourceId('Microsoft.Resources/deployments', 'container-apps-env')]",
         "[resourceId('Microsoft.Resources/deployments', 'keycloak')]",
         "[resourceId('Microsoft.Resources/deployments', 'postgresql')]"
@@ -1110,7 +1479,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.42.1.51946",
-              "templateHash": "15796341167555015322"
+              "templateHash": "8469005137050622925"
             }
           },
           "parameters": {
@@ -1145,7 +1514,7 @@
           "resources": [
             {
               "type": "Microsoft.App/containerApps",
-              "apiVersion": "2023-05-01",
+              "apiVersion": "2024-03-01",
               "name": "[parameters('name')]",
               "location": "[parameters('location')]",
               "properties": {
@@ -1155,7 +1524,13 @@
                     "external": true,
                     "targetPort": 15672,
                     "transport": "auto",
-                    "allowInsecure": false
+                    "allowInsecure": false,
+                    "additionalPortMappings": [
+                      {
+                        "external": false,
+                        "targetPort": 5672
+                      }
+                    ]
                   },
                   "secrets": [
                     {
@@ -1168,19 +1543,15 @@
                   "containers": [
                     {
                       "name": "[parameters('name')]",
-                      "image": "docker.io/bitnami/rabbitmq:4.0",
+                      "image": "docker.io/rabbitmq:4-management",
                       "env": [
                         {
-                          "name": "RABBITMQ_USERNAME",
+                          "name": "RABBITMQ_DEFAULT_USER",
                           "value": "[variables('rabbitmqUsername')]"
                         },
                         {
-                          "name": "RABBITMQ_PASSWORD",
+                          "name": "RABBITMQ_DEFAULT_PASS",
                           "secretRef": "rabbitmq-password"
-                        },
-                        {
-                          "name": "RABBITMQ_MANAGEMENT_ALLOW_WEB_ACCESS",
-                          "value": "yes"
                         }
                       ],
                       "resources": {
@@ -1200,11 +1571,11 @@
           "outputs": {
             "fqdn": {
               "type": "string",
-              "value": "[reference(resourceId('Microsoft.App/containerApps', parameters('name')), '2023-05-01').configuration.ingress.fqdn]"
+              "value": "[reference(resourceId('Microsoft.App/containerApps', parameters('name')), '2024-03-01').configuration.ingress.fqdn]"
             },
-            "amqpConnectionString": {
+            "internalName": {
               "type": "string",
-              "value": "[format('amqp://{0}:{1}@{2}:{3}.internal:5672', variables('rabbitmqUsername'), parameters('adminPassword'), parameters('name'), uniqueString(resourceGroup().id))]"
+              "value": "[parameters('name')]"
             },
             "username": {
               "type": "string",
@@ -1237,16 +1608,12 @@
             "value": "[reference(resourceId('Microsoft.Resources/deployments', 'container-apps-env'), '2025-04-01').outputs.environmentId.value]"
           },
           "image": {
-            "value": "[format('{0}/customermanagement-api:latest', reference(resourceId('Microsoft.Resources/deployments', 'container-registry'), '2025-04-01').outputs.loginServer.value)]"
+            "value": "[format('ghcr.io/ebizcon/risk-management-platform/customermanagement-api:{0}', parameters('imageTag'))]"
           },
-          "registryServer": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'container-registry'), '2025-04-01').outputs.loginServer.value]"
-          },
-          "registryUsername": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'container-registry'), '2025-04-01').outputs.adminUsername.value]"
-          },
+          "registryServer": "[if(not(empty(parameters('ghcrToken'))), createObject('value', 'ghcr.io'), createObject('value', ''))]",
+          "registryUsername": "[if(not(empty(parameters('ghcrToken'))), createObject('value', 'ebizcon'), createObject('value', ''))]",
           "registryPassword": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'container-registry'), '2025-04-01').outputs.adminPassword.value]"
+            "value": "[parameters('ghcrToken')]"
           },
           "ingressPort": {
             "value": 8080
@@ -1268,11 +1635,11 @@
               },
               {
                 "name": "ConnectionStrings__messaging",
-                "value": "[format('amqp://risk:{0}@{1}:5672', parameters('rabbitmqPassword'), reference(resourceId('Microsoft.Resources/deployments', 'rabbitmq'), '2025-04-01').outputs.fqdn.value)]"
+                "value": "[format('amqp://risk:{0}@{1}:5672', parameters('rabbitmqPassword'), reference(resourceId('Microsoft.Resources/deployments', 'rabbitmq'), '2025-04-01').outputs.internalName.value)]"
               },
               {
                 "name": "RabbitMQ__ConnectionString",
-                "value": "[format('amqp://risk:{0}@{1}:5672', parameters('rabbitmqPassword'), reference(resourceId('Microsoft.Resources/deployments', 'rabbitmq'), '2025-04-01').outputs.fqdn.value)]"
+                "value": "[format('amqp://risk:{0}@{1}:5672', parameters('rabbitmqPassword'), reference(resourceId('Microsoft.Resources/deployments', 'rabbitmq'), '2025-04-01').outputs.internalName.value)]"
               },
               {
                 "name": "APPLICATION_SERVICE_URL",
@@ -1288,7 +1655,7 @@
               },
               {
                 "name": "OIDC_ROLES_CLAIM_PATH",
-                "value": "resource_access.risk-management-app.roles"
+                "value": "realm_access.roles"
               },
               {
                 "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
@@ -1443,7 +1810,6 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Resources/deployments', 'container-registry')]",
         "[resourceId('Microsoft.Resources/deployments', 'application-insights')]",
         "[resourceId('Microsoft.Resources/deployments', 'container-apps-env')]",
         "[resourceId('Microsoft.Resources/deployments', 'keycloak')]",
@@ -1471,16 +1837,12 @@
             "value": "[reference(resourceId('Microsoft.Resources/deployments', 'container-apps-env'), '2025-04-01').outputs.environmentId.value]"
           },
           "image": {
-            "value": "[format('{0}/riskmanagement-api:latest', reference(resourceId('Microsoft.Resources/deployments', 'container-registry'), '2025-04-01').outputs.loginServer.value)]"
+            "value": "[format('ghcr.io/ebizcon/risk-management-platform/riskmanagement-api:{0}', parameters('imageTag'))]"
           },
-          "registryServer": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'container-registry'), '2025-04-01').outputs.loginServer.value]"
-          },
-          "registryUsername": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'container-registry'), '2025-04-01').outputs.adminUsername.value]"
-          },
+          "registryServer": "[if(not(empty(parameters('ghcrToken'))), createObject('value', 'ghcr.io'), createObject('value', ''))]",
+          "registryUsername": "[if(not(empty(parameters('ghcrToken'))), createObject('value', 'ebizcon'), createObject('value', ''))]",
           "registryPassword": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'container-registry'), '2025-04-01').outputs.adminPassword.value]"
+            "value": "[parameters('ghcrToken')]"
           },
           "ingressPort": {
             "value": 8080
@@ -1502,11 +1864,11 @@
               },
               {
                 "name": "ConnectionStrings__messaging",
-                "value": "[format('amqp://risk:{0}@{1}:5672', parameters('rabbitmqPassword'), reference(resourceId('Microsoft.Resources/deployments', 'rabbitmq'), '2025-04-01').outputs.fqdn.value)]"
+                "value": "[format('amqp://risk:{0}@{1}:5672', parameters('rabbitmqPassword'), reference(resourceId('Microsoft.Resources/deployments', 'rabbitmq'), '2025-04-01').outputs.internalName.value)]"
               },
               {
                 "name": "RabbitMQ__ConnectionString",
-                "value": "[format('amqp://risk:{0}@{1}:5672', parameters('rabbitmqPassword'), reference(resourceId('Microsoft.Resources/deployments', 'rabbitmq'), '2025-04-01').outputs.fqdn.value)]"
+                "value": "[format('amqp://risk:{0}@{1}:5672', parameters('rabbitmqPassword'), reference(resourceId('Microsoft.Resources/deployments', 'rabbitmq'), '2025-04-01').outputs.internalName.value)]"
               },
               {
                 "name": "CUSTOMER_SERVICE_URL",
@@ -1522,7 +1884,7 @@
               },
               {
                 "name": "OIDC_ROLES_CLAIM_PATH",
-                "value": "resource_access.risk-management-app.roles"
+                "value": "realm_access.roles"
               },
               {
                 "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
@@ -1677,7 +2039,6 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Resources/deployments', 'container-registry')]",
         "[resourceId('Microsoft.Resources/deployments', 'application-insights')]",
         "[resourceId('Microsoft.Resources/deployments', 'container-apps-env')]",
         "[resourceId('Microsoft.Resources/deployments', 'keycloak')]",
