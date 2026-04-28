@@ -24,9 +24,14 @@ param serviceApiKey string
 @description('RabbitMQ administrator password')
 param rabbitmqPassword string
 
+@secure()
+@description('GitHub Container Registry token (optional, for private images)')
+param ghcrToken string = ''
+
 var prefix = 'riskmgmt-${environmentName}'
 var acrName = replace('riskmgmt${environmentName}acr', '-', '')
 
+// ACR is optional - can use GHCR instead
 module acr 'modules/containerRegistry.bicep' = {
   name: 'container-registry'
   params: {
@@ -34,6 +39,12 @@ module acr 'modules/containerRegistry.bicep' = {
     location: location
   }
 }
+
+// Determine if we use ACR or GHCR
+var useACR = !empty(acr.outputs.loginServer) && empty(ghcrToken)
+var registryServer = useACR ? acr.outputs.loginServer : 'ghcr.io'
+var registryUsername = useACR ? acr.outputs.adminUsername : ''
+var registryPassword = useACR ? acr.outputs.adminPassword : ghcrToken
 
 module postgres 'modules/postgresql.bicep' = {
   name: 'postgresql'
@@ -80,10 +91,10 @@ module databaseSeeder 'modules/databaseSeeder.bicep' = {
     name: '${prefix}-seeder'
     location: location
     environmentId: containerAppsEnv.outputs.environmentId
-    image: '${acr.outputs.loginServer}/databaseseeder:latest'
-    registryServer: acr.outputs.loginServer
-    registryUsername: acr.outputs.adminUsername
-    registryPassword: acr.outputs.adminPassword
+    image: 'ghcr.io/pathenk/risk-management-platform/databaseseeder:latest'
+    registryServer: !empty(ghcrToken) ? 'ghcr.io' : ''
+    registryUsername: !empty(ghcrToken) ? 'pathenk' : ''
+    registryPassword: ghcrToken
     customerConnectionString: 'Host=${postgres.outputs.fqdn};Database=customer-management;Username=${postgres.outputs.adminUsername};Password=${postgresAdminPassword};SSL Mode=Require'
     riskConnectionString: 'Host=${postgres.outputs.fqdn};Database=risk-management;Username=${postgres.outputs.adminUsername};Password=${postgresAdminPassword};SSL Mode=Require'
   }
@@ -99,10 +110,10 @@ module app 'modules/containerApp.bicep' = {
     name: '${prefix}-app'
     location: location
     environmentId: containerAppsEnv.outputs.environmentId
-    image: '${acr.outputs.loginServer}/risk-management-app:latest'
-    registryServer: acr.outputs.loginServer
-    registryUsername: acr.outputs.adminUsername
-    registryPassword: acr.outputs.adminPassword
+    image: 'ghcr.io/pathenk/risk-management-platform/risk-management-app:latest'
+    registryServer: !empty(ghcrToken) ? 'ghcr.io' : ''
+    registryUsername: !empty(ghcrToken) ? 'pathenk' : ''
+    registryPassword: ghcrToken
     ingressPort: 3000
     ingressExternal: true
     minReplicas: 0
@@ -137,10 +148,10 @@ module customerApi 'modules/containerApp.bicep' = {
     name: '${prefix}-customer-api'
     location: location
     environmentId: containerAppsEnv.outputs.environmentId
-    image: '${acr.outputs.loginServer}/customermanagement-api:latest'
-    registryServer: acr.outputs.loginServer
-    registryUsername: acr.outputs.adminUsername
-    registryPassword: acr.outputs.adminPassword
+    image: 'ghcr.io/pathenk/risk-management-platform/customermanagement-api:latest'
+    registryServer: !empty(ghcrToken) ? 'ghcr.io' : ''
+    registryUsername: !empty(ghcrToken) ? 'pathenk' : ''
+    registryPassword: ghcrToken
     ingressPort: 8080
     ingressExternal: true
     minReplicas: 0
@@ -164,10 +175,10 @@ module riskApi 'modules/containerApp.bicep' = {
     name: '${prefix}-risk-api'
     location: location
     environmentId: containerAppsEnv.outputs.environmentId
-    image: '${acr.outputs.loginServer}/riskmanagement-api:latest'
-    registryServer: acr.outputs.loginServer
-    registryUsername: acr.outputs.adminUsername
-    registryPassword: acr.outputs.adminPassword
+    image: 'ghcr.io/pathenk/risk-management-platform/riskmanagement-api:latest'
+    registryServer: !empty(ghcrToken) ? 'ghcr.io' : ''
+    registryUsername: !empty(ghcrToken) ? 'pathenk' : ''
+    registryPassword: ghcrToken
     ingressPort: 8080
     ingressExternal: true
     minReplicas: 0
