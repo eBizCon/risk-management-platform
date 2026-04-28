@@ -65,8 +65,9 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Update Container Apps
+        env:
+          IMAGE_TAG: ${{ inputs.image_tag }}
         run: |
-          IMAGE_TAG="${{ inputs.image_tag }}"
           az containerapp update \
             --name riskmgmt-dev-app \
             --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
