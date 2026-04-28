@@ -5,6 +5,13 @@
 cd ~/repos/risk-management-platform && git pull && git submodule update --init --recursive
 ```
 
+
+## Install Dependenciees
+```bash
+1. curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash 2>&1
+2. az config set extension.dynamic_install_allow_preview=true
+3. az extension add --name log-analytics
+```
 ## Update Dependencies
 ```bash
 1. cd ~/repos/risk-management-platform/src/frontend && npm install
