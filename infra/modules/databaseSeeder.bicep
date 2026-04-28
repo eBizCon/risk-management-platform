@@ -49,13 +49,13 @@ resource containerAppJob 'Microsoft.App/jobs@2023-05-01' = {
           value: riskConnectionString
         }
       ]
-      registries: [
+      registries: !empty(registryServer) ? [
         {
           server: registryServer
           username: registryUsername
           passwordSecretRef: 'registry-password'
         }
-      ]
+      ] : []
       replicaTimeout: 600
       replicaRetryLimit: 2
       triggerType: 'Manual'

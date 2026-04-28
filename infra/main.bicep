@@ -40,12 +40,6 @@ module acr 'modules/containerRegistry.bicep' = {
   }
 }
 
-// Determine if we use ACR or GHCR
-var useACR = !empty(acr.outputs.loginServer) && empty(ghcrToken)
-var registryServer = useACR ? acr.outputs.loginServer : 'ghcr.io'
-var registryUsername = useACR ? acr.outputs.adminUsername : ''
-var registryPassword = useACR ? acr.outputs.adminPassword : ghcrToken
-
 module postgres 'modules/postgresql.bicep' = {
   name: 'postgresql'
   params: {
@@ -91,9 +85,9 @@ module databaseSeeder 'modules/databaseSeeder.bicep' = {
     name: '${prefix}-seeder'
     location: location
     environmentId: containerAppsEnv.outputs.environmentId
-    image: 'ghcr.io/pathenk/risk-management-platform/databaseseeder:latest'
+    image: 'ghcr.io/ebizcon/risk-management-platform/databaseseeder:latest'
     registryServer: !empty(ghcrToken) ? 'ghcr.io' : ''
-    registryUsername: !empty(ghcrToken) ? 'pathenk' : ''
+    registryUsername: !empty(ghcrToken) ? 'ebizcon' : ''
     registryPassword: ghcrToken
     customerConnectionString: 'Host=${postgres.outputs.fqdn};Database=customer-management;Username=${postgres.outputs.adminUsername};Password=${postgresAdminPassword};SSL Mode=Require'
     riskConnectionString: 'Host=${postgres.outputs.fqdn};Database=risk-management;Username=${postgres.outputs.adminUsername};Password=${postgresAdminPassword};SSL Mode=Require'
@@ -109,9 +103,9 @@ module app 'modules/containerApp.bicep' = {
     name: '${prefix}-app'
     location: location
     environmentId: containerAppsEnv.outputs.environmentId
-    image: 'ghcr.io/pathenk/risk-management-platform/risk-management-app:latest'
+    image: 'ghcr.io/ebizcon/risk-management-platform/risk-management-app:latest'
     registryServer: !empty(ghcrToken) ? 'ghcr.io' : ''
-    registryUsername: !empty(ghcrToken) ? 'pathenk' : ''
+    registryUsername: !empty(ghcrToken) ? 'ebizcon' : ''
     registryPassword: ghcrToken
     ingressPort: 3000
     ingressExternal: true
@@ -147,9 +141,9 @@ module customerApi 'modules/containerApp.bicep' = {
     name: '${prefix}-customer-api'
     location: location
     environmentId: containerAppsEnv.outputs.environmentId
-    image: 'ghcr.io/pathenk/risk-management-platform/customermanagement-api:latest'
+    image: 'ghcr.io/ebizcon/risk-management-platform/customermanagement-api:latest'
     registryServer: !empty(ghcrToken) ? 'ghcr.io' : ''
-    registryUsername: !empty(ghcrToken) ? 'pathenk' : ''
+    registryUsername: !empty(ghcrToken) ? 'ebizcon' : ''
     registryPassword: ghcrToken
     ingressPort: 8080
     ingressExternal: true
@@ -174,9 +168,9 @@ module riskApi 'modules/containerApp.bicep' = {
     name: '${prefix}-risk-api'
     location: location
     environmentId: containerAppsEnv.outputs.environmentId
-    image: 'ghcr.io/pathenk/risk-management-platform/riskmanagement-api:latest'
+    image: 'ghcr.io/ebizcon/risk-management-platform/riskmanagement-api:latest'
     registryServer: !empty(ghcrToken) ? 'ghcr.io' : ''
-    registryUsername: !empty(ghcrToken) ? 'pathenk' : ''
+    registryUsername: !empty(ghcrToken) ? 'ebizcon' : ''
     registryPassword: ghcrToken
     ingressPort: 8080
     ingressExternal: true
