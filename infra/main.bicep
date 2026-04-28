@@ -75,7 +75,7 @@ module keycloak 'modules/keycloak.bicep' = {
     postgresUsername: postgres.outputs.adminUsername
     postgresPassword: postgresAdminPassword
     keycloakAdminPassword: keycloakAdminPassword
-    realmImportJson: loadFileAsBase64('../dev/keycloak/import/risk-management-realm.json')
+    realmImportJson: loadTextContent('../dev/keycloak/import/risk-management-realm.json')
   }
 }
 
