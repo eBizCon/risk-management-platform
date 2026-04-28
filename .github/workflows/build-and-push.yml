@@ -5,10 +5,10 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  BACKEND_IMAGE_NAME_RISK: ${{ toLower(github.repository_owner) }}/riskmanagement-api
-  BACKEND_IMAGE_NAME_CUSTOMER: ${{ toLower(github.repository_owner) }}/customermanagement-api
-  BACKEND_IMAGE_NAME_SEEDER: ${{ toLower(github.repository_owner) }}/databaseseeder
-  FRONTEND_IMAGE_NAME: ${{ toLower(github.repository_owner) }}/risk-management-app
+  BACKEND_IMAGE_NAME_RISK: ${{ format('{0}/riskmanagement-api', toLower(github.repository_owner)) }}
+  BACKEND_IMAGE_NAME_CUSTOMER: ${{ format('{0}/customermanagement-api', toLower(github.repository_owner)) }}
+  BACKEND_IMAGE_NAME_SEEDER: ${{ format('{0}/databaseseeder', toLower(github.repository_owner)) }}
+  FRONTEND_IMAGE_NAME: ${{ format('{0}/risk-management-app', toLower(github.repository_owner)) }}
 
 jobs:
   build-and-push-risk-api:
