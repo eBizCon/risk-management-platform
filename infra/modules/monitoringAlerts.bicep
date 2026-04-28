@@ -38,8 +38,8 @@ resource appInsightsExceptionAlert 'Microsoft.Insights/scheduledQueryRules@2023-
     scopes: [
       logAnalyticsWorkspaceId
     ]
-    evaluationFrequency: 'PT5M'
-    windowSize: 'PT5M'
+    evaluationFrequency: 'PT1M'
+    windowSize: 'PT1M'
     autoMitigate: true
     criteria: {
       allOf: [

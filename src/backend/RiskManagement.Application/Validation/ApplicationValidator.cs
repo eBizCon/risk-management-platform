@@ -19,7 +19,7 @@ public class ApplicationValidator : AbstractValidator<ApplicationCreateDto>
             .LessThanOrEqualTo(10000000).WithMessage("Fixkosten scheinen unrealistisch hoch");
 
         RuleFor(x => x.DesiredRate)
-            .GreaterThan(0).WithMessage("Gewünschte Rate muss positiv sein")
+            .GreaterThanOrEqualTo(0).WithMessage("Gewünschte Rate darf nicht negativ sein")
             .LessThanOrEqualTo(1000000).WithMessage("Gewünschte Rate scheint unrealistisch hoch");
 
         RuleFor(x => x.FixedCosts)
@@ -49,7 +49,7 @@ public class ApplicationUpdateValidator : AbstractValidator<ApplicationUpdateDto
             .LessThanOrEqualTo(10000000).WithMessage("Fixkosten scheinen unrealistisch hoch");
 
         RuleFor(x => x.DesiredRate)
-            .GreaterThan(0).WithMessage("Gewünschte Rate muss positiv sein")
+            .GreaterThanOrEqualTo(0).WithMessage("Gewünschte Rate darf nicht negativ sein")
             .LessThanOrEqualTo(1000000).WithMessage("Gewünschte Rate scheint unrealistisch hoch");
 
         RuleFor(x => x.FixedCosts)
