@@ -109,6 +109,7 @@ module rabbitmq 'modules/containerApp.bicep' = {
     environmentId: containerAppsEnv.outputs.environmentId
     image: 'rabbitmq:4-management'
     ingressPort: 5672
+    exposedPort: 5672
     ingressExternal: false
     ingressTransport: 'tcp'
     minReplicas: 1

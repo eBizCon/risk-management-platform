@@ -41,6 +41,9 @@ param command array = []
 @description('Ingress transport protocol (auto, http, http2, tcp)')
 param ingressTransport string = 'auto'
 
+@description('Exposed port for TCP ingress (required when transport is tcp)')
+param exposedPort int = 0
+
 @description('CPU cores for the container')
 param cpu string = '0.5'
 
@@ -53,12 +56,12 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
   properties: {
     managedEnvironmentId: environmentId
     configuration: {
-      ingress: {
+      ingress: union({
         external: ingressExternal
         targetPort: ingressPort
         transport: ingressTransport
         allowInsecure: false
-      }
+      }, exposedPort > 0 ? { exposedPort: exposedPort } : {})
       registries: !empty(registryServer) ? [
         {
           server: registryServer
