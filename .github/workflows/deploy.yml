@@ -5,7 +5,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_PREFIX: ${{ toLower(github.repository_owner) }}/risk-management-platform
+  IMAGE_PREFIX: ebizcon/risk-management-platform
 
 jobs:
   build-and-push:
