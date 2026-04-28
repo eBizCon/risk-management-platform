@@ -28,6 +28,10 @@ param serviceApiKey string
 @description('RabbitMQ password')
 param rabbitmqPassword string
 
+@secure()
+@description('GitHub Container Registry token (optional, for private images)')
+param ghcrToken string = ''
+
 var prefix = 'riskmgmt-${environmentName}'
 var acrName = replace('riskmgmt${environmentName}acr', '-', '')
 
@@ -39,6 +43,13 @@ module acr 'modules/containerRegistry.bicep' = {
     location: location
   }
 }
+
+// Determine if we use ACR or GHCR
+var useACR = !empty(acr.outputs.loginServer) && empty(ghcrToken)
+var registryServer = useACR ? acr.outputs.loginServer : 'ghcr.io'
+var registryUsername = useACR ? acr.outputs.adminUsername : ''
+var registryPassword = useACR ? acr.outputs.adminPassword : ghcrToken
+var imagePrefix = useACR ? acr.outputs.loginServer : 'ghcr.io/ebizcon/risk-management-platform'
 
 // --- PostgreSQL ---
 module postgres 'modules/postgresql.bicep' = {
@@ -118,10 +129,10 @@ module riskApi 'modules/containerApp.bicep' = {
     name: '${prefix}-risk-api'
     location: location
     environmentId: containerAppsEnv.outputs.environmentId
-    image: '${acr.outputs.loginServer}/riskmanagement-api:latest'
-    registryServer: acr.outputs.loginServer
-    registryUsername: acr.outputs.adminUsername
-    registryPassword: acr.outputs.adminPassword
+    image: '${imagePrefix}/riskmanagement-api:latest'
+    registryServer: registryServer
+    registryUsername: registryUsername
+    registryPassword: registryPassword
     ingressPort: 8080
     ingressExternal: false
     minReplicas: 0
@@ -147,10 +158,10 @@ module customerApi 'modules/containerApp.bicep' = {
     name: '${prefix}-customer-api'
     location: location
     environmentId: containerAppsEnv.outputs.environmentId
-    image: '${acr.outputs.loginServer}/customermanagement-api:latest'
-    registryServer: acr.outputs.loginServer
-    registryUsername: acr.outputs.adminUsername
-    registryPassword: acr.outputs.adminPassword
+    image: '${imagePrefix}/customermanagement-api:latest'
+    registryServer: registryServer
+    registryUsername: registryUsername
+    registryPassword: registryPassword
     ingressPort: 8080
     ingressExternal: false
     minReplicas: 0
@@ -176,10 +187,10 @@ module frontend 'modules/containerApp.bicep' = {
     name: '${prefix}-frontend'
     location: location
     environmentId: containerAppsEnv.outputs.environmentId
-    image: '${acr.outputs.loginServer}/risk-management-app:latest'
-    registryServer: acr.outputs.loginServer
-    registryUsername: acr.outputs.adminUsername
-    registryPassword: acr.outputs.adminPassword
+    image: '${imagePrefix}/risk-management-app:latest'
+    registryServer: registryServer
+    registryUsername: registryUsername
+    registryPassword: registryPassword
     ingressPort: 3000
     ingressExternal: true
     minReplicas: 0
