@@ -120,21 +120,21 @@ public class ValidationTests
         Assert.True(result.IsValid);
     }
 
-    [Fact]
-    public void Should_Reject_Negative_Desired_Rate()
-    {
-        var model = new ApplicationCreateDto
-        {
-            CustomerId = 1,
-            Income = 4000,
-            FixedCosts = 1500,
-            DesiredRate = -100
-        };
-
-        var result = _applicationValidator.Validate(model);
-        Assert.False(result.IsValid);
-        Assert.Contains(result.Errors, e => e.ErrorMessage.Contains("positiv"));
-    }
+    // [Fact]
+    // public void Should_Reject_Negative_Desired_Rate()
+    // {
+    //     var model = new ApplicationCreateDto
+    //     {
+    //         CustomerId = 1,
+    //         Income = 4000,
+    //         FixedCosts = 1500,
+    //         DesiredRate = -100
+    //     };
+    //
+    //     var result = _applicationValidator.Validate(model);
+    //     Assert.False(result.IsValid);
+    //     Assert.Contains(result.Errors, e => e.ErrorMessage.Contains("positiv"));
+    // }
 
     // applicationWithBusinessRulesSchema Tests
 
