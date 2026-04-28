@@ -37,19 +37,23 @@ var acrName = replace('riskmgmt${environmentName}acr', '-', '')
 // Compute the deployed app FQDN for Keycloak redirect URI configuration
 var appFqdn = '${prefix}-app.${containerAppsEnv.outputs.defaultDomain}'
 
-// Inject deployed app URL into realm JSON so Keycloak accepts redirects from the deployed frontend
+// Inject deployed app URL and effective client secret into realm JSON
 var rawRealmJson = loadTextContent('../dev/keycloak/import/risk-management-realm.json')
 var deployedRealmJson = replace(
   replace(
-    replace(rawRealmJson,
-      '"http://localhost:5173/*", "http://localhost:5227/*"',
-      '"http://localhost:5173/*", "http://localhost:5227/*", "https://${appFqdn}/*"'
+    replace(
+      replace(rawRealmJson,
+        '"http://localhost:5173/*", "http://localhost:5227/*"',
+        '"http://localhost:5173/*", "http://localhost:5227/*", "https://${appFqdn}/*"'
+      ),
+      '"http://localhost:5173", "http://localhost:5227"',
+      '"http://localhost:5173", "http://localhost:5227", "https://${appFqdn}"'
     ),
-    '"http://localhost:5173", "http://localhost:5227"',
-    '"http://localhost:5173", "http://localhost:5227", "https://${appFqdn}"'
+    '"http://localhost:5173/*##http://localhost:5227/*"',
+    '"http://localhost:5173/*##http://localhost:5227/*##https://${appFqdn}/*"'
   ),
-  '"http://localhost:5173/*##http://localhost:5227/*"',
-  '"http://localhost:5173/*##http://localhost:5227/*##https://${appFqdn}/*"'
+  '"secret": "dev-client-secret"',
+  '"secret": "${effectiveOidcClientSecret}"'
 )
 
 // Fallback to dev-client-secret from realm JSON when OIDC_CLIENT_SECRET is not provided
