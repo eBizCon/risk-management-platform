@@ -1,12 +1,17 @@
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+using DevinAlertBridge;
 
-var host = new HostBuilder()
-    .ConfigureFunctionsWorkerDefaults()
-    .ConfigureServices(services =>
-    {
-        services.AddHttpClient("DevinApiClient");
-    })
-    .Build();
+var builder = WebApplication.CreateBuilder(args);
 
-host.Run();
+builder.Services.AddHttpClient("DevinApiClient");
+builder.Services.AddSingleton<DevinSessionTrigger>();
+
+var app = builder.Build();
+
+app.MapGet("/healthz", () => Results.Ok("ok"));
+
+app.MapPost("/api/alerts/devin", async (HttpContext context, DevinSessionTrigger trigger, CancellationToken cancellationToken) =>
+{
+    return await trigger.HandleAsync(context, cancellationToken);
+});
+
+app.Run();

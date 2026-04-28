@@ -7,15 +7,9 @@ param location string
 @description('Log Analytics workspace resource ID used by Application Insights')
 param logAnalyticsWorkspaceId string
 
-@description('Resource ID of the Devin bridge Function App')
-param devinFunctionAppResourceId string
-
-@description('Function name inside the Devin bridge Function App')
-param devinFunctionName string = 'AlertToDevinSession'
-
 @secure()
-@description('HTTP trigger URL of the Devin bridge function')
-param devinFunctionTriggerUrl string
+@description('Webhook URL of the Devin bridge that starts a session')
+param devinSessionWebhookUrl string
 
 resource devinActionGroup 'Microsoft.Insights/actionGroups@2023-01-01' = {
   name: '${prefix}-devin-ag'
@@ -23,12 +17,10 @@ resource devinActionGroup 'Microsoft.Insights/actionGroups@2023-01-01' = {
   properties: {
     groupShortName: 'devinalert'
     enabled: true
-    azureFunctionReceivers: [
+    webhookReceivers: [
       {
-        name: 'devin-session-function'
-        functionAppResourceId: devinFunctionAppResourceId
-        functionName: devinFunctionName
-        httpTriggerUrl: devinFunctionTriggerUrl
+        name: 'devin-session-webhook'
+        serviceUri: devinSessionWebhookUrl
         useCommonAlertSchema: true
       }
     ]

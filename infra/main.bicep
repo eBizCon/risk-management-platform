@@ -99,19 +99,26 @@ module appInsights 'modules/applicationInsights.bicep' = {
   }
 }
 
-module devinAlertBridge 'modules/devinAlertBridgeFunction.bicep' = if (!empty(devinOrgId) && !empty(alertWebhookToken)) {
+module devinAlertBridge 'modules/containerApp.bicep' = if (!empty(devinOrgId) && !empty(alertWebhookToken)) {
   name: 'devin-alert-bridge'
   params: {
-    prefix: prefix
+    name: '${prefix}-devin-bridge'
     location: location
-    imageTag: imageTag
+    environmentId: containerAppsEnv.outputs.environmentId
+    image: 'ghcr.io/ebizcon/risk-management-platform/devin-alert-bridge:${imageTag}'
     registryServer: !empty(ghcrToken) ? 'ghcr.io' : ''
     registryUsername: !empty(ghcrToken) ? 'ebizcon' : ''
     registryPassword: ghcrToken
-    devinOrgId: devinOrgId
-    appInsightsConnectionString: appInsights.outputs.connectionString
-    devinApiKey: devinApiKey
-    alertWebhookToken: alertWebhookToken
+    ingressPort: 8080
+    ingressExternal: true
+    minReplicas: 0
+    maxReplicas: 1
+    envVars: [
+      { name: 'DEVIN_ORG_ID', value: devinOrgId }
+      { name: 'DEVIN_API_KEY', value: devinApiKey }
+      { name: 'ALERT_WEBHOOK_TOKEN', value: alertWebhookToken }
+      { name: 'APPLICATIONINSIGHTS_CONNECTION_STRING', value: appInsights.outputs.connectionString }
+    ]
   }
 }
 
@@ -121,8 +128,7 @@ module monitoringAlerts 'modules/monitoringAlerts.bicep' = if (!empty(devinOrgId
     prefix: prefix
     location: location
     logAnalyticsWorkspaceId: appInsights.outputs.logAnalyticsWorkspaceId
-    devinFunctionAppResourceId: resourceId('Microsoft.Web/sites', '${prefix}-devin-bridge')
-    devinFunctionTriggerUrl: 'https://${prefix}-devin-bridge.azurewebsites.net/api/alerts/devin?token=${alertWebhookToken}'
+    devinSessionWebhookUrl: 'https://${devinAlertBridge!.outputs.fqdn}/api/alerts/devin?token=${alertWebhookToken}'
   }
 }
 

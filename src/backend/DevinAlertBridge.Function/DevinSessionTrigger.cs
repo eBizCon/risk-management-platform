@@ -1,24 +1,22 @@
-using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using System.Web;
-using System.Collections.Generic;
-using Microsoft.Azure.Functions.Worker;
-using Microsoft.Azure.Functions.Worker.Http;
-using Microsoft.Extensions.Logging;
 
-namespace DevinAlertBridge.Function;
+namespace DevinAlertBridge;
 
-public sealed class AlertToDevinFunction(
-    IHttpClientFactory httpClientFactory,
-    ILogger<AlertToDevinFunction> logger)
+public sealed class DevinSessionTrigger
 {
-    [Function("AlertToDevinSession")]
-    public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "alerts/devin")] HttpRequestData request,
-        CancellationToken cancellationToken)
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly ILogger<DevinSessionTrigger> _logger;
+
+    public DevinSessionTrigger(IHttpClientFactory httpClientFactory, ILogger<DevinSessionTrigger> logger)
+    {
+        _httpClientFactory = httpClientFactory;
+        _logger = logger;
+    }
+
+    public async Task<IResult> HandleAsync(HttpContext context, CancellationToken cancellationToken)
     {
         var invocationId = Guid.NewGuid().ToString("N");
         var configuredToken = Environment.GetEnvironmentVariable("ALERT_WEBHOOK_TOKEN") ?? string.Empty;
@@ -28,37 +26,31 @@ public sealed class AlertToDevinFunction(
             ? string.Empty
             : $"https://api.devin.ai/v3/organizations/{devinOrgId}/sessions";
 
-        logger.LogInformation(
-            "[{InvocationId}] Incoming Azure Monitor alert request. Method={Method}, Url={Url}",
+        _logger.LogInformation(
+            "[{InvocationId}] Incoming Azure Monitor alert request. Method={Method}, Path={Path}",
             invocationId,
-            request.Method,
-            request.Url);
+            context.Request.Method,
+            context.Request.Path);
 
         if (string.IsNullOrWhiteSpace(configuredToken) || string.IsNullOrWhiteSpace(devinOrgId))
         {
-            var misconfiguredResponse = request.CreateResponse(HttpStatusCode.InternalServerError);
-            await misconfiguredResponse.WriteStringAsync("Function app is not configured.", cancellationToken);
-            return misconfiguredResponse;
+            return Results.Problem("Bridge is not configured.", statusCode: StatusCodes.Status500InternalServerError);
         }
 
-        var query = HttpUtility.ParseQueryString(request.Url.Query);
-        var providedToken = query.Get("token") ?? string.Empty;
+        var providedToken = context.Request.Query.TryGetValue("token", out var tokenValue) ? tokenValue.ToString() : string.Empty;
         if (!string.Equals(configuredToken, providedToken, StringComparison.Ordinal))
         {
-            var unauthorizedResponse = request.CreateResponse(HttpStatusCode.Unauthorized);
-            await unauthorizedResponse.WriteStringAsync("Unauthorized.", cancellationToken);
-            return unauthorizedResponse;
+            return Results.Unauthorized();
         }
 
-        var requestBody = await new StreamReader(request.Body).ReadToEndAsync(cancellationToken);
+        using var reader = new StreamReader(context.Request.Body);
+        var requestBody = await reader.ReadToEndAsync(cancellationToken);
         if (string.IsNullOrWhiteSpace(requestBody))
         {
-            var badRequestResponse = request.CreateResponse(HttpStatusCode.BadRequest);
-            await badRequestResponse.WriteStringAsync("Request body is required.", cancellationToken);
-            return badRequestResponse;
+            return Results.BadRequest("Request body is required.");
         }
 
-        logger.LogInformation(
+        _logger.LogInformation(
             "[{InvocationId}] Incoming alert payload (truncated): {IncomingPayload}",
             invocationId,
             Truncate(requestBody, 8000));
@@ -70,9 +62,7 @@ public sealed class AlertToDevinFunction(
         }
         catch (JsonException)
         {
-            var invalidJsonResponse = request.CreateResponse(HttpStatusCode.BadRequest);
-            await invalidJsonResponse.WriteStringAsync("Invalid JSON payload.", cancellationToken);
-            return invalidJsonResponse;
+            return Results.BadRequest("Invalid JSON payload.");
         }
 
         var essentials = alertPayload?["data"]?["essentials"];
@@ -82,7 +72,7 @@ public sealed class AlertToDevinFunction(
         var firedDateTime = essentials?["firedDateTime"]?.GetValue<string>() ?? "unknown";
         var alertId = essentials?["alertId"]?.GetValue<string>() ?? "unknown";
 
-        logger.LogInformation(
+        _logger.LogInformation(
             "[{InvocationId}] Alert essentials: AlertRule={AlertRule}, Severity={Severity}, MonitorCondition={MonitorCondition}, FiredDateTime={FiredDateTime}",
             invocationId,
             alertRule,
@@ -110,7 +100,7 @@ public sealed class AlertToDevinFunction(
 
         var devinPayload = JsonSerializer.Serialize(sessionRequestPayload);
 
-        logger.LogInformation(
+        _logger.LogInformation(
             "[{InvocationId}] Outgoing Devin request prepared. DevinApiUrl={DevinApiUrl}, HasAuthorizationHeader={HasAuthorizationHeader}, Payload={OutgoingPayload}",
             invocationId,
             devinApiUrl,
@@ -127,11 +117,11 @@ public sealed class AlertToDevinFunction(
             outboundRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", devinApiKey);
         }
 
-        var client = httpClientFactory.CreateClient("DevinApiClient");
+        var client = _httpClientFactory.CreateClient("DevinApiClient");
         using var outboundResponse = await client.SendAsync(outboundRequest, cancellationToken);
         var outboundResponseBody = await outboundResponse.Content.ReadAsStringAsync(cancellationToken);
 
-        logger.LogInformation(
+        _logger.LogInformation(
             "[{InvocationId}] Devin response received. StatusCode={StatusCode}, Body={ResponseBody}",
             invocationId,
             (int)outboundResponse.StatusCode,
@@ -139,15 +129,11 @@ public sealed class AlertToDevinFunction(
 
         if (!outboundResponse.IsSuccessStatusCode)
         {
-            logger.LogError("Devin API call failed with status code {StatusCode}", outboundResponse.StatusCode);
-            var failedResponse = request.CreateResponse(HttpStatusCode.BadGateway);
-            await failedResponse.WriteStringAsync("Failed to trigger Devin session.", cancellationToken);
-            return failedResponse;
+            _logger.LogError("[{InvocationId}] Devin API call failed with status code {StatusCode}", invocationId, outboundResponse.StatusCode);
+            return Results.Problem("Failed to trigger Devin session.", statusCode: StatusCodes.Status502BadGateway);
         }
 
-        var successResponse = request.CreateResponse(HttpStatusCode.Accepted);
-        await successResponse.WriteStringAsync("Devin session trigger accepted.", cancellationToken);
-        return successResponse;
+        return Results.Accepted(value: "Devin session trigger accepted.");
     }
 
     private static string Truncate(string value, int maxLength)
