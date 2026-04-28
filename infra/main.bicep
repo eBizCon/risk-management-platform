@@ -28,6 +28,9 @@ param rabbitmqPassword string
 @description('GitHub Container Registry token (optional, for private images)')
 param ghcrToken string = ''
 
+@description('Container image tag to deploy (e.g. latest, branch-name)')
+param imageTag string = 'latest'
+
 var prefix = 'riskmgmt-${environmentName}'
 var acrName = replace('riskmgmt${environmentName}acr', '-', '')
 
@@ -109,7 +112,7 @@ module databaseSeeder 'modules/databaseSeeder.bicep' = {
     name: '${prefix}-seeder'
     location: location
     environmentId: containerAppsEnv.outputs.environmentId
-    image: 'ghcr.io/ebizcon/risk-management-platform/databaseseeder:latest'
+    image: 'ghcr.io/ebizcon/risk-management-platform/databaseseeder:${imageTag}'
     registryServer: !empty(ghcrToken) ? 'ghcr.io' : ''
     registryUsername: !empty(ghcrToken) ? 'ebizcon' : ''
     registryPassword: ghcrToken
@@ -127,7 +130,7 @@ module app 'modules/containerApp.bicep' = {
     name: '${prefix}-app'
     location: location
     environmentId: containerAppsEnv.outputs.environmentId
-    image: 'ghcr.io/ebizcon/risk-management-platform/risk-management-app:latest'
+    image: 'ghcr.io/ebizcon/risk-management-platform/risk-management-app:${imageTag}'
     registryServer: !empty(ghcrToken) ? 'ghcr.io' : ''
     registryUsername: !empty(ghcrToken) ? 'ebizcon' : ''
     registryPassword: ghcrToken
@@ -169,7 +172,7 @@ module customerApi 'modules/containerApp.bicep' = {
     name: '${prefix}-customer-api'
     location: location
     environmentId: containerAppsEnv.outputs.environmentId
-    image: 'ghcr.io/ebizcon/risk-management-platform/customermanagement-api:latest'
+    image: 'ghcr.io/ebizcon/risk-management-platform/customermanagement-api:${imageTag}'
     registryServer: !empty(ghcrToken) ? 'ghcr.io' : ''
     registryUsername: !empty(ghcrToken) ? 'ebizcon' : ''
     registryPassword: ghcrToken
@@ -196,7 +199,7 @@ module riskApi 'modules/containerApp.bicep' = {
     name: '${prefix}-risk-api'
     location: location
     environmentId: containerAppsEnv.outputs.environmentId
-    image: 'ghcr.io/ebizcon/risk-management-platform/riskmanagement-api:latest'
+    image: 'ghcr.io/ebizcon/risk-management-platform/riskmanagement-api:${imageTag}'
     registryServer: !empty(ghcrToken) ? 'ghcr.io' : ''
     registryUsername: !empty(ghcrToken) ? 'ebizcon' : ''
     registryPassword: ghcrToken

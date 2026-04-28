@@ -12,17 +12,36 @@ on:
         type: boolean
         default: true
       image_tag:
-        description: 'Container image tag to deploy'
+        description: 'Container image tag override (leave empty for auto: latest on main, branch name on feature branches)'
         type: string
-        default: 'latest'
+        default: ''
 
 env:
   REGISTRY: ghcr.io
   IMAGE_PREFIX: ebizcon/risk-management-platform
 
 jobs:
+  resolve-tag:
+    runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.tag.outputs.tag }}
+    steps:
+      - name: Determine image tag
+        id: tag
+        run: |
+          INPUT_TAG="${{ inputs.image_tag }}"
+          if [ -n "$INPUT_TAG" ]; then
+            echo "tag=$INPUT_TAG" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.ref_name }}" = "main" ]; then
+            echo "tag=latest" >> "$GITHUB_OUTPUT"
+          else
+            BRANCH_TAG=$(echo "${{ github.ref_name }}" | sed 's/\//-/g')
+            echo "tag=$BRANCH_TAG" >> "$GITHUB_OUTPUT"
+          fi
+
   deploy-infra:
     if: ${{ inputs.deploy_infra }}
+    needs: [resolve-tag]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -41,6 +60,8 @@ jobs:
             --output none
 
       - name: Deploy Bicep
+        env:
+          IMAGE_TAG: ${{ needs.resolve-tag.outputs.image_tag }}
         run: |
           az deployment group create \
             --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
@@ -52,11 +73,12 @@ jobs:
             --parameters oidcClientSecret="${{ secrets.OIDC_CLIENT_SECRET }}" \
             --parameters serviceApiKey="${{ secrets.SERVICE_API_KEY }}" \
             --parameters rabbitmqPassword="${{ secrets.RABBITMQ_PASSWORD }}" \
-            --parameters ghcrToken="${{ secrets.GHCR_TOKEN }}"
+            --parameters ghcrToken="${{ secrets.GHCR_TOKEN }}" \
+            --parameters imageTag="${IMAGE_TAG}"
 
   deploy-apps:
     if: ${{ !failure() && !cancelled() && inputs.deploy_apps }}
-    needs: [deploy-infra]
+    needs: [resolve-tag, deploy-infra]
     runs-on: ubuntu-latest
     steps:
       - name: Azure Login
@@ -67,7 +89,7 @@ jobs:
 
       - name: Update Container Apps
         env:
-          IMAGE_TAG: ${{ inputs.image_tag }}
+          IMAGE_TAG: ${{ needs.resolve-tag.outputs.image_tag }}
         run: |
           az containerapp update \
             --name riskmgmt-dev-app \
