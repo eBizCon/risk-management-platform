@@ -33,7 +33,8 @@ Die Risk Management Platform besteht aus mehreren Bounded Contexts, die nach Dom
 │   (MassTransit + RabbitMQ)      │
 │                                 │
 │   Saga: ApplicationCreation     │
-│   Consumers: 3                  │
+│   Consumers: 8 (Saga)           │
+│   + 5 (Cross-BC sync)           │
 │                                 │
 └─────────────────────────────────┘
 
@@ -85,7 +86,6 @@ Der zentrale Bounded Context der Plattform. Verantwortet die Kreditantrags-Verwa
 | Service | Beschreibung |
 |---|---|
 | `ICustomerProfileService` | Anti-Corruption Layer zum CustomerManagement BC |
-| `ICustomerNameService` | Namensauflösung für Kunden-IDs |
 
 **Domain Events:**
 
@@ -100,9 +100,15 @@ Der zentrale Bounded Context der Plattform. Verantwortet die Kreditantrags-Verwa
 
 | Event | Beschreibung |
 |---|---|
-| `ApplicationCreationStarted` | Startet asynchrone Antragserstellung |
+| `ApplicationCreationStarted` | Startet Saga für neue Antragserstellung (OperationType=Create) |
+| `ApplicationUpdateStarted` | Startet Saga für Update/Submit bestehender Anträge (OperationType=Update) |
+| `FetchCustomerProfile` | Fordert Kundenprofil vom CustomerManagement BC an |
 | `CustomerProfileFetched` | Kundendaten abgerufen |
+| `PerformCreditCheck` | Fordert Bonitätsprüfung an |
 | `CreditCheckCompleted` | Bonitätsprüfung abgeschlossen |
+| `FinalizeApplication` | Finalisiert neuen Antrag (Create-Pfad) |
+| `FinalizeApplicationUpdate` | Aktualisiert bestehenden Antrag (Update-Pfad) |
+| `MarkApplicationFailed` | Markiert Antrag als fehlgeschlagen in der Domain |
 | `ApplicationCreationCompleted` | Antrag erfolgreich finalisiert |
 | `ApplicationCreationFailed` | Fehler bei der Antragserstellung |
 
@@ -157,13 +163,19 @@ Gemeinsam genutzte Bausteine, die in beiden Bounded Contexts verwendet werden.
 | `AggregateRoot<TId>` | Basisklasse für Aggregate Roots mit Domain Event Support |
 | `Entity<TId>` | Basisklasse für Entities |
 | `ValueObject` | Basisklasse für Value Objects (Equality by value) |
-| `IDispatcher` | CQRS Dispatcher (SendAsync, QueryAsync, PublishAsync) |
+| `IDispatcher` | CQRS Dispatcher (SendAsync, QueryAsync, PublishAsync, PublishDomainEventsAsync) |
+| `ICommand<T>` / `IQuery<T>` | Marker-Interfaces für Commands und Queries |
 | `ICommandHandler<TCommand, TResult>` | Command Handler Interface |
 | `IQueryHandler<TQuery, TResult>` | Query Handler Interface |
 | `IDomainEventHandler<TEvent>` | Domain Event Handler Interface |
-| `Result<T>` | Result Pattern für fehlerfreie Rückgabewerte |
+| `Result<T>` | Result Pattern (Success, Failure, NotFound, Forbidden, ValidationFailure) |
 | `EmailAddress` | Stark typisiertes Value Object |
 | `InternalAuthMiddleware` | API-Key-basierte Service-zu-Service-Authentifizierung |
+| `ApiKeyAuthMiddleware` | API-Key-Validierung für interne Endpoints |
+| `ExceptionHandlingMiddleware` | Globale Exception-Behandlung mit strukturierten Fehlerantworten |
+| `KeycloakRoleClaimsTransformer` | Transformiert Keycloak-OIDC-Rollen in ASP.NET Claims |
+| `DomainEventDispatchInterceptor` | EF Core Interceptor für automatisches Dispatchen von Domain Events bei SaveChanges |
+| `Customer*IntegrationEvent` | Integration Events (Created, Updated, Activated, Archived, Deleted) für Cross-BC-Sync |
 
 ---
 
@@ -175,7 +187,7 @@ Single-Page Application als BFF (Backend for Frontend) mit Server-Side Rendering
 |---|---|---|
 | Antragsteller | `/applications` | `applicant` |
 | Sachbearbeiter | `/processor` | `processor` |
-| Risikomanager | `/risk-manager` | `processor` |
+| Risikomanager | `/risk-manager/scoring-config` | `risk_manager` |
 | Kundenverwaltung | `/customers` | `applicant`, `processor` |
 | Authentifizierung | `/login`, `/auth` | alle |
 
@@ -204,15 +216,17 @@ Risk Management                          Customer Management
 
 - **Supplier:** Customer Management stellt einen internen API-Endpunkt bereit (`/api/internal/customers/{id}`)
 - **Customer:** Risk Management konsumiert diese API über `CustomerServiceClient`
-- **ACL:** `ICustomerProfileService` und `ICustomerNameService` übersetzen die externe Antwort in domänen-eigene Records (`CustomerProfile`, `CustomerAddress`)
+- **ACL:** `ICustomerProfileService` übersetzt die externe Antwort in domänen-eigene Records (`CustomerProfile`, `CustomerAddress`)
 - **Authentifizierung:** Service-zu-Service via `X-Api-Key` Header + `InternalAuthMiddleware`
 
 ### Customer Management → Risk Management
 
-**Beziehungstyp:** Indirekte Referenz
+**Beziehungstyp:** Indirekte Referenz + Event Publishing (Outbox Pattern)
 
 - Customer Management kennt die `APPLICATION_SERVICE_URL` des Risk Management API
-- Wird verwendet, um ggf. antragsrelevante Informationen zu prüfen
+- Wird verwendet, um ggf. antragsrelevante Informationen zu prüfen (z.B. vor Kundenlöschung via `IApplicationServiceClient`)
+- Customer Management publiziert **Integration Events** (`CustomerCreated`, `CustomerUpdated`, `CustomerActivated`, `CustomerArchived`, `CustomerDeleted`) über RabbitMQ
+- Verwendet das **Outbox Pattern** (`AddEntityFrameworkOutbox<CustomerDbContext>` + `UseBusOutbox()`), um sicherzustellen, dass Events nur bei erfolgreicher DB-Transaktion gesendet werden
 
 ### Shared Kernel ← beide Bounded Contexts
 
@@ -259,8 +273,9 @@ Risk Management
 │  ApplicationCreation│                     ▼
 │  StateMachine       │◄──── orchestriert Saga via RabbitMQ
 │                     │
-│  3 Consumers        │◄──── empfangen Commands von Saga
-│                     │
+│  8 Consumers        │◄──── empfangen Commands von Saga
+│  (inkl. Fault +     │
+│   MarkFailed)       │
 └─────────────────────┘
 ```
 
@@ -274,7 +289,7 @@ Risk Management
 
 - Beide APIs nutzen Keycloak als OIDC Identity Provider
 - JWT-Token-Validierung über `JwtBearer` Middleware
-- Rollen: `applicant`, `processor`
+- Rollen: `applicant`, `processor`, `risk_manager`
 - Frontend nutzt Authorization Code Flow mit PKCE
 
 ## Deployment-Topologie (Aspire)
@@ -315,7 +330,7 @@ Risk Management
 | Von | Nach | Muster | Transport |
 |---|---|---|---|
 | Risk Management | Customer Management | Customer/Supplier + ACL | HTTP (synchron) |
-| Customer Management | Risk Management | Indirekte Referenz | HTTP (synchron) |
+| Customer Management | Risk Management | Indirekte Referenz + Outbox Pattern | HTTP (synchron) + AMQP (Integration Events) |
 | Risk Management | SCHUFA | ACL (Port/Adapter) | In-Process (Mock) |
 | Risk Management | RabbitMQ | Saga Orchestration | AMQP (asynchron) |
 | Beide BCs | Shared Kernel | Shared Kernel | Projekt-Referenz |
