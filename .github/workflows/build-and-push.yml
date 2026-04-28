@@ -5,10 +5,10 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  BACKEND_IMAGE_NAME_RISK: ebizcon/riskmanagement-api
-  BACKEND_IMAGE_NAME_CUSTOMER: ebizcon/customermanagement-api
-  BACKEND_IMAGE_NAME_SEEDER: ebizcon/databaseseeder
-  FRONTEND_IMAGE_NAME: ebizcon/risk-management-app
+  BACKEND_IMAGE_NAME_RISK: ${{ github.repository }}/riskmanagement-api
+  BACKEND_IMAGE_NAME_CUSTOMER: ${{ github.repository }}/customermanagement-api
+  BACKEND_IMAGE_NAME_SEEDER: ${{ github.repository }}/databaseseeder
+  FRONTEND_IMAGE_NAME: ${{ github.repository }}/risk-management-app
 
 jobs:
   build-and-push-risk-api:

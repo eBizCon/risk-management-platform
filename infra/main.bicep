@@ -28,8 +28,39 @@ param rabbitmqPassword string
 @description('GitHub Container Registry token (optional, for private images)')
 param ghcrToken string = ''
 
+@description('Container image tag to deploy (e.g. latest, branch-name)')
+param imageTag string = 'latest'
+
 var prefix = 'riskmgmt-${environmentName}'
 var acrName = replace('riskmgmt${environmentName}acr', '-', '')
+
+// Compute the deployed app FQDN for Keycloak redirect URI configuration
+var appFqdn = '${prefix}-app.${containerAppsEnv.outputs.defaultDomain}'
+
+// Inject deployed app URL and effective client secret into realm JSON
+var rawRealmJson = loadTextContent('../dev/keycloak/import/risk-management-realm.json')
+var deployedRealmJson = replace(
+  replace(
+    replace(
+      replace(rawRealmJson,
+        '"http://localhost:5173/*", "http://localhost:5227/*"',
+        '"http://localhost:5173/*", "http://localhost:5227/*", "https://${appFqdn}/*"'
+      ),
+      '"http://localhost:5173", "http://localhost:5227"',
+      '"http://localhost:5173", "http://localhost:5227", "https://${appFqdn}"'
+    ),
+    '"http://localhost:5173/*##http://localhost:5227/*"',
+    '"http://localhost:5173/*##http://localhost:5227/*##https://${appFqdn}/*"'
+  ),
+  '"secret": "dev-client-secret"',
+  '"secret": "${effectiveOidcClientSecret}"'
+)
+
+// Fallback to dev-client-secret from realm JSON when OIDC_CLIENT_SECRET is not provided
+var effectiveOidcClientSecret = !empty(oidcClientSecret) ? oidcClientSecret : 'dev-client-secret'
+
+// Deterministic session secret derived from resource group (stable across redeployments)
+var generatedSessionSecret = '${uniqueString(resourceGroup().id, 'session-secret')}-${uniqueString(resourceGroup().id, prefix)}-secret-key!!'
 
 // ACR is optional - can use GHCR instead
 module acr 'modules/containerRegistry.bicep' = {
@@ -39,12 +70,6 @@ module acr 'modules/containerRegistry.bicep' = {
     location: location
   }
 }
-
-// Determine if we use ACR or GHCR
-var useACR = !empty(acr.outputs.loginServer) && empty(ghcrToken)
-var registryServer = useACR ? acr.outputs.loginServer : 'ghcr.io'
-var registryUsername = useACR ? acr.outputs.adminUsername : ''
-var registryPassword = useACR ? acr.outputs.adminPassword : ghcrToken
 
 module postgres 'modules/postgresql.bicep' = {
   name: 'postgresql'
@@ -81,7 +106,7 @@ module keycloak 'modules/keycloak.bicep' = {
     postgresUsername: postgres.outputs.adminUsername
     postgresPassword: postgresAdminPassword
     keycloakAdminPassword: keycloakAdminPassword
-    realmImportJson: loadFileAsBase64('../dev/keycloak/import/risk-management-realm.json')
+    realmImportJson: deployedRealmJson
   }
 }
 
@@ -91,9 +116,9 @@ module databaseSeeder 'modules/databaseSeeder.bicep' = {
     name: '${prefix}-seeder'
     location: location
     environmentId: containerAppsEnv.outputs.environmentId
-    image: 'ghcr.io/pathenk/risk-management-platform/databaseseeder:latest'
+    image: 'ghcr.io/ebizcon/risk-management-platform/databaseseeder:${imageTag}'
     registryServer: !empty(ghcrToken) ? 'ghcr.io' : ''
-    registryUsername: !empty(ghcrToken) ? 'pathenk' : ''
+    registryUsername: !empty(ghcrToken) ? 'ebizcon' : ''
     registryPassword: ghcrToken
     customerConnectionString: 'Host=${postgres.outputs.fqdn};Database=customer-management;Username=${postgres.outputs.adminUsername};Password=${postgresAdminPassword};SSL Mode=Require'
     riskConnectionString: 'Host=${postgres.outputs.fqdn};Database=risk-management;Username=${postgres.outputs.adminUsername};Password=${postgresAdminPassword};SSL Mode=Require'
@@ -109,9 +134,9 @@ module app 'modules/containerApp.bicep' = {
     name: '${prefix}-app'
     location: location
     environmentId: containerAppsEnv.outputs.environmentId
-    image: 'ghcr.io/pathenk/risk-management-platform/risk-management-app:latest'
+    image: 'ghcr.io/ebizcon/risk-management-platform/risk-management-app:${imageTag}'
     registryServer: !empty(ghcrToken) ? 'ghcr.io' : ''
-    registryUsername: !empty(ghcrToken) ? 'pathenk' : ''
+    registryUsername: !empty(ghcrToken) ? 'ebizcon' : ''
     registryPassword: ghcrToken
     ingressPort: 3000
     ingressExternal: true
@@ -119,13 +144,17 @@ module app 'modules/containerApp.bicep' = {
     maxReplicas: 5
     envVars: [
       { name: 'DATABASE_URL', value: 'postgresql://${postgres.outputs.adminUsername}:${postgresAdminPassword}@${postgres.outputs.fqdn}:5432/risk_management?sslmode=require' }
+      { name: 'SESSION_SECRET', value: generatedSessionSecret }
       { name: 'OIDC_ISSUER', value: 'https://${keycloak.outputs.fqdn}/realms/risk-management' }
-      { name: 'OIDC_CLIENT_ID', value: 'risk-management-app' }
-      { name: 'OIDC_CLIENT_SECRET', value: oidcClientSecret }
-      { name: 'OIDC_REDIRECT_URI', value: 'https://${prefix}-app.${containerAppsEnv.outputs.defaultDomain}/auth/callback' }
-      { name: 'OIDC_POST_LOGOUT_REDIRECT_URI', value: 'https://${prefix}-app.${containerAppsEnv.outputs.defaultDomain}' }
+      { name: 'OIDC_CLIENT_ID', value: 'risk-management-platform' }
+      { name: 'OIDC_CLIENT_SECRET', value: effectiveOidcClientSecret }
+      { name: 'OIDC_REDIRECT_URI', value: 'https://${appFqdn}/auth/callback' }
+      { name: 'OIDC_POST_LOGOUT_REDIRECT_URI', value: 'https://${appFqdn}' }
       { name: 'OIDC_SCOPE', value: 'openid profile email' }
-      { name: 'OIDC_ROLES_CLAIM_PATH', value: 'resource_access.risk-management-app.roles' }
+      { name: 'OIDC_ROLES_CLAIM_PATH', value: 'realm_access.roles' }
+      { name: 'RISK_MANAGEMENT_API_URL', value: 'https://${prefix}-risk-api.${containerAppsEnv.outputs.defaultDomain}' }
+      { name: 'CUSTOMER_SERVICE_URL', value: 'https://${prefix}-customer-api.${containerAppsEnv.outputs.defaultDomain}' }
+      { name: 'SERVICE_API_KEY', value: serviceApiKey }
       { name: 'PORT', value: '3000' }
     ]
   }
@@ -147,9 +176,9 @@ module customerApi 'modules/containerApp.bicep' = {
     name: '${prefix}-customer-api'
     location: location
     environmentId: containerAppsEnv.outputs.environmentId
-    image: 'ghcr.io/pathenk/risk-management-platform/customermanagement-api:latest'
+    image: 'ghcr.io/ebizcon/risk-management-platform/customermanagement-api:${imageTag}'
     registryServer: !empty(ghcrToken) ? 'ghcr.io' : ''
-    registryUsername: !empty(ghcrToken) ? 'pathenk' : ''
+    registryUsername: !empty(ghcrToken) ? 'ebizcon' : ''
     registryPassword: ghcrToken
     ingressPort: 8080
     ingressExternal: true
@@ -157,12 +186,12 @@ module customerApi 'modules/containerApp.bicep' = {
     maxReplicas: 5
     envVars: [
       { name: 'ConnectionStrings__DefaultConnection', value: 'Host=${postgres.outputs.fqdn};Database=customer-management;Username=${postgres.outputs.adminUsername};Password=${postgresAdminPassword};SSL Mode=Require' }
-      { name: 'ConnectionStrings__messaging', value: 'amqp://risk:${rabbitmqPassword}@${rabbitmq.outputs.fqdn}:5672' }
-      { name: 'RabbitMQ__ConnectionString', value: 'amqp://risk:${rabbitmqPassword}@${rabbitmq.outputs.fqdn}:5672' }
+      { name: 'ConnectionStrings__messaging', value: 'amqp://risk:${rabbitmqPassword}@${rabbitmq.outputs.internalName}:5672' }
+      { name: 'RabbitMQ__ConnectionString', value: 'amqp://risk:${rabbitmqPassword}@${rabbitmq.outputs.internalName}:5672' }
       { name: 'APPLICATION_SERVICE_URL', value: 'https://${prefix}-risk-api.${containerAppsEnv.outputs.defaultDomain}' }
       { name: 'SERVICE_API_KEY', value: serviceApiKey }
       { name: 'OIDC_ISSUER', value: 'https://${keycloak.outputs.fqdn}/realms/risk-management' }
-      { name: 'OIDC_ROLES_CLAIM_PATH', value: 'resource_access.risk-management-app.roles' }
+      { name: 'OIDC_ROLES_CLAIM_PATH', value: 'realm_access.roles' }
       { name: 'APPLICATIONINSIGHTS_CONNECTION_STRING', value: appInsights.outputs.connectionString }
     ]
   }
@@ -174,9 +203,9 @@ module riskApi 'modules/containerApp.bicep' = {
     name: '${prefix}-risk-api'
     location: location
     environmentId: containerAppsEnv.outputs.environmentId
-    image: 'ghcr.io/pathenk/risk-management-platform/riskmanagement-api:latest'
+    image: 'ghcr.io/ebizcon/risk-management-platform/riskmanagement-api:${imageTag}'
     registryServer: !empty(ghcrToken) ? 'ghcr.io' : ''
-    registryUsername: !empty(ghcrToken) ? 'pathenk' : ''
+    registryUsername: !empty(ghcrToken) ? 'ebizcon' : ''
     registryPassword: ghcrToken
     ingressPort: 8080
     ingressExternal: true
@@ -184,12 +213,12 @@ module riskApi 'modules/containerApp.bicep' = {
     maxReplicas: 5
     envVars: [
       { name: 'ConnectionStrings__DefaultConnection', value: 'Host=${postgres.outputs.fqdn};Database=risk-management;Username=${postgres.outputs.adminUsername};Password=${postgresAdminPassword};SSL Mode=Require' }
-      { name: 'ConnectionStrings__messaging', value: 'amqp://risk:${rabbitmqPassword}@${rabbitmq.outputs.fqdn}:5672' }
-      { name: 'RabbitMQ__ConnectionString', value: 'amqp://risk:${rabbitmqPassword}@${rabbitmq.outputs.fqdn}:5672' }
+      { name: 'ConnectionStrings__messaging', value: 'amqp://risk:${rabbitmqPassword}@${rabbitmq.outputs.internalName}:5672' }
+      { name: 'RabbitMQ__ConnectionString', value: 'amqp://risk:${rabbitmqPassword}@${rabbitmq.outputs.internalName}:5672' }
       { name: 'CUSTOMER_SERVICE_URL', value: 'https://${prefix}-customer-api.${containerAppsEnv.outputs.defaultDomain}' }
       { name: 'SERVICE_API_KEY', value: serviceApiKey }
       { name: 'OIDC_ISSUER', value: 'https://${keycloak.outputs.fqdn}/realms/risk-management' }
-      { name: 'OIDC_ROLES_CLAIM_PATH', value: 'resource_access.risk-management-app.roles' }
+      { name: 'OIDC_ROLES_CLAIM_PATH', value: 'realm_access.roles' }
       { name: 'APPLICATIONINSIGHTS_CONNECTION_STRING', value: appInsights.outputs.connectionString }
     ]
   }

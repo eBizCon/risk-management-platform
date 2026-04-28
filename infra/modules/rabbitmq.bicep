@@ -13,7 +13,7 @@ param adminPassword string
 
 var rabbitmqUsername = 'risk'
 
-resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
+resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
   name: name
   location: location
   properties: {
@@ -24,6 +24,12 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
         targetPort: 15672
         transport: 'auto'
         allowInsecure: false
+        additionalPortMappings: [
+          {
+            external: false
+            targetPort: 5672
+          }
+        ]
       }
       secrets: [
         {
@@ -36,11 +42,10 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
       containers: [
         {
           name: name
-          image: 'docker.io/bitnami/rabbitmq:4.0'
+          image: 'docker.io/rabbitmq:4-management'
           env: [
-            { name: 'RABBITMQ_USERNAME', value: rabbitmqUsername }
-            { name: 'RABBITMQ_PASSWORD', secretRef: 'rabbitmq-password' }
-            { name: 'RABBITMQ_MANAGEMENT_ALLOW_WEB_ACCESS', value: 'yes' }
+            { name: 'RABBITMQ_DEFAULT_USER', value: rabbitmqUsername }
+            { name: 'RABBITMQ_DEFAULT_PASS', secretRef: 'rabbitmq-password' }
           ]
           resources: {
             cpu: json('0.5')
@@ -57,5 +62,5 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
 }
 
 output fqdn string = containerApp.properties.configuration.ingress.fqdn
-output amqpConnectionString string = 'amqp://${rabbitmqUsername}:${adminPassword}@${name}:${uniqueString(resourceGroup().id)}.internal:5672'
+output internalName string = name
 output username string = rabbitmqUsername
