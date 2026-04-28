@@ -21,7 +21,7 @@ param postgresPassword string
 @description('Keycloak administrator password')
 param keycloakAdminPassword string
 
-@description('Keycloak realm import JSON (base64 encoded)')
+@description('Keycloak realm import JSON content')
 param realmImportJson string = ''
 
 var keycloakAdmin = 'admin'
@@ -77,6 +77,7 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
             { name: 'KC_HTTP_ENABLED', value: 'true' }
             { name: 'KEYCLOAK_ADMIN', value: keycloakAdmin }
             { name: 'KEYCLOAK_ADMIN_PASSWORD', secretRef: 'keycloak-admin-password' }
+            { name: 'REALM_CONFIG_HASH', value: uniqueString(realmImportJson) }
           ]
           resources: {
             cpu: json('0.5')
