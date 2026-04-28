@@ -121,7 +121,8 @@ module monitoringAlerts 'modules/monitoringAlerts.bicep' = if (!empty(devinOrgId
     prefix: prefix
     location: location
     logAnalyticsWorkspaceId: appInsights.outputs.logAnalyticsWorkspaceId
-    devinSessionWebhookUrl: 'https://${prefix}-devin-bridge.azurewebsites.net/api/alerts/devin?token=${alertWebhookToken}'
+    devinFunctionAppResourceId: resourceId('Microsoft.Web/sites', '${prefix}-devin-bridge')
+    devinFunctionTriggerUrl: 'https://${prefix}-devin-bridge.azurewebsites.net/api/alerts/devin?token=${alertWebhookToken}'
   }
 }
 
