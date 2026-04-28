@@ -38,18 +38,30 @@ param registryPassword string = ''
 @description('Container command override')
 param command array = []
 
+@description('Ingress transport protocol (auto, http, http2, tcp)')
+param ingressTransport string = 'auto'
+
+@description('Exposed port for TCP ingress (required when transport is tcp)')
+param exposedPort int = 0
+
+@description('CPU cores for the container')
+param cpu string = '0.5'
+
+@description('Memory for the container')
+param memory string = '1Gi'
+
 resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
   name: name
   location: location
   properties: {
     managedEnvironmentId: environmentId
     configuration: {
-      ingress: {
+      ingress: union({
         external: ingressExternal
         targetPort: ingressPort
-        transport: 'auto'
+        transport: ingressTransport
         allowInsecure: false
-      }
+      }, exposedPort > 0 ? { exposedPort: exposedPort } : {})
       registries: !empty(registryServer) ? [
         {
           server: registryServer
@@ -71,8 +83,8 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
           image: image
           env: envVars
           resources: {
-            cpu: json('0.5')
-            memory: '1Gi'
+            cpu: json(cpu)
+            memory: memory
           }
           command: !empty(command) ? command : null
         }

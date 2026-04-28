@@ -1,0 +1,6 @@
+AppHost/
+**/bin/
+**/obj/
+**/*.Tests/
+*.md
+.git
