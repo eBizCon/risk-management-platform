@@ -81,7 +81,8 @@ jobs:
           az deployment group create \
             --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
             --template-file infra/main.bicep \
-            --parameters infra/parameters/dev.bicepparam \
+            --parameters environmentName="dev" \
+            --parameters location="northeurope" \
             --parameters postgresAdminPassword="${{ secrets.POSTGRES_ADMIN_PASSWORD }}" \
             --parameters keycloakAdminPassword="${{ secrets.KEYCLOAK_ADMIN_PASSWORD }}" \
             --parameters oidcClientSecret="${{ secrets.OIDC_CLIENT_SECRET }}" \

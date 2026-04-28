@@ -99,7 +99,6 @@ module databaseSeeder 'modules/databaseSeeder.bicep' = {
     riskConnectionString: 'Host=${postgres.outputs.fqdn};Database=risk-management;Username=${postgres.outputs.adminUsername};Password=${postgresAdminPassword};SSL Mode=Require'
   }
   dependsOn: [
-    postgres
     rabbitmq
   ]
 }
