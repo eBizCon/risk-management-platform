@@ -95,16 +95,25 @@ jobs:
       - name: Update Container Apps
         env:
           IMAGE_TAG: ${{ needs.resolve-tag.outputs.image_tag }}
+          FORCE_ROLLOUT: ${{ github.run_id }}-${{ github.run_attempt }}
         run: |
           az containerapp update \
             --name riskmgmt-dev-app \
             --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
-            --image ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/risk-management-app:${IMAGE_TAG}
+            --image ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/risk-management-app:${IMAGE_TAG} \
+            --set-env-vars FORCE_ROLLOUT=${FORCE_ROLLOUT}
           az containerapp update \
             --name riskmgmt-dev-risk-api \
             --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
-            --image ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/riskmanagement-api:${IMAGE_TAG}
+            --image ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/riskmanagement-api:${IMAGE_TAG} \
+            --set-env-vars FORCE_ROLLOUT=${FORCE_ROLLOUT}
           az containerapp update \
             --name riskmgmt-dev-customer-api \
             --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
-            --image ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/customermanagement-api:${IMAGE_TAG}
+            --image ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/customermanagement-api:${IMAGE_TAG} \
+            --set-env-vars FORCE_ROLLOUT=${FORCE_ROLLOUT}
+          az containerapp update \
+            --name riskmgmt-dev-devin-bridge \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --image ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/devin-alert-bridge:${IMAGE_TAG} \
+            --set-env-vars FORCE_ROLLOUT=${FORCE_ROLLOUT}

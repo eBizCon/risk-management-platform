@@ -82,21 +82,23 @@ public sealed class DevinSessionTrigger
 
         var prompt = BuildSessionPrompt(alertRule, severity, monitorCondition, firedDateTime, alertId, alertPayload);
         var title = $"[Alert:{severity}] {alertRule}";
-        var repos = ParseCsv(Environment.GetEnvironmentVariable("DEVIN_SESSION_REPOS"));
+        // var repos = ParseCsv(Environment.GetEnvironmentVariable("DEVIN_SESSION_REPOS"));
+        var repos = "risk-management-platform";
         var bypassApproval = ParseBool(Environment.GetEnvironmentVariable("DEVIN_BYPASS_APPROVAL"), true);
 
         var sessionRequestPayload = new Dictionary<string, object?>
         {
             ["prompt"] = prompt,
             ["title"] = title,
+            ["playbook_id"] = "518ba362c3e6497f97015d052b6060ec",
             ["bypass_approval"] = bypassApproval,
             ["tags"] = new[] { "azure-monitor", "application-insights", "risk-management-platform" }
         };
 
-        if (repos.Count > 0)
-        {
+        // if (repos.Count > 0)
+        // {
             sessionRequestPayload["repos"] = repos;
-        }
+        // }
 
         var devinPayload = JsonSerializer.Serialize(sessionRequestPayload);
 
@@ -188,11 +190,6 @@ Alert details:
 - Condition: {monitorCondition}
 - FiredAt: {firedDateTime}
 - AlertId: {alertId}
-
-Tasks:
-1. Analyze probable root cause from the alert context.
-2. Propose immediate mitigation steps.
-3. Propose a long-term fix and verification plan.
 
 Raw Azure alert payload (JSON):
 {alertJson}

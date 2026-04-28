@@ -44,7 +44,7 @@ resource appInsightsExceptionAlert 'Microsoft.Insights/scheduledQueryRules@2023-
     criteria: {
       allOf: [
         {
-          query: 'AppExceptions | where Message has "Unhandled exception while processing request"'
+          query: 'AppExceptions | where AppRoleName  == "riskmgmt-dev-risk-api" |  where Properties has "Unhandled exception while processing request"'
           timeAggregation: 'Count'
           operator: 'GreaterThan'
           threshold: 0
