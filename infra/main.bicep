@@ -186,8 +186,8 @@ module customerApi 'modules/containerApp.bicep' = {
     maxReplicas: 5
     envVars: [
       { name: 'ConnectionStrings__DefaultConnection', value: 'Host=${postgres.outputs.fqdn};Database=customer-management;Username=${postgres.outputs.adminUsername};Password=${postgresAdminPassword};SSL Mode=Require' }
-      { name: 'ConnectionStrings__messaging', value: 'amqp://risk:${rabbitmqPassword}@${rabbitmq.outputs.fqdn}:5672' }
-      { name: 'RabbitMQ__ConnectionString', value: 'amqp://risk:${rabbitmqPassword}@${rabbitmq.outputs.fqdn}:5672' }
+      { name: 'ConnectionStrings__messaging', value: 'amqp://risk:${rabbitmqPassword}@${rabbitmq.outputs.internalName}:5672' }
+      { name: 'RabbitMQ__ConnectionString', value: 'amqp://risk:${rabbitmqPassword}@${rabbitmq.outputs.internalName}:5672' }
       { name: 'APPLICATION_SERVICE_URL', value: 'https://${prefix}-risk-api.${containerAppsEnv.outputs.defaultDomain}' }
       { name: 'SERVICE_API_KEY', value: serviceApiKey }
       { name: 'OIDC_ISSUER', value: 'https://${keycloak.outputs.fqdn}/realms/risk-management' }
@@ -213,8 +213,8 @@ module riskApi 'modules/containerApp.bicep' = {
     maxReplicas: 5
     envVars: [
       { name: 'ConnectionStrings__DefaultConnection', value: 'Host=${postgres.outputs.fqdn};Database=risk-management;Username=${postgres.outputs.adminUsername};Password=${postgresAdminPassword};SSL Mode=Require' }
-      { name: 'ConnectionStrings__messaging', value: 'amqp://risk:${rabbitmqPassword}@${rabbitmq.outputs.fqdn}:5672' }
-      { name: 'RabbitMQ__ConnectionString', value: 'amqp://risk:${rabbitmqPassword}@${rabbitmq.outputs.fqdn}:5672' }
+      { name: 'ConnectionStrings__messaging', value: 'amqp://risk:${rabbitmqPassword}@${rabbitmq.outputs.internalName}:5672' }
+      { name: 'RabbitMQ__ConnectionString', value: 'amqp://risk:${rabbitmqPassword}@${rabbitmq.outputs.internalName}:5672' }
       { name: 'CUSTOMER_SERVICE_URL', value: 'https://${prefix}-customer-api.${containerAppsEnv.outputs.defaultDomain}' }
       { name: 'SERVICE_API_KEY', value: serviceApiKey }
       { name: 'OIDC_ISSUER', value: 'https://${keycloak.outputs.fqdn}/realms/risk-management' }

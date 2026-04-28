@@ -13,7 +13,7 @@ param adminPassword string
 
 var rabbitmqUsername = 'risk'
 
-resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
+resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
   name: name
   location: location
   properties: {
@@ -24,6 +24,12 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
         targetPort: 15672
         transport: 'auto'
         allowInsecure: false
+        additionalPortMappings: [
+          {
+            external: false
+            targetPort: 5672
+          }
+        ]
       }
       secrets: [
         {
@@ -56,5 +62,5 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
 }
 
 output fqdn string = containerApp.properties.configuration.ingress.fqdn
-output amqpConnectionString string = 'amqp://${rabbitmqUsername}:${adminPassword}@${name}:${uniqueString(resourceGroup().id)}.internal:5672'
+output internalName string = name
 output username string = rabbitmqUsername
