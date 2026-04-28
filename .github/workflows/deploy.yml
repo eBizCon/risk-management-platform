@@ -51,7 +51,8 @@ jobs:
             --parameters keycloakAdminPassword="${{ secrets.KEYCLOAK_ADMIN_PASSWORD }}" \
             --parameters oidcClientSecret="${{ secrets.OIDC_CLIENT_SECRET }}" \
             --parameters serviceApiKey="${{ secrets.SERVICE_API_KEY }}" \
-            --parameters rabbitmqPassword="${{ secrets.RABBITMQ_PASSWORD }}"
+            --parameters rabbitmqPassword="${{ secrets.RABBITMQ_PASSWORD }}" \
+            --parameters ghcrToken="${{ secrets.GHCR_TOKEN }}"
 
   deploy-apps:
     if: ${{ !failure() && !cancelled() && inputs.deploy_apps }}
