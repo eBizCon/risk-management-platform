@@ -44,12 +44,12 @@ module acr 'modules/containerRegistry.bicep' = {
   }
 }
 
-// Determine if we use ACR or GHCR
-var useACR = !empty(acr.outputs.loginServer) && empty(ghcrToken)
-var registryServer = useACR ? acr.outputs.loginServer : 'ghcr.io'
-var registryUsername = useACR ? acr.outputs.adminUsername : 'ebizcon'
-var registryPassword = useACR ? acr.outputs.adminPassword : ghcrToken
-var imagePrefix = useACR ? acr.outputs.loginServer : 'ghcr.io/ebizcon/risk-management-platform'
+// Always use GHCR for image paths (deploy.yml pushes to GHCR)
+// ghcrToken only controls whether registry credentials are configured (needed for private images)
+var imagePrefix = 'ghcr.io/ebizcon/risk-management-platform'
+var registryServer = !empty(ghcrToken) ? 'ghcr.io' : ''
+var registryUsername = !empty(ghcrToken) ? 'ebizcon' : ''
+var registryPassword = ghcrToken
 
 // --- PostgreSQL ---
 module postgres 'modules/postgresql.bicep' = {
