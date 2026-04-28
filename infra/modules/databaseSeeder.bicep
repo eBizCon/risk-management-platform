@@ -35,20 +35,24 @@ resource containerAppJob 'Microsoft.App/jobs@2023-05-01' = {
     environmentId: environmentId
     workloadProfileName: null
     configuration: {
-      secrets: [
-        {
-          name: 'registry-password'
-          value: registryPassword
-        }
-        {
-          name: 'customer-connection'
-          value: customerConnectionString
-        }
-        {
-          name: 'risk-connection'
-          value: riskConnectionString
-        }
-      ]
+      secrets: concat(
+        !empty(registryServer) ? [
+          {
+            name: 'registry-password'
+            value: registryPassword
+          }
+        ] : [],
+        [
+          {
+            name: 'customer-connection'
+            value: customerConnectionString
+          }
+          {
+            name: 'risk-connection'
+            value: riskConnectionString
+          }
+        ]
+      )
       registries: !empty(registryServer) ? [
         {
           server: registryServer
