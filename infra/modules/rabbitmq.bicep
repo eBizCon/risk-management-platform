@@ -56,7 +56,7 @@ resource containerApp 'Microsoft.App/containerApps@2026-01-01' = {
       scale: {
         cooldownPeriod: 3600
         pollingInterval: 30
-        minReplicas: 0
+        minReplicas: 1
         maxReplicas: 1
       }
     }
