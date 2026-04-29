@@ -111,7 +111,7 @@ module devinAlertBridge 'modules/containerApp.bicep' = if (!empty(devinOrgId) &&
     registryPassword: ghcrToken
     ingressPort: 8080
     ingressExternal: true
-    minReplicas: 0
+    minReplicas: 1
     maxReplicas: 1
     envVars: [
       { name: 'DEVIN_ORG_ID', value: devinOrgId }
