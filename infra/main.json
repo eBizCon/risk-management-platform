@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.42.1.51946",
-      "templateHash": "597800587332845500"
+      "templateHash": "16651589487151575884"
     }
   },
   "parameters": {
@@ -474,7 +474,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.42.1.51946",
-              "templateHash": "13725298072363491666"
+              "templateHash": "8427158095707672246"
             }
           },
           "parameters": {
@@ -568,7 +568,7 @@
           "resources": [
             {
               "type": "Microsoft.App/containerApps",
-              "apiVersion": "2023-05-01",
+              "apiVersion": "2026-01-01",
               "name": "[parameters('name')]",
               "location": "[parameters('location')]",
               "properties": {
@@ -597,6 +597,18 @@
                     }
                   ],
                   "scale": {
+                    "rules": [
+                      {
+                        "name": "http-rule",
+                        "http": {
+                          "metadata": {
+                            "concurrentRequests": "100"
+                          }
+                        }
+                      }
+                    ],
+                    "cooldownPeriod": 1800,
+                    "pollingInterval": 30,
                     "minReplicas": "[parameters('minReplicas')]",
                     "maxReplicas": "[parameters('maxReplicas')]"
                   }
@@ -607,7 +619,7 @@
           "outputs": {
             "fqdn": {
               "type": "string",
-              "value": "[reference(resourceId('Microsoft.App/containerApps', parameters('name')), '2023-05-01').configuration.ingress.fqdn]"
+              "value": "[reference(resourceId('Microsoft.App/containerApps', parameters('name')), '2026-01-01').configuration.ingress.fqdn]"
             }
           }
         }
@@ -648,7 +660,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.42.1.51946",
-              "templateHash": "10309027848633876001"
+              "templateHash": "13196195507970412372"
             }
           },
           "parameters": {
@@ -708,13 +720,13 @@
                 "scopes": [
                   "[parameters('logAnalyticsWorkspaceId')]"
                 ],
-                "evaluationFrequency": "PT5M",
-                "windowSize": "PT5M",
-                "autoMitigate": true,
+                "evaluationFrequency": "PT1M",
+                "windowSize": "PT1M",
+                "autoMitigate": false,
                 "criteria": {
                   "allOf": [
                     {
-                      "query": "AppExceptions",
+                      "query": "AppExceptions | where AppRoleName  == \"riskmgmt-dev-risk-api\" |  where Properties has \"Unhandled exception while processing request\"",
                       "timeAggregation": "Count",
                       "operator": "GreaterThan",
                       "threshold": 0,
@@ -875,7 +887,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.42.1.51946",
-              "templateHash": "337918799758881287"
+              "templateHash": "11136270535177670876"
             }
           },
           "parameters": {
@@ -1023,7 +1035,7 @@
                   ],
                   "volumes": "[if(not(empty(parameters('realmImportJson'))), createArray(createObject('name', 'realm-import', 'storageType', 'Secret', 'secrets', createArray(createObject('secretRef', 'realm-import-json', 'path', 'risk-management-realm.json')))), createArray())]",
                   "scale": {
-                    "minReplicas": 1,
+                    "minReplicas": 0,
                     "maxReplicas": 1
                   }
                 }
@@ -1239,7 +1251,7 @@
             "value": 0
           },
           "maxReplicas": {
-            "value": 5
+            "value": 1
           },
           "envVars": {
             "value": [
@@ -1305,7 +1317,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.42.1.51946",
-              "templateHash": "13725298072363491666"
+              "templateHash": "8427158095707672246"
             }
           },
           "parameters": {
@@ -1399,7 +1411,7 @@
           "resources": [
             {
               "type": "Microsoft.App/containerApps",
-              "apiVersion": "2023-05-01",
+              "apiVersion": "2026-01-01",
               "name": "[parameters('name')]",
               "location": "[parameters('location')]",
               "properties": {
@@ -1428,6 +1440,18 @@
                     }
                   ],
                   "scale": {
+                    "rules": [
+                      {
+                        "name": "http-rule",
+                        "http": {
+                          "metadata": {
+                            "concurrentRequests": "100"
+                          }
+                        }
+                      }
+                    ],
+                    "cooldownPeriod": 1800,
+                    "pollingInterval": 30,
                     "minReplicas": "[parameters('minReplicas')]",
                     "maxReplicas": "[parameters('maxReplicas')]"
                   }
@@ -1438,7 +1462,7 @@
           "outputs": {
             "fqdn": {
               "type": "string",
-              "value": "[reference(resourceId('Microsoft.App/containerApps', parameters('name')), '2023-05-01').configuration.ingress.fqdn]"
+              "value": "[reference(resourceId('Microsoft.App/containerApps', parameters('name')), '2026-01-01').configuration.ingress.fqdn]"
             }
           }
         }
@@ -1625,7 +1649,7 @@
             "value": 0
           },
           "maxReplicas": {
-            "value": 5
+            "value": 1
           },
           "envVars": {
             "value": [
@@ -1671,7 +1695,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.42.1.51946",
-              "templateHash": "13725298072363491666"
+              "templateHash": "8427158095707672246"
             }
           },
           "parameters": {
@@ -1765,7 +1789,7 @@
           "resources": [
             {
               "type": "Microsoft.App/containerApps",
-              "apiVersion": "2023-05-01",
+              "apiVersion": "2026-01-01",
               "name": "[parameters('name')]",
               "location": "[parameters('location')]",
               "properties": {
@@ -1794,6 +1818,18 @@
                     }
                   ],
                   "scale": {
+                    "rules": [
+                      {
+                        "name": "http-rule",
+                        "http": {
+                          "metadata": {
+                            "concurrentRequests": "100"
+                          }
+                        }
+                      }
+                    ],
+                    "cooldownPeriod": 1800,
+                    "pollingInterval": 30,
                     "minReplicas": "[parameters('minReplicas')]",
                     "maxReplicas": "[parameters('maxReplicas')]"
                   }
@@ -1804,7 +1840,7 @@
           "outputs": {
             "fqdn": {
               "type": "string",
-              "value": "[reference(resourceId('Microsoft.App/containerApps', parameters('name')), '2023-05-01').configuration.ingress.fqdn]"
+              "value": "[reference(resourceId('Microsoft.App/containerApps', parameters('name')), '2026-01-01').configuration.ingress.fqdn]"
             }
           }
         }
@@ -1854,7 +1890,7 @@
             "value": 0
           },
           "maxReplicas": {
-            "value": 5
+            "value": 1
           },
           "envVars": {
             "value": [
@@ -1900,7 +1936,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.42.1.51946",
-              "templateHash": "13725298072363491666"
+              "templateHash": "8427158095707672246"
             }
           },
           "parameters": {
@@ -1994,7 +2030,7 @@
           "resources": [
             {
               "type": "Microsoft.App/containerApps",
-              "apiVersion": "2023-05-01",
+              "apiVersion": "2026-01-01",
               "name": "[parameters('name')]",
               "location": "[parameters('location')]",
               "properties": {
@@ -2023,6 +2059,18 @@
                     }
                   ],
                   "scale": {
+                    "rules": [
+                      {
+                        "name": "http-rule",
+                        "http": {
+                          "metadata": {
+                            "concurrentRequests": "100"
+                          }
+                        }
+                      }
+                    ],
+                    "cooldownPeriod": 1800,
+                    "pollingInterval": 30,
                     "minReplicas": "[parameters('minReplicas')]",
                     "maxReplicas": "[parameters('maxReplicas')]"
                   }
@@ -2033,7 +2081,7 @@
           "outputs": {
             "fqdn": {
               "type": "string",
-              "value": "[reference(resourceId('Microsoft.App/containerApps', parameters('name')), '2023-05-01').configuration.ingress.fqdn]"
+              "value": "[reference(resourceId('Microsoft.App/containerApps', parameters('name')), '2026-01-01').configuration.ingress.fqdn]"
             }
           }
         }

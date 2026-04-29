@@ -38,7 +38,7 @@ param registryPassword string = ''
 @description('Container command override')
 param command array = []
 
-resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
+resource containerApp 'Microsoft.App/containerApps@2026-01-01' = {
   name: name
   location: location
   properties: {
@@ -77,7 +77,20 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
           command: !empty(command) ? command : null
         }
       ]
-      scale: {
+      scale: {  
+        rules: [
+          {
+            name: 'http-rule'
+            http: {
+              metadata: {
+                concurrentRequests: '100'
+                
+              }
+            }
+          }
+        ]
+        cooldownPeriod: 1800
+        pollingInterval: 30
         minReplicas: minReplicas
         maxReplicas: maxReplicas
       }

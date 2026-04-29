@@ -185,7 +185,7 @@ module app 'modules/containerApp.bicep' = {
     ingressPort: 3000
     ingressExternal: true
     minReplicas: 0
-    maxReplicas: 5
+    maxReplicas: 1
     envVars: [
       { name: 'DATABASE_URL', value: 'postgresql://${postgres.outputs.adminUsername}:${postgresAdminPassword}@${postgres.outputs.fqdn}:5432/risk_management?sslmode=require' }
       { name: 'SESSION_SECRET', value: generatedSessionSecret }
@@ -227,7 +227,7 @@ module customerApi 'modules/containerApp.bicep' = {
     ingressPort: 8080
     ingressExternal: true
     minReplicas: 0
-    maxReplicas: 5
+    maxReplicas: 1
     envVars: [
       { name: 'ConnectionStrings__DefaultConnection', value: 'Host=${postgres.outputs.fqdn};Database=customer-management;Username=${postgres.outputs.adminUsername};Password=${postgresAdminPassword};SSL Mode=Require' }
       { name: 'ConnectionStrings__messaging', value: 'amqp://risk:${rabbitmqPassword}@${rabbitmq.outputs.internalName}:5672' }
@@ -254,7 +254,7 @@ module riskApi 'modules/containerApp.bicep' = {
     ingressPort: 8080
     ingressExternal: true
     minReplicas: 0
-    maxReplicas: 5
+    maxReplicas: 1
     envVars: [
       { name: 'ConnectionStrings__DefaultConnection', value: 'Host=${postgres.outputs.fqdn};Database=risk-management;Username=${postgres.outputs.adminUsername};Password=${postgresAdminPassword};SSL Mode=Require' }
       { name: 'ConnectionStrings__messaging', value: 'amqp://risk:${rabbitmqPassword}@${rabbitmq.outputs.internalName}:5672' }
