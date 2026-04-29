@@ -27,7 +27,7 @@ param realmImportJson string = ''
 
 var keycloakAdmin = 'admin'
 
-resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
+resource containerApp 'Microsoft.App/containerApps@2026-01-01' = {
   name: name
   location: location
   properties: {
@@ -105,6 +105,8 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
         }
       ] : []
       scale: {
+        cooldownPeriod: 3600
+        pollingInterval: 30
         minReplicas: 0
         maxReplicas: 1
       }

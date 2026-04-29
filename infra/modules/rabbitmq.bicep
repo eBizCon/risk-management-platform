@@ -13,7 +13,7 @@ param adminPassword string
 
 var rabbitmqUsername = 'risk'
 
-resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
+resource containerApp 'Microsoft.App/containerApps@2026-01-01' = {
   name: name
   location: location
   properties: {
@@ -54,7 +54,9 @@ resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
         }
       ]
       scale: {
-        minReplicas: 1
+        cooldownPeriod: 3600
+        pollingInterval: 30
+        minReplicas: 0
         maxReplicas: 1
       }
     }
