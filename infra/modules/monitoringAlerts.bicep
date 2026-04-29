@@ -40,7 +40,7 @@ resource appInsightsExceptionAlert 'Microsoft.Insights/scheduledQueryRules@2023-
     ]
     evaluationFrequency: 'PT1M'
     windowSize: 'PT1M'
-    autoMitigate: true
+    autoMitigate: false
     criteria: {
       allOf: [
         {

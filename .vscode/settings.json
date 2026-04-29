@@ -15,5 +15,8 @@
       "name": "riskmanagement",
       "database": "${workspaceFolder:risk-management-platform}/data.db"
     }
-  ]
+  ],
+  "[bicep]": {
+    "editor.defaultFormatter": "anthony-c-martin.vscode-bicep"
+  }
 }
