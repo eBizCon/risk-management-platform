@@ -1,5 +1,5 @@
 using System.Text.Json;
-using RiskManagement.Domain.Exceptions;
+using SharedKernel.Exceptions;
 
 namespace RiskManagement.Api.Middleware;
 
@@ -19,6 +19,14 @@ public class ExceptionHandlingMiddleware
         try
         {
             await _next(context);
+        }
+        catch (DomainException ex)
+        {
+            _logger.LogWarning(ex, "Domain validation error while processing request {Method} {Path}",
+                context.Request.Method, context.Request.Path);
+            context.Response.StatusCode = 400;
+            context.Response.ContentType = "application/json";
+            await context.Response.WriteAsync(JsonSerializer.Serialize(new { error = ex.Message }));
         }
         catch (Exception ex)
         {
