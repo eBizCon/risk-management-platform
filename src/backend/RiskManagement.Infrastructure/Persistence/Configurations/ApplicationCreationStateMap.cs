@@ -12,7 +12,7 @@ public class ApplicationCreationStateConfiguration : IEntityTypeConfiguration<Ap
 
         entity.HasKey(x => x.CorrelationId);
         entity.Property(x => x.CorrelationId).HasColumnName("correlation_id");
-        entity.Property(x => x.CurrentState).HasColumnName("current_state").HasMaxLength(64).IsRequired();
+        entity.Property(x => x.CurrentState).HasColumnName("current_state").HasMaxLength(64);
 
         entity.Property(x => x.ApplicationId).HasColumnName("application_id");
         entity.Property(x => x.CustomerId).HasColumnName("customer_id");
