@@ -156,10 +156,6 @@
 	}
 
 	$effect(() => {
-		stats.draft;
-		stats.submitted;
-		stats.approved;
-		stats.rejected;
 		createBarChart();
 		createPieChart();
 
