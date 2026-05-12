@@ -5,12 +5,12 @@
 cd ~/repos/risk-management-platform && git pull && git submodule update --init --recursive
 ```
 
-
 ## Install Dependenciees
 ```bash
 1. curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash 2>&1
 2. az config set extension.dynamic_install_allow_preview=true
 3. az extension add --name log-analytics
+4. playwright?
 ```
 ## Update Dependencies
 ```bash
@@ -149,3 +149,28 @@ If the fix is trivial (e.g., a simple configuration update or a one-line bug fix
 * **No Silent Failures**: Do not ignore an alert even if it seems transient; always document the RCA in an issue.
 * **No Destructive CLI Commands**: Do not run any Azure CLI commands that delete resources or clear production logs.
 * **No Window Widening**: Do not expand the query time window beyond what the alert payload specifies without explicitly telling the user and getting confirmation.
+
+
+## Devin CLI
+### Trigger Devin Session
+```bash
+curl -X POST "https://api.devin.ai/v3/organizations/{DEVIN_ORG_ID}/sessions" \
+  -H "Authorization: Bearer {DEVIN_API_KEY}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "An Azure Monitor alert was triggered and requires investigation.\n\nAlert details:\n- Rule: riskmgmt-dev Application Insights exceptions\n- Severity: Sev2\n- Condition: Fired\n- FiredAt: 2026-04-28T15:06:41Z\n- AlertId: ac35a243-992f-7dab-11fb-fffb49ba000d\n\nRaw Azure alert payload (JSON):\n{...}",
+    "title": "[Alert:Sev2] riskmgmt-dev Application Insights exceptions",
+    "playbook_id": "playbook-518ba362c3e6497f97015d052b6060ec",
+    "bypass_approval": true,
+    "tags": ["azure-monitor", "application-insights", "risk-management-platform"],
+    "repos": ["risk-management-platform"]
+  }'
+```
+
+**Parameter:**
+- `prompt`: Die Anfrage an Devin, die den Kontext des Alerts enthält
+- `title`: Titel der Devin Session
+- `playbook_id` (optional): Playbook ID aus der URL `https://app.devin.ai/org/<org>/settings/playbooks/518ba362c3e6497f97015d052b6060ec` mit `playbook-` prefixed
+- `bypass_approval`: Wenn `true`, wird die Session ohne Genehmigung erstellt
+- `repos` (optional): Repository-Namen, auf die in der Session referenziert werden soll
+- `tags` (optional): Session-Tags für Kategorisierung
