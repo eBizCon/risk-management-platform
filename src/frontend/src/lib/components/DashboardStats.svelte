@@ -1,6 +1,5 @@
 <script lang="ts">
 	import type { DashboardStats } from '$lib/types';
-	import { onMount } from 'svelte';
 	import { FileEdit, Send, CheckCircle, XCircle } from 'lucide-svelte';
 	import Chart from 'chart.js/auto';
 
@@ -156,7 +155,11 @@
 		});
 	}
 
-	onMount(() => {
+	$effect(() => {
+		stats.draft;
+		stats.submitted;
+		stats.approved;
+		stats.rejected;
 		createBarChart();
 		createPieChart();
 
