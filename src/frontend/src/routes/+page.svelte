@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
+	import DashboardStats from '$lib/components/DashboardStats.svelte';
 	import {
 		FileText,
 		ClipboardCheck,
@@ -13,6 +14,7 @@
 	const user = $derived($page.data.user ?? null);
 	const isApplicant = $derived(user?.role === 'applicant');
 	const isProcessor = $derived(user?.role === 'processor');
+	const dashboardStats = $derived($page.data.dashboardStats ?? null);
 </script>
 
 <svelte:head>
@@ -29,6 +31,10 @@
 			automatischer Risikobewertung.
 		</p>
 	</div>
+
+	{#if dashboardStats && (isApplicant || isProcessor)}
+		<DashboardStats stats={dashboardStats} />
+	{/if}
 
 	<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6" data-testid="home-features">
 		<div class="card p-6" data-testid="home-feature-automation">
@@ -70,64 +76,64 @@
 	<div class="card p-8 mt-8" data-testid="home-role-section">
 		{#if isApplicant}
 			<div data-testid="home-applicant-section">
-			<h2 class="text-2xl font-bold text-primary mb-4">Als Antragsteller</h2>
-			<p class="text-secondary mb-6">
-				Erstellen Sie neue Kreditanträge, speichern Sie Entwürfe und verfolgen Sie den Status Ihrer
-				eingereichten Anträge.
-			</p>
-			<div class="flex flex-col sm:flex-row gap-4">
-				<a
-					href="/applications/new"
-					class="btn-primary inline-flex items-center px-6 py-3 w-full sm:w-auto"
-					data-testid="home-applicant-new-application-link"
-				>
-					<FileText class="w-5 h-5 mr-2" />
-					Neuen Antrag erstellen
-					<ArrowRight class="w-5 h-5 ml-2" />
-				</a>
-				<a
-					href="/applications"
-					class="btn-secondary inline-flex items-center px-6 py-3 w-full sm:w-auto"
-					data-testid="home-applicant-applications-link"
-				>
-					Meine Anträge ansehen
-				</a>
-			</div>
+				<h2 class="text-2xl font-bold text-primary mb-4">Als Antragsteller</h2>
+				<p class="text-secondary mb-6">
+					Erstellen Sie neue Kreditanträge, speichern Sie Entwürfe und verfolgen Sie den Status
+					Ihrer eingereichten Anträge.
+				</p>
+				<div class="flex flex-col sm:flex-row gap-4">
+					<a
+						href="/applications/new"
+						class="btn-primary inline-flex items-center px-6 py-3 w-full sm:w-auto"
+						data-testid="home-applicant-new-application-link"
+					>
+						<FileText class="w-5 h-5 mr-2" />
+						Neuen Antrag erstellen
+						<ArrowRight class="w-5 h-5 ml-2" />
+					</a>
+					<a
+						href="/applications"
+						class="btn-secondary inline-flex items-center px-6 py-3 w-full sm:w-auto"
+						data-testid="home-applicant-applications-link"
+					>
+						Meine Anträge ansehen
+					</a>
+				</div>
 			</div>
 		{:else if isProcessor}
 			<div data-testid="home-processor-section">
-			<h2 class="text-2xl font-bold text-primary mb-4">Als Antragsbearbeiter</h2>
-			<p class="text-secondary mb-6">
-				Prüfen Sie eingereichte Anträge, treffen Sie fundierte Entscheidungen und verfolgen Sie die
-				Bearbeitungshistorie.
-			</p>
-			<div class="flex flex-col sm:flex-row gap-4">
-				<a
-					href="/processor"
-					class="btn-primary inline-flex items-center px-6 py-3 w-full sm:w-auto"
-					data-testid="home-processor-worklist-link"
-				>
-					<ClipboardCheck class="w-5 h-5 mr-2" />
-					Anträge bearbeiten
-					<ArrowRight class="w-5 h-5 ml-2" />
-				</a>
-			</div>
+				<h2 class="text-2xl font-bold text-primary mb-4">Als Antragsbearbeiter</h2>
+				<p class="text-secondary mb-6">
+					Prüfen Sie eingereichte Anträge, treffen Sie fundierte Entscheidungen und verfolgen Sie
+					die Bearbeitungshistorie.
+				</p>
+				<div class="flex flex-col sm:flex-row gap-4">
+					<a
+						href="/processor"
+						class="btn-primary inline-flex items-center px-6 py-3 w-full sm:w-auto"
+						data-testid="home-processor-worklist-link"
+					>
+						<ClipboardCheck class="w-5 h-5 mr-2" />
+						Anträge bearbeiten
+						<ArrowRight class="w-5 h-5 ml-2" />
+					</a>
+				</div>
 			</div>
 		{:else}
 			<div data-testid="home-guest-section">
-			<h2 class="text-2xl font-bold text-primary mb-4">Starten Sie jetzt</h2>
-			<p class="text-secondary mb-6">
-				Melden Sie sich an, um Anträge zu stellen oder zu bearbeiten.
-			</p>
-			<a
-				href="/login"
-				class="btn-primary inline-flex items-center px-6 py-3 w-full sm:w-auto"
-				data-testid="hero-login"
-			>
-				<LogIn class="w-5 h-5 mr-2" />
-				Zum Login
-				<ArrowRight class="w-5 h-5 ml-2" />
-			</a>
+				<h2 class="text-2xl font-bold text-primary mb-4">Starten Sie jetzt</h2>
+				<p class="text-secondary mb-6">
+					Melden Sie sich an, um Anträge zu stellen oder zu bearbeiten.
+				</p>
+				<a
+					href="/login"
+					class="btn-primary inline-flex items-center px-6 py-3 w-full sm:w-auto"
+					data-testid="hero-login"
+				>
+					<LogIn class="w-5 h-5 mr-2" />
+					Zum Login
+					<ArrowRight class="w-5 h-5 ml-2" />
+				</a>
 			</div>
 		{/if}
 	</div>

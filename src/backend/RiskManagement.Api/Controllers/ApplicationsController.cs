@@ -89,4 +89,13 @@ public class ApplicationsController : ControllerBase
         var result = await _dispatcher.SendAsync(new SubmitApplicationCommand(id, User.GetEmail()));
         return result.ToActionResult();
     }
+
+    [HttpGet("dashboard/stats")]
+    [Authorize(Policy = AuthPolicies.ApplicantOrProcessor)]
+    public async Task<IActionResult> GetDashboardStats()
+    {
+        var role = User.IsProcessor() ? "processor" : "applicant";
+        var result = await _dispatcher.QueryAsync(new GetDashboardStatsQuery(User.GetEmail(), role));
+        return result.ToActionResult();
+    }
 }
