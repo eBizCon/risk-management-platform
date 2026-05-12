@@ -236,7 +236,7 @@
 				name="desiredRate"
 				value={application?.desiredRate ?? ''}
 				required
-				min="0"
+				min="0.01"
 				step="0.01"
 				class="mt-1 block w-full rounded-md border-default shadow-sm sm:text-sm"
 				placeholder="z.B. 500"
