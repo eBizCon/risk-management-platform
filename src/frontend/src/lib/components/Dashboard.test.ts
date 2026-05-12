@@ -45,16 +45,16 @@ describe('Dashboard', () => {
 		expect(screen.getByTestId('dashboard-pie-chart')).toBeInTheDocument();
 	});
 
-	it('should display pie chart legend entries for non-zero values', () => {
+	it('should display pie chart legend entries', () => {
 		render(Dashboard, { props: { stats: sampleStats } });
 		const legend = screen.getByTestId('dashboard-pie-legend');
-		expect(legend).toHaveTextContent('Entwurf: 33%');
-		expect(legend).toHaveTextContent('Eingereicht: 25%');
-		expect(legend).toHaveTextContent('Genehmigt: 25%');
-		expect(legend).toHaveTextContent('Abgelehnt: 17%');
+		expect(legend).toHaveTextContent('Entwurf');
+		expect(legend).toHaveTextContent('Eingereicht');
+		expect(legend).toHaveTextContent('Genehmigt');
+		expect(legend).toHaveTextContent('Abgelehnt');
 	});
 
-	it('should not display legend entries for zero values', () => {
+	it('should display all legend entries even with zero values', () => {
 		const statsWithZero: DashboardStats = {
 			total: 5,
 			draft: 3,
@@ -64,10 +64,10 @@ describe('Dashboard', () => {
 		};
 		render(Dashboard, { props: { stats: statsWithZero } });
 		const legend = screen.getByTestId('dashboard-pie-legend');
-		expect(legend).toHaveTextContent('Entwurf: 60%');
-		expect(legend).toHaveTextContent('Eingereicht: 40%');
-		expect(legend).not.toHaveTextContent('Genehmigt');
-		expect(legend).not.toHaveTextContent('Abgelehnt');
+		expect(legend).toHaveTextContent('Entwurf');
+		expect(legend).toHaveTextContent('Eingereicht');
+		expect(legend).toHaveTextContent('Genehmigt');
+		expect(legend).toHaveTextContent('Abgelehnt');
 	});
 
 	it('should handle all-zero stats correctly', () => {
