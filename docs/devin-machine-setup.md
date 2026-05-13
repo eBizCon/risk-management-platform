@@ -27,31 +27,28 @@ cd ~/repos/risk-management-platform && git pull && git submodule update --init -
 
 ## Testing instructions
 ```md
-Run the app locally via Aspire for E2E testing.
+## Local development (manual startup)
 
-Start commands:
+Use this flow when you want to run and inspect the app manually.
 
 1) Start backend stack with Aspire:
-dotnet run --project ~/repos/risk-management-platform/src/backend/AppHost/AppHost.csproj
+dotnet run --project ./src/backend/AppHost/AppHost.csproj --launch-profile http-testmode
 
-2) In a second terminal, start frontend:
-cd ~/repos/risk-management-platform/src/frontend
+2) In a second terminal, start frontend dev server:
+cd ./src/frontend
 cp .env.test .env
-npm run dev --  --port 5173
+npm run dev -- --port 5173
 
 Wait until:
 - Keycloak is healthy
 - Frontend on http://localhost:5173 is reachable
 - APIs are healthy in Aspire dashboard
 
-E2E test command:
-cd ~/repos/risk-management-platform/src/frontend
-npm run test:e2e:ci
+---
 
-Login for browser-based flows:
-- applicant / applicant
-- processor / processor
+## E2E testing (automatic startup via Playwright)
 
+Use the skill `run-e2e` for automated Playwright runs.
 ```
 
 # Playbook
