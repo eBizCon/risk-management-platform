@@ -1,0 +1,31 @@
+# One-time setup (e.g., install system tools, global CLIs).
+initialize: |
+  curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+  (cd src/frontend && npx playwright install chromium --with-deps)
+# Install project dependencies (runs during builds, surfaced to agent at session start).
+maintenance: |
+  export DOTNET_ROOT="/home/ubuntu/.dotnet"
+  export PATH="/home/ubuntu/.dotnet:/home/ubuntu/.dotnet/tools:$PATH"
+  (cd src/frontend && npm install)
+  for proj in src/backend/*/*.csproj; do dotnet restore "$proj"; done
+knowledge:
+  - name: lint
+    contents: |
+      cd src/frontend && npm run lint
+      cd src/frontend && npm run check
+  - name: test
+    contents: |
+      # Backend unit tests
+      dotnet test src/backend/RiskManagement.Api.Tests/RiskManagement.Api.Tests.csproj -c Debug -v minimal
+      # Frontend unit tests
+      cd src/frontend && npm test
+  - name: startup
+    contents: |
+      # Backend (Aspire orchestrator with Keycloak, PostgreSQL, RabbitMQ)
+      dotnet run --project src/backend/AppHost/AppHost.csproj --launch-profile http-testmode
+      # Frontend dev server (in a second terminal)
+      cd src/frontend && cp .env.test .env && npm run dev -- --port 5173
+  - name: notes
+    contents: |
+      # E2E tests use Playwright; use the run-e2e skill
+      # Test users: applicant/applicant, processor/processor
