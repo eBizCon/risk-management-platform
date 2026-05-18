@@ -21,7 +21,8 @@ public class DashboardController : ControllerBase
     [HttpGet("dashboard-stats")]
     public async Task<IActionResult> GetDashboardStats()
     {
-        var result = await _dispatcher.QueryAsync(new GetDashboardStatsQuery(User.GetEmail(), User.GetRole()));
+        var role = User.IsProcessor() ? "processor" : "applicant";
+        var result = await _dispatcher.QueryAsync(new GetDashboardStatsQuery(User.GetEmail(), role));
         return result.ToActionResult();
     }
 }
