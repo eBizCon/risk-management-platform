@@ -46,6 +46,9 @@ test.describe('Home Page - Processor View', () => {
 	});
 
 	test('should display application dashboard for processor', async ({ authenticatedPage }) => {
+		const apiResponse = await authenticatedPage.request.get('/api/applications/dashboard-stats');
+		baseExpect(apiResponse.ok(), `Dashboard API returned ${apiResponse.status()}: ${await apiResponse.text()}`).toBeTruthy();
+
 		await authenticatedPage.goto('/', { waitUntil: 'networkidle' });
 		await baseExpect(authenticatedPage.getByTestId('application-dashboard')).toBeVisible({ timeout: 10000 });
 		await baseExpect(authenticatedPage.getByTestId('dashboard-header')).toBeVisible();
