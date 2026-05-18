@@ -1,5 +1,6 @@
 # Risikomanagement-Plattform
 
+<!-- Environment verification -->
 Eine Webanwendung zur Verwaltung und Bewertung von Kreditanträgen mit automatischer Risikobewertung.
 
 ---
