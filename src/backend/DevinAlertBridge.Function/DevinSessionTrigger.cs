@@ -90,7 +90,7 @@ public sealed class DevinSessionTrigger
         {
             ["prompt"] = prompt,
             ["title"] = title,
-            ["playbook_id"] = "playbook-518ba362c3e6497f97015d052b6060ec",
+            ["playbook_id"] = "playbook-67d7e9b540f34255a5b891fd7cf7166e",
             ["bypass_approval"] = bypassApproval,
             ["tags"] = new[] { "azure-monitor", "application-insights", "risk-management-platform" }
         };
