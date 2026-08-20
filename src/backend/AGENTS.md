@@ -14,6 +14,15 @@ This file defines instructions for the `src/backend/` scope.
 - Use the dispatcher pattern in controllers instead of injecting individual handlers.
 - Keep controllers thin: map transport input, dispatch, map result to HTTP response.
 
+## Dispatcher Pattern
+
+- `IDispatcher` is the only abstraction injected into controllers.
+- Handlers (`ICommandHandler<,>`, `IQueryHandler<,>`, `IDomainEventHandler<>`) are auto-registered by assembly scanning in `Infrastructure/DependencyInjection.cs`.
+- Dispatch uses `IServiceProvider` + reflection (`MakeGenericType` + `GetMethod("HandleAsync").Invoke`).
+- Domain events are published explicitly after saving changes, then cleared from the aggregate.
+- Use `PublishDomainEventsAsync(AggregateRoot aggregate)` to capture, publish, and clear events in one call.
+- Event dispatching tolerates zero registered handlers; command/query dispatching throws when no handler is found.
+
 ## Domain Modeling
 
 - Preserve aggregate invariants via domain methods and guard clauses.
@@ -33,10 +42,21 @@ This file defines instructions for the `src/backend/` scope.
 - Do not expose DbContext outside Infrastructure.
 - Use dedicated read models for query-heavy read use cases.
 
+## Seeding
+
+- Seeding is handled by a dedicated central backend project invoked via AppHost.
+- The seeder seeds both `CustomerManagement` and `RiskManagement` contexts automatically.
+- APIs must not run in-process seeding.
+- Keep strict bounded-context decoupling: no direct project references between `RiskManagement.*` and `CustomerManagement.*`.
+
 ## Testing
 
 - Use backend tests to validate domain behavior, handlers, and integration boundaries.
 - Prefer Arrange-Act-Assert structure and explicit assertions for business failures.
+
+## Known Issues
+
+- Keep `Microsoft.IdentityModel.*` package versions aligned. A mismatch between `Microsoft.IdentityModel.Protocols.OpenIdConnect` (7.1.2) and `System.IdentityModel.Tokens.Jwt` (7.7.1) caused `OpenIdConnectConfiguration` to parse `authorization_endpoint` as empty. Align all IdentityModel packages to the same version (e.g., 7.7.1) with explicit `PackageReference` entries.
 
 ## Precedence
 

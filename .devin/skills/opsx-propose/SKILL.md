@@ -1,8 +1,6 @@
 ---
-name: "OPSX: Propose"
+name: opsx-propose
 description: Propose a new change - create it and generate all artifacts in one step
-category: Workflow
-tags: [workflow, artifacts, experimental]
 ---
 
 Propose a new change - create the change and generate all artifacts in one step.

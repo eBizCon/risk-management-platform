@@ -1,4 +1,5 @@
 ---
+name: create-and-plan-user-story
 description: Create and plan a user story
 ---
 

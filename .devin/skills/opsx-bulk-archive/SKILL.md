@@ -1,8 +1,6 @@
 ---
-name: "OPSX: Bulk Archive"
+name: opsx-bulk-archive
 description: Archive multiple completed changes at once
-category: Workflow
-tags: [workflow, archive, experimental, bulk]
 ---
 
 Archive multiple completed changes in a single operation.
