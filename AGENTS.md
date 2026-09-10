@@ -8,6 +8,7 @@ This file defines global repository-wide instructions.
 - When multiple `AGENTS.md` files apply, the deeper file has precedence for its subtree.
 - Keep code, tests, and comments in English.
 - Prefer minimal, focused changes that respect the existing architecture.
+- Also follow behavioral rule files in `.devin/rules/*.md` when working in matching scopes.
 
 ## Project Intent
 

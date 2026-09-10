@@ -38,16 +38,11 @@ cd ./src/frontend
 npm run test:e2e:ci
 ```
 
-Alternative local command:
+`test:e2e:ci` runs `CI=true playwright test` and is preferred for deterministic CI-like behavior.
 
-```bash
-cd ./src/frontend
-npm run test:e2e
-```
+⚠️ Do **not** run `npm run test:e2e` without `:ci` inside Windsurf/Cascade — it launches a headed browser that blocks the agent.
 
 This runs Playwright in Chromium and generates an HTML report in `playwright-report/`.
-
-`test:e2e:ci` runs `CI=true playwright test` and is preferred for deterministic CI-like behavior.
 
 ## Run targeted tests
 
@@ -91,8 +86,21 @@ For manual browser testing or debugging:
 
 - **Backend startup timeout**: Check AppHost output and verify `http://localhost:5627/health` becomes reachable.
 - **Port conflict on E2E ports**: Free `5627`, `5400`, `8181`, `29032`, `30132`, `4173` or adjust `playwright.config.ts`.
+  - If port `4173` is occupied: `lsof -ti:4173 | xargs kill -9`
 - **`reuseExistingServer` behavior**: Locally (`!CI`) Playwright may reuse existing processes; in CI it starts fresh.
 - **Session creation failed**: The `/api/test/session` endpoint is missing or broken. Check `src/routes/api/test/session/`
 - **Timeout on navigation**: Check that frontend preview startup completed (`npm run build && TEST=true npm run preview`).
 - **`data-testid` not found**: A UI element is missing its `data-testid` attribute. Fix the component, not the test.
 - **Flaky tests**: If a test passes on retry (shown as "flaky"), investigate the root cause instead of ignoring it.
+
+## Agent Execution Notes
+
+- Run E2E commands as **non-blocking** (`Background: true`).
+- Poll for completion with `command_status` and `WaitDurationSeconds: 60`; repeat until done.
+- For single tests: `CI=true npx playwright test <file>` or `CI=true npx playwright test -g "<test name>"`.
+
+## Selector Rules
+
+- Prefer `data-testid` selectors for E2E tests.
+- Do not use XPath or fragile CSS selectors.
+- Do not implement workarounds in tests; fix the underlying UI functionality instead.
