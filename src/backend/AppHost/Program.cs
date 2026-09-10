@@ -11,7 +11,7 @@ var pgPassword = builder.AddParameter("pg-password", "risk", secret: true);
 var postgres = builder.AddPostgres("pg", pgUser, pgPassword);
 if (!isTestMode)
 {
-    postgres = postgres.WithDataVolume();
+    postgres = postgres.WithDataVolume().WithHostPort(5432);
 }
 
 var riskDb = postgres.AddDatabase("risk-management");

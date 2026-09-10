@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "postgres-customer": {
+      "command": "docker",
+      "args": ["run", "-i", "--rm", "-e", "DATABASE_URI", "crystaldba/postgres-mcp", "--access-mode=unrestricted"],
+      "env": {
+        "DATABASE_URI": "postgresql://risk:risk@host.docker.internal:5432/customer-management"
+      }
+    }
+  }
+}

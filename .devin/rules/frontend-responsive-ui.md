@@ -5,6 +5,7 @@ globs:
   - src/frontend/**/*.svelte
   - src/frontend/**/*.css
   - src/frontend/**/*.ts
+# trigger: always_on | manual | model_decision | glob
 ---
 
 # Responsive UI
