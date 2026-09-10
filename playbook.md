@@ -5,6 +5,12 @@ Agent-Panel
 - Context
 ---
 Erkläre mir was die Anwendung macht und wie sie Aufgebaut ist, nutze subagents
+
+Analysiere diese Codebasis und erstelle einen strukturierten Überblick. Gehe dabei wie folgt vor:
+- Technologie-Stack: Identifiziere die wichtigsten Programmiersprachen, Frameworks, Bibliotheken und Build-Tools
+- Projektstruktur: Erkläre kurz den Zweck der Hauptordner und Verzeichnisse (z. B. wo liegen die Komponenten, die API-Routen, Konfigurationen, Tests).
+- Architektur & Kernkonzepte: Beschreibe das architektonische Grundmuster (z. B. MVC, Microservices, Monolith) und wie die Kernkomponenten miteinander interagieren.
+Nutze Subagents
 ---
 Code-Maps
 - http://localhost:5173/login
@@ -16,6 +22,9 @@ Inline-Edit
 ---
 Skills
 ---
+@analyse-bug 
+wenn ich als Applicant einen Kreditantrag einrreiche und dabei für die gewünscht Rate 0 eingegbe, bekomme ich im Frontend ein Internal Server Error angezeigt
+---
 Rules
 - AGENTS.md
 - .devin/rules
@@ -23,9 +32,6 @@ Rules
 MCP
 - Time MCP, welche Uhrzeit haben wir?
 - Postgres Liste Tabellen
----
-@analyse-bug 
-wenn ich als Applicant einen Kreditantrag einrreiche und dabei für die gewünscht Rate 0 eingegbe, bekomme ich im Frontend ein Internal Server Error angezeigt
 ---
 @git-review
 ---
