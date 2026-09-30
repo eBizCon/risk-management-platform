@@ -29,12 +29,5 @@
       <jdbc-url>jdbc:postgresql://localhost:57425/?password=risk&amp;user=risk</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
-    <data-source source="LOCAL" name="pg" uuid="128c1d56-abf4-4a25-8cf3-c7b2fbdafa7f">
-      <driver-ref>postgresql</driver-ref>
-      <synchronize>true</synchronize>
-      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
-      <jdbc-url>jdbc:postgresql://localhost:63298/?password=risk&amp;user=risk</jdbc-url>
-      <working-dir>$ProjectFileDir$</working-dir>
-    </data-source>
   </component>
 </project>
