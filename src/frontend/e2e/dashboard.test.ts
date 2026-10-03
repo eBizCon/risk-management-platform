@@ -17,8 +17,34 @@ test.describe('Home Page - Applicant View', () => {
 		await authenticatedPage.goto('/');
 		await baseExpect(authenticatedPage.getByTestId('home-role-section')).toBeVisible();
 		await baseExpect(authenticatedPage.getByTestId('home-applicant-section')).toBeVisible();
-		await baseExpect(authenticatedPage.getByTestId('home-applicant-new-application-link')).toBeVisible();
-		await baseExpect(authenticatedPage.getByTestId('home-applicant-applications-link')).toBeVisible();
+		await baseExpect(
+			authenticatedPage.getByTestId('home-applicant-new-application-link')
+		).toBeVisible();
+		await baseExpect(
+			authenticatedPage.getByTestId('home-applicant-applications-link')
+		).toBeVisible();
+	});
+
+	test('should display dashboard stats for applicant', async ({ authenticatedPage }) => {
+		await authenticatedPage.goto('/');
+		await baseExpect(authenticatedPage.getByTestId('dashboard-stats')).toBeVisible();
+		await baseExpect(authenticatedPage.getByTestId('dashboard-header')).toBeVisible();
+		await baseExpect(authenticatedPage.getByTestId('dashboard-total')).toContainText('Gesamt:');
+		await baseExpect(authenticatedPage.getByTestId('dashboard-total')).toContainText('Anträge');
+	});
+
+	test('should display all four status cards', async ({ authenticatedPage }) => {
+		await authenticatedPage.goto('/');
+		await baseExpect(authenticatedPage.getByTestId('dashboard-card-draft')).toBeVisible();
+		await baseExpect(authenticatedPage.getByTestId('dashboard-card-submitted')).toBeVisible();
+		await baseExpect(authenticatedPage.getByTestId('dashboard-card-approved')).toBeVisible();
+		await baseExpect(authenticatedPage.getByTestId('dashboard-card-rejected')).toBeVisible();
+	});
+
+	test('should display dashboard charts', async ({ authenticatedPage }) => {
+		await authenticatedPage.goto('/');
+		await baseExpect(authenticatedPage.getByTestId('dashboard-bar-chart')).toBeVisible();
+		await baseExpect(authenticatedPage.getByTestId('dashboard-pie-chart')).toBeVisible();
 	});
 });
 
@@ -31,6 +57,15 @@ test.describe('Home Page - Processor View', () => {
 		await baseExpect(authenticatedPage.getByTestId('home-processor-section')).toBeVisible();
 		await baseExpect(authenticatedPage.getByTestId('home-processor-worklist-link')).toBeVisible();
 	});
+
+	test('should display dashboard stats for processor', async ({ authenticatedPage }) => {
+		await authenticatedPage.goto('/');
+		await baseExpect(authenticatedPage.getByTestId('dashboard-stats')).toBeVisible();
+		await baseExpect(authenticatedPage.getByTestId('dashboard-header')).toBeVisible();
+		await baseExpect(authenticatedPage.getByTestId('dashboard-total')).toContainText('Gesamt:');
+		await baseExpect(authenticatedPage.getByTestId('dashboard-status-cards')).toBeVisible();
+		await baseExpect(authenticatedPage.getByTestId('dashboard-charts')).toBeVisible();
+	});
 });
 
 base.describe('Home Page - Unauthenticated User', () => {
@@ -40,5 +75,11 @@ base.describe('Home Page - Unauthenticated User', () => {
 		await baseExpect(page.getByTestId('home-role-section')).toBeVisible();
 		await baseExpect(page.getByTestId('home-guest-section')).toBeVisible();
 		await baseExpect(page.getByTestId('hero-login')).toBeVisible();
+	});
+
+	base('should not show dashboard stats for unauthenticated user', async ({ page }) => {
+		await clearTestSessions(page);
+		await page.goto('/');
+		await baseExpect(page.getByTestId('dashboard-stats')).not.toBeVisible();
 	});
 });

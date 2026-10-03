@@ -89,4 +89,5 @@ public class ApplicationsController : ControllerBase
         var result = await _dispatcher.SendAsync(new SubmitApplicationCommand(id, User.GetEmail()));
         return result.ToActionResult();
     }
+
 }
